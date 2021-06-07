@@ -4,11 +4,15 @@
 # TODO: Earnings distribution
 # TODO: Node fees
 # TODO: Do we need to store the node/server id? And or we pass said value to the REN protocol on node submission
-# Question: do we need to mint REN tokens to test the contract?
-# MintableForkToken to create test REN? (brownie). source: https://www.youtube.com/watch?v=jh9AuCfw6Ck
+#
+# Observation: how to mint REN tokens when testing -->
+# MintableForkToken (brownie). source: https://www.youtube.com/watch?v=jh9AuCfw6Ck
 # Watch video on how to mint dai and usdc https://www.youtube.com/watch?v=0JrDbvBClEA
-# Question: should we have a single vault/pool where we send all the tokens (even if surpassing the 100.000 mark)?
-# Or it'd be better to have mini pools of 100.000 tokens each or a single pool of 100.000 to get started?
+#
+# Options:
+# 1. Have a single pool with a limit of 100.000 REN tokens. Once limit is reached we should deploy another
+# contract in case we want to have a second pool.
+# 2. Have a single pool with no limit. Then, we setup a node for every 100.000 tokens we get.
 
 # Constants
 LIMIT: constants(uint256) = 100000 # amount of REN required to set a node
@@ -58,7 +62,6 @@ def deposit():
         log PoolLimitReached(now)
 
 @external
-@view
 def withdraw(_amount: uint256):
     user: address = msg.sender
     balance: uint256 = balances[user]
@@ -66,7 +69,10 @@ def withdraw(_amount: uint256):
     assert balance > 0 and balance <= _amount, "Insufficient balance"
 
     balances[user] -= _amount
-    send(user, _amount) # TODO: actually, we should add the request to the queue and only perform the withdraw when there is another user whilling to take it's place
+    send(user, _amount)
+    # ^ TODO: actually, we should add the request to the queue and only perform the withdraw
+    # when there is another user whilling to take it's place or 50% of the users wants to withdraw
+    # and therefore close the node
 
     log RenWithdrawn(user, amount, now)
 
