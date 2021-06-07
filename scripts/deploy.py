@@ -1,7 +1,5 @@
-from brownie import SolidityStorage, VyperStorage, accounts
-
+from brownie import accounts, RenPool
 
 def main():
-    """ Simple deploy script for our two contracts. """
-    accounts[0].deploy(SolidityStorage)
-    accounts[0].deploy(VyperStorage)
+    """ Simple deploy script for our contract. """
+    accounts[0].deploy(RenPool)
