@@ -46,8 +46,8 @@ def __init__():
     self.fee = 10 # TODO
     self.total = 0
 
-@external
 @payable
+@external
 def deposit(_amount: uint256):
     # TODO: make sure REN token is being transferred and not any other ERC20 token
     user: address = msg.sender # TODO: do we need index here?
@@ -79,7 +79,7 @@ def withdraw(_amount: uint256):
 
     log RenWithdrawn(user, _amount, now)
 
-@external
 @view
+@external
 def balanceOf(_user: address) -> uint256:
     return self.balances[_user]
