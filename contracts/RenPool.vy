@@ -4,7 +4,7 @@
 # TODO: Earnings distribution
 # TODO: Node fees
 # TODO: Do we need to store the node/server id? And or we pass said value to the REN protocol on node submission
-# TODO: need a method to send REN to the protocol once LIMIT is reached. This should be accesible only by the owner(s)
+# TODO: need a method to send REN to the protocol once TARGET is reached. This should be accesible only by the owner(s)
 # TODO add fallback function to receive ETH on case we need to pay for transaction fees or whatever
 #
 # Observation: how to mint REN tokens when testing -->
@@ -12,18 +12,18 @@
 # Watch video on how to mint dai and usdc https://www.youtube.com/watch?v=0JrDbvBClEA
 #
 # Options:
-# 1. Have a single pool with a limit of 100.000 REN tokens. Once limit is reached we should deploy another
+# 1. Have a single pool with a target of 100.000 REN tokens. Once target is reached we should deploy another
 # contract in case we want to have a second pool.
-# 2. Have a single pool with no limit. Then, we setup a node for every 100.000 tokens we get.
+# 2. Have a single pool with no target. Then, we setup a node for every 100.000 tokens we get.
 
 # Constants
-LIMIT: constant(uint256) = 100_000 * 10 ** 18 # amount of REN required to set a node
+TARGET: constant(uint256) = 100_000 * 10 ** 18 # amount of tokens required to spin up a REN node
 
 # Variables
 owner: public(address)
 balances: public(HashMap[address, uint256])
 totalBalance: public(uint256)
-fee: public(uint256) # pool's fee percentage
+fee: public(uint256) # pool's fee (percentage)
 
 # Events
 event RenDeposited:
@@ -53,13 +53,13 @@ def deposit(_amount: uint256):
     now: uint256 = block.timestamp
 
     assert _amount > 0, "Amount must be positive"
-    assert _amount + self.totalBalance <= LIMIT, "Amount surpasses pool limit"
+    assert _amount + self.totalBalance <= TARGET, "Amount surpasses pool target"
 
     self.balances[user] += _amount # uint256 is set to zero by default
     self.totalBalance += _amount
 
     log RenDeposited(user, _amount, now)
-    if self.totalBalance == LIMIT:
+    if self.totalBalance == TARGET:
         log PoolLimitReached(now)
 
 @external
