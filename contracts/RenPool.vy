@@ -12,10 +12,10 @@
 # MintableForkToken (brownie). source: https://www.youtube.com/watch?v=jh9AuCfw6Ck
 # Watch video on how to mint dai and usdc https://www.youtube.com/watch?v=0JrDbvBClEA
 #
-# Options:
+# Architecture options:
 # 1. Have a single pool with a target of 100.000 REN tokens. Once target is reached we should deploy another
 # contract in case we want to have a second pool.
-# 2. Have a single pool with no target. Then, we setup a node for every 100.000 tokens we get.
+# 2. Have a single pool with no limit. Then, we setup a node for every 100.000 tokens we get.
 
 # Constants
 TARGET: constant(uint256) = 100_000 * 10 ** 18 # amount of tokens required to spin up a REN node
