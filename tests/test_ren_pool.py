@@ -1,14 +1,15 @@
-
-def test_ren_pool_deploy(ren_pool):
+def test_ren_pool_deploy(accounts, ren_pool):
     """
     Test if the contract is correctly deployed.
     """
-    assert ren_pool.get() == 10
+    assert ren_pool.owner() == accounts[0]
+    assert ren_pool.totalBalance() == 0
 
 
-def test_ren_pool_set(accounts, ren_pool):
+def test_ren_pool_deposit(accounts, ren_pool):
     """
-    Test if the storage variable can be changed.
+    Test deposit.
     """
-    ren_pool.set(30, {'from': accounts[0]})
-    assert ren_pool.get() == 30
+    DEPOSIT = 100
+    ren_pool.deposit({'from': accounts[0], 'value': DEPOSIT})
+    assert ren_pool.balanceOf(accounts[0], {'from': accounts[0]}) == DEPOSIT
