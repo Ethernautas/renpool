@@ -17,7 +17,7 @@
 # 2. Have a single pool with no limit. Then, we setup a node for every 100.000 tokens we get.
 
 # Constants
-LIMIT: constant(uint256) = 100000 # amount of REN required to set a node
+LIMIT: constant(uint256) = 100_000 * 10 ** 18 # amount of REN required to set a node
 
 # Variables
 owner: public(address)
@@ -39,7 +39,6 @@ event RenWithdrawn:
 event PoolLimitReached:
     time: uint256
 
-# Class
 @external
 def __init__():
     self.owner = msg.sender
@@ -48,19 +47,18 @@ def __init__():
 
 @external
 @payable
-def deposit():
+def deposit(_amount: uint256):
+    # TODO: make sure REN token is being transferred and not any other ERC20 token
     user: address = msg.sender # TODO: do we need index here?
-    amount: uint256 = msg.value # TODO: should we require msg.value to be uint?
     now: uint256 = block.timestamp
 
-    assert amount > 0, "Amount must be positive"
-    assert amount + self.totalBalance <= LIMIT, "Amount surpasses pool limit"
+    assert _amount > 0, "Amount must be positive"
+    assert _amount + self.totalBalance <= LIMIT, "Amount surpasses pool limit"
 
-    # TODO: make sure REN token is being transferred and not any other ERC20 token
-    self.balances[user] += amount # uint256 is set to zero by default
-    self.totalBalance += amount
+    self.balances[user] += _amount # uint256 is set to zero by default
+    self.totalBalance += _amount
 
-    log RenDeposited(user, amount, now)
+    log RenDeposited(user, _amount, now)
     if self.totalBalance == LIMIT:
         log PoolLimitReached(now)
 

@@ -11,5 +11,5 @@ def test_ren_pool_deposit(accounts, ren_pool):
     Test deposit.
     """
     DEPOSIT = 100
-    ren_pool.deposit({'from': accounts[0], 'value': DEPOSIT})
+    ren_pool.deposit(DEPOSIT, {'from': accounts[0]})
     assert ren_pool.balanceOf(accounts[0], {'from': accounts[0]}) == DEPOSIT
