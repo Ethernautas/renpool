@@ -19,14 +19,26 @@ from vyper.interfaces import ERC20
 # contract in case we want to have a second pool.
 # 2. Have a single pool with no limit. Then, we setup a node for every 100.000 tokens we get.
 
-TARGET: constant(uint256) = 100_000 * 10 ** 18 # amount of tokens required to spin up a REN node
+# amount of tokens required to spin up a REN node
+TARGET: constant(uint256) = 100_000 * 10 ** 18
 
+# address from where the RenPool contract is deployed
 owner: public(address)
+
+# address of the ren ERC20 token contract
 ren_token: public(address)
-balances: public(HashMap[address, uint256]) # TODO: shouldn't we speak about shares instead? (in case of slashing and rewards distribution)?
-total_pooled: public(uint256) # total amount of REN in the pool
-is_locked: public(bool) # True once the target tokens has been transferred to the REN protocol. False otherwise
-fee: public(uint256) # pool's fee (percentage)
+
+# TODO: shouldn't we speak about shares instead? (in case of slashing and rewards distribution)?
+balances: public(HashMap[address, uint256])
+
+# total amount of REN stored in the pool
+total_pooled: public(uint256)
+
+# True once all tokens have been transferred to the REN protocol, False otherwise
+is_locked: public(bool)
+
+# pool's fee (percentage)
+fee: public(uint256)
 
 event RenDeposited:
     addr: indexed(address)
