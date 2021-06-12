@@ -8,7 +8,7 @@ from vyper.interfaces import ERC20
 # TODO: Do we need to store the node/server id? And or we pass said value to the REN protocol on node submission
 # TODO: need a method to send REN to the protocol once TARGET is reached. This should be accesible only by the owner(s)
 # TODO add fallback function to receive ETH on case we need to pay for transaction fees or whatever
-# TODO: add status var (UNLOCKED/LOCKED), only allow direct withdraws when status == UNLOCKED
+# TODO: add ownable functionality. see openzeplin: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/b0cf6fbb7a70f31527f36579ad644e1cf12fdf4e/contracts/access/Ownable.sol
 #
 # Observation: how to mint REN tokens when testing -->
 # MintableForkToken (brownie). source: https://www.youtube.com/watch?v=jh9AuCfw6Ck
@@ -26,16 +26,16 @@ TARGET: constant(uint256) = 100_000 * 10 ** 18
 owner: public(address)
 
 # address of the ren ERC20 token contract
-ren_token: public(address)
+renToken: public(ERC20)
 
 # TODO: shouldn't we speak about shares instead? (in case of slashing and rewards distribution)?
 balances: public(HashMap[address, uint256])
 
 # total amount of REN stored in the pool
-total_pooled: public(uint256)
+totalPooled: public(uint256)
 
 # True once all tokens have been transferred to the REN protocol, False otherwise
-is_locked: public(bool)
+isLocked: public(bool)
 
 # pool's fee (percentage)
 fee: public(uint256)
@@ -60,15 +60,15 @@ event PoolUnlocked:
     time: uint256
 
 @external
-def __init__(_ren_token: address):
+def __init__(_renAddr: address):
     self.owner = msg.sender
-    self.ren_token = _ren_token
-    self.is_locked = False
+    self.renToken = ERC20(_renAddr)
+    self.isLocked = False
     self.fee = 10 # TODO
-    self.total_pooled = 0 # this might be decimal in case of slash
+    self.totalPooled = 0 # this might be decimal in case of slash
 
-@payable
 @external
+@nonreentrant('lock')
 def deposit(_amount: uint256):
     # TODO: how to make sure REN token is being transferred and not any other ERC20 token
     # token: address = self.token
@@ -79,29 +79,29 @@ def deposit(_amount: uint256):
     now: uint256 = block.timestamp
 
     assert _amount > 0, "Amount must be positive"
-    assert _amount + self.total_pooled <= TARGET, "Amount surpasses pool target"
-
-    ERC20(self.ren_token).transferFrom(addr, self, _amount)
+    assert _amount + self.totalPooled <= TARGET, "Amount surpasses pool target"
+    # self.renToken.approve(self, _amount)
+    self.renToken.transferFrom(addr, self, _amount)
 
     self.balances[addr] += _amount # uint256 is set to zero by default
-    self.total_pooled += _amount
+    self.totalPooled += _amount
 
     log RenDeposited(addr, _amount, now)
-    if self.total_pooled == TARGET:
+    if self.totalPooled == TARGET:
         log PoolTargetReached(now)
 
 @external
-# @nonreentrant('lock') ??
+@nonreentrant('lock')
 def withdraw(_amount: uint256):
     addr: address = msg.sender
     addrBalance: uint256 = self.balances[addr]
     now: uint256 = block.timestamp
 
     assert addrBalance > 0 and addrBalance <= _amount, "Insufficient funds"
-    assert not self.is_locked, "Funds are locked"
+    assert not self.isLocked, "Funds are locked"
+    assert self.renToken.transfer(addr, _amount), "Could not deposit funds"
 
     self.balances[addr] -= _amount
-    ERC20(self.ren_token).transfer(addr, _amount)
     # send(addr, _amount)
     # ^ TODO: actually, we should add the request to the queue and only perform the withdraw
     # when there is another user whilling to take it's place or 50% of the users wants to withdraw
@@ -117,12 +117,12 @@ def balanceOf(_addr: address) -> uint256:
 
 @internal
 def _lockPool():
-    self.is_locked = True
+    self.isLocked = True
     log PoolLocked(block.timestamp)
 
 @internal
 def _unlockPool():
-    self.is_locked = False
+    self.isLocked = False
     log PoolUnlocked(block.timestamp)
 
 @external

@@ -1,3 +1,38 @@
+# RenPool project
+
+Bringing community pools to the REN ecosystem
+
+## Getting started
+1. Install brownie:
+- [https://iamdefinitelyahuman.medium.com/getting-started-with-brownie-part-1-9b2181f4cb99](https://iamdefinitelyahuman.medium.com/getting-started-with-brownie-part-1-9b2181f4cb99)
+- [https://eth-brownie.readthedocs.io/en/stable/install.html](https://eth-brownie.readthedocs.io/en/stable/install.html)
+- [https://www.youtube.com/watch?v=nkvIFE2QVp0](https://www.youtube.com/watch?v=nkvIFE2QVp0)
+
+2. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth.
+
+    ```bash
+    brownie console
+    ```
+
+3. Mint a ERC20 token called REN and deploy RenPool contract to local net (you'll get a fresh instance every time you init the new brownie console).
+
+    ```bash
+    ren, pool = run('deploy')
+    ```
+
+4. You can now interact with the `ren` token contract and the ren `pool` contract objects using any of the `accounts` provided by brownie and any of the contract methodds.
+
+    ```bash
+    ren.balanceOf(accounts[0])
+    999999999999991000000
+    ```
+
+    ```bash
+    tx1 = ren.approve(pool.address, 100, {'from': accounts[0]})
+    tx2 = pool.deposit(100, {'from': accounts[0]})
+    pool.totalPooled()
+    ```
+
 # Brownie React Mix
 
 This mix comes with everything you need to start using [React](https://reactjs.org/) with a Brownie project.
