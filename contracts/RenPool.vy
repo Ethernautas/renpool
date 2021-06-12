@@ -80,7 +80,6 @@ def deposit(_amount: uint256):
 
     assert _amount > 0, "Amount must be positive"
     assert _amount + self.totalPooled <= TARGET, "Amount surpasses pool target"
-    # self.renToken.approve(self, _amount)
     self.renToken.transferFrom(addr, self, _amount)
 
     self.balances[addr] += _amount # uint256 is set to zero by default
@@ -99,10 +98,10 @@ def withdraw(_amount: uint256):
 
     assert addrBalance > 0 and addrBalance <= _amount, "Insufficient funds"
     assert not self.isLocked, "Funds are locked"
-    assert self.renToken.transfer(addr, _amount), "Could not deposit funds"
 
+    self.renToken.transfer(addr, _amount)
     self.balances[addr] -= _amount
-    # send(addr, _amount)
+    self.totalPooled -= _amount
     # ^ TODO: actually, we should add the request to the queue and only perform the withdraw
     # when there is another user whilling to take it's place or 50% of the users wants to withdraw
     # and therefore close the node

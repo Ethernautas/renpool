@@ -25,5 +25,22 @@ def test_ren_pool_deposit(accounts, ren_pool, ren_token):
     assert ren_pool.totalPooled() == 0
     ren_token.approve(ren_pool.address, DEPOSIT, {'from': accounts[0]})
     ren_pool.deposit(DEPOSIT, {'from': accounts[0]})
+    assert ren_token.balanceOf(ren_pool.address, {'from': accounts[0]}) == DEPOSIT
     assert ren_pool.balanceOf(accounts[0], {'from': accounts[0]}) == DEPOSIT
     assert ren_pool.totalPooled() == DEPOSIT
+
+def test_ren_pool_withdraw(accounts, ren_pool, ren_token):
+    """
+    Test withdraw.
+    """
+    DEPOSIT = 100
+    assert ren_pool.totalPooled() == 0
+    ren_token.approve(ren_pool.address, DEPOSIT, {'from': accounts[0]})
+    ren_pool.deposit(DEPOSIT, {'from': accounts[0]})
+    assert ren_token.balanceOf(ren_pool.address, {'from': accounts[0]}) == DEPOSIT
+    assert ren_pool.balanceOf(accounts[0], {'from': accounts[0]}) == DEPOSIT
+    assert ren_pool.totalPooled() == DEPOSIT
+    ren_pool.withdraw(DEPOSIT, {'from': accounts[0]})
+    assert ren_pool.balanceOf(accounts[0], {'from': accounts[0]}) == 0
+    assert ren_pool.totalPooled() == 0
+    assert ren_token.balanceOf(ren_pool.address, {'from': accounts[0]}) == 0
