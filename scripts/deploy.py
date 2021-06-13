@@ -1,4 +1,5 @@
-from brownie import ERC20, accounts, RenPool
+from brownie import accounts, ERC20, RenPool
+# ^ accounts is coming from ganash and ERC20 and RenPool from the contracts folder.
 
 def distribute_tokens(ren):
     for i in range(10):
@@ -10,9 +11,11 @@ def main():
     2. Distribute REN tokens among accounts;
     3. Deploy RenPool contract;
     """
-    ren = ERC20.deploy("REN", "REN", 18, 1e21, {'from': accounts[0]})
-    distribute_tokens(ren)
-    pool = RenPool.deploy(ren, {'from': accounts[0]})
-    return ren, pool
+    renToken = ERC20.deploy("REN", "REN", 18, 1e21, {'from': accounts[0]})
+    distribute_tokens(renToken)
+    renPool = RenPool.deploy(renToken, {'from': accounts[0]})
+    return renToken, renPool
+
+
 
 

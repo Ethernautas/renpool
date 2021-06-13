@@ -14,23 +14,29 @@ Bringing community pools to the REN ecosystem
     brownie console
     ```
 
-3. Mint a ERC20 token called REN and deploy RenPool contract to local net (you'll get a fresh instance every time you init the brownie console).
+3. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
 
     ```bash
-    ren, pool = run('deploy')
+    renToken, renPool = run('deploy')
     ```
 
-4. You can now interact with the `ren` token contract and the ren `pool` contract objects using any of the `accounts` provided by brownie and any of the contract methods.
+4. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
 
     ```bash
-    ren.balanceOf(accounts[0])
+    renToken.balanceOf(accounts[0])
     999999999999991000000
     ```
 
     ```bash
-    tx1 = ren.approve(pool.address, 100, {'from': accounts[0]})
-    tx2 = pool.deposit(100, {'from': accounts[0]})
-    pool.totalPooled()
+    tx1 = renToken.approve(renPool.address, 100, {'from': accounts[0]})
+    tx2 = renPool.deposit(100, {'from': accounts[0]})
+    renPool.totalPooled()
+    ```
+
+5. Running tests (open a new terminal).
+
+    ```bash
+    brownie test
     ```
 
 # Brownie React Mix
