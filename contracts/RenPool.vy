@@ -9,6 +9,7 @@ from vyper.interfaces import ERC20
 # TODO: need a method to send REN to the protocol once TARGET is reached. This should be accesible only by the owner(s)
 # TODO add fallback function to receive ETH on case we need to pay for transaction fees or whatever
 # TODO: add ownable functionality. see openzeplin: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/b0cf6fbb7a70f31527f36579ad644e1cf12fdf4e/contracts/access/Ownable.sol
+# TODO: check that the REN mainnet token actually has 10 decimals precision for the TARGET to be well defined.
 #
 # Observation: how to mint REN tokens when testing -->
 # MintableForkToken (brownie). source: https://www.youtube.com/watch?v=jh9AuCfw6Ck
@@ -19,26 +20,14 @@ from vyper.interfaces import ERC20
 # contract in case we want to have a second pool.
 # 2. Have a single pool with no limit. Then, we setup a node for every 100.000 tokens we get.
 
-# amount of tokens required to spin up a REN node
-TARGET: constant(uint256) = 100_000 * 10 ** 18
+TARGET: constant(uint256) = 100_000 * 10 ** 18 # amount of tokens required to spin up a REN node
 
-# address from where the RenPool contract is deployed
 owner: public(address)
-
-# address of the ren ERC20 token contract
 renToken: public(ERC20)
-
-# TODO: shouldn't we speak about shares instead? (in case of slashing and rewards distribution)?
-balances: public(HashMap[address, uint256])
-
-# total amount of REN stored in the pool
-totalPooled: public(uint256)
-
-# True once all tokens have been transferred to the REN protocol, False otherwise
-isLocked: public(bool)
-
-# pool's fee (percentage)
-fee: public(uint256)
+balances: public(HashMap[address, uint256]) # QUESTION: shouldn't we speak about shares instead? (in case of slashing and rewards distribution)?
+totalPooled: public(uint256) # total amount of REN stored in the pool
+isLocked: public(bool) # True once all tokens have been transferred to the REN protocol, False otherwise
+fee: public(uint256) # pool's fee (percentage)
 
 event RenDeposited:
     addr: indexed(address)
@@ -60,28 +49,25 @@ event PoolUnlocked:
     time: uint256
 
 @external
-def __init__(_renAddr: address):
+def __init__(_renTokenAddr: address):
     self.owner = msg.sender
-    self.renToken = ERC20(_renAddr)
+    self.renToken = ERC20(_renTokenAddr)
     self.isLocked = False
-    self.fee = 10 # TODO
     self.totalPooled = 0 # this might be decimal in case of slash
+    self.fee = 10 # TODO
 
 @external
 @nonreentrant('lock')
 def deposit(_amount: uint256):
-    # TODO: how to make sure REN token is being transferred and not any other ERC20 token
-    # token: address = self.token
-    # assert ERC20(token).transfer(_addr, amount)
-    # see: https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/FeeDistributor.vy
-    # see burn method
-    addr: address = msg.sender # TODO: do we need index here?
+    addr: address = msg.sender
     now: uint256 = block.timestamp
 
     assert _amount > 0, "Amount must be positive"
     assert _amount + self.totalPooled <= TARGET, "Amount surpasses pool target"
-    self.renToken.transferFrom(addr, self, _amount)
 
+    self.renToken.transferFrom(addr, self, _amount)
+    # ^ user needs approve this transaction (give allowance) for the transferFrom method to pass.
+    # See: https://ethereum.org/nl/developers/tutorials/erc20-annotated-code/
     self.balances[addr] += _amount # uint256 is set to zero by default
     self.totalPooled += _amount
 
@@ -126,8 +112,11 @@ def _unlockPool():
 
 @external
 def submit():
+    """
+    Once the TARGET is reached, submit the 100_000 tokens to the REN protocol to initiate the dark node.
+    TODO: we need REN contract addr and method name. Do we need to pass node id or something?
+    """
     assert msg.sender == self.owner, "Unauthorized"
-    # TODO: transfer funds to the REN protocol. We need REN addr and method name. Do we need to pass node id or something?
     self._lockPool()
 
 @external
