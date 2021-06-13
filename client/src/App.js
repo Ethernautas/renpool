@@ -10,9 +10,11 @@ class App extends Component {
         web3: null,
         accounts: null,
         chainId: null,
+        renToken: null,
         renPool: null,
         totalPooled: 0,
-        inputValue: 0,
+        isApproved: false,
+        amount: 0,
     }
 
     componentDidMount = async () => {
@@ -50,22 +52,22 @@ class App extends Component {
             return
         }
 
-        // const renToken = await this.loadContract("dev", "ERC20")
+        const renToken = await this.loadContract("dev", "ERC20")
         // ^ TODO: we need RenToken contract (instance of ERC20) in order to approve transaction before deposit
         const renPool = await this.loadContract("dev", "RenPool")
 
-        if (renPool == null) {
+        if (renToken == null || renPool == null) {
             return
         }
 
         const totalPooled = await renPool.methods.totalPooled().call()
 
-        this.setState({ renPool, totalPooled })
+        this.setState({ renToken, renPool, totalPooled })
     }
 
     loadContract = async (chain, contractName) => {
         // Load a deployed contract instance into a web3 contract object
-        const {web3} = this.state
+        const { web3 } = this.state
 
         // Get the address of the most recent deployment from the deployment map
         let address
@@ -88,15 +90,52 @@ class App extends Component {
         return new web3.eth.Contract(contractArtifact.abi, address)
     }
 
-    handleDeposit = async (e) => {
-        const {accounts, renPool, inputValue} = this.state
+
+    handleChange = async (amount) => {
+        const { renToken, renPool } = this.state
+
+        console.log('REN POOL', JSON.stringify(renPool, null, 1))
+        const isApproved = await renToken.methods.allowance(renPool.address, amount).call()
+
+        this.setState({ amount, isApproved })
+    }
+
+    handleApprove = async (e) => {
         e.preventDefault()
-        const value = parseInt(inputValue)
+
+        const { accounts, renToken, renPool, amount } = this.state
+
+        const value = parseInt(amount)
         if (isNaN(value)) {
             alert("invalid value")
             return
         }
-        await renPool.methods.deposit(value).send({from: accounts[0]})
+
+        await renToken.methods.approve(value).send({ from: accounts[0] })
+            .on('receipt', async () => {
+                this.setState({
+                    isApproved: await renToken.methods.allowance(renPool.address, amount).call()
+                })
+            })
+    }
+
+    handleDeposit = async (e) => {
+        e.preventDefault()
+
+        const { accounts, renPool, isApproved, amount } = this.state
+
+        if (!isApproved) {
+            alert("you need to approve the transaction first")
+            return
+        }
+
+        const value = parseInt(amount)
+        if (isNaN(value)) {
+            alert("invalid value")
+            return
+        }
+
+        await renPool.methods.deposit(value).send({ from: accounts[0] })
             .on('receipt', async () => {
                 this.setState({
                     totalPooled: await renPool.methods.totalPooled().call()
@@ -105,7 +144,7 @@ class App extends Component {
     }
 
     render() {
-        const { web3, accounts, chainId, renPool, totalPooled, inputValue } = this.state
+        const { web3, accounts, chainId, renPool, totalPooled, isApproved, amount } = this.state
 
         if (web3 == null) {
             return <div>Loading Web3, accounts, and contracts...</div>
@@ -132,18 +171,31 @@ class App extends Component {
 
                 <div>The stored value is: {totalPooled}</div>
                 <br/>
-                <form onSubmit={(e) => { this.handleDeposit(e) }}>
+                <form
+                    onSubmit={(e) => {
+                        if (isApproved) {
+                            this.handleDeposit(e)
+                        } else {
+                            this.handleApprove(e)
+                        }
+                    }}
+                >
                     <div>
                         <label>Deposit REN: </label>
                         <br/>
                         <input
-                            name="inputValue"
+                            name="amount"
                             type="text"
-                            value={inputValue}
-                            onChange={(e) => { this.setState({ inputValue: e.target.value }) }}
+                            value={amount}
+                            onChange={(e) => { this.handleChange(e.target.value) }}
                         />
                         <br/>
-                        <button type="submit" disabled={!isAccountsUnlocked}>Submit</button>
+                        <button
+                            type="submit"
+                            disabled={!isAccountsUnlocked}
+                        >
+                            {isApproved ? 'Submit' : 'Approve'}
+                        </button>
                     </div>
                 </form>
             </div>
