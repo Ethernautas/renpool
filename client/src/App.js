@@ -1,4 +1,5 @@
 import React, {Component} from "react"
+import isNumber from 'lodash/isNumber'
 import './App.css'
 import {getWeb3} from "./getWeb3"
 import map from "./artifacts/deployments/map.json"
@@ -11,7 +12,9 @@ class App extends Component {
         accounts: null,
         chainId: null,
         renToken: null,
+        renTokenAddr: null,
         renPool: null,
+        renPoolAddr: null,
         totalPooled: 0,
         isApproved: false,
         amount: 0,
@@ -52,9 +55,9 @@ class App extends Component {
             return
         }
 
-        const renToken = await this.loadContract("dev", "ERC20")
+        const [renTokenAddr, renToken] = await this.loadContract("dev", "ERC20")
         // ^ TODO: we need RenToken contract (instance of ERC20) in order to approve transaction before deposit
-        const renPool = await this.loadContract("dev", "RenPool")
+        const [renPoolAddr, renPool] = await this.loadContract("dev", "RenPool")
 
         if (renToken == null || renPool == null) {
             return
@@ -62,7 +65,7 @@ class App extends Component {
 
         const totalPooled = await renPool.methods.totalPooled().call()
 
-        this.setState({ renToken, renPool, totalPooled })
+        this.setState({ renTokenAddr, renToken, renPoolAddr, renPool, totalPooled })
     }
 
     loadContract = async (chain, contractName) => {
@@ -87,23 +90,33 @@ class App extends Component {
             return undefined
         }
 
-        return new web3.eth.Contract(contractArtifact.abi, address)
+        return [address, new web3.eth.Contract(contractArtifact.abi, address)]
     }
 
-
     handleChange = async (amount) => {
-        const { renToken, renPool } = this.state
+        const { renToken, renPoolAddr } = this.state
 
-        console.log('REN POOL', JSON.stringify(renPool, null, 1))
-        const isApproved = await renToken.methods.allowance(renPool.address, amount).call()
+        const value = amount != null ? parseInt(amount) : amount
+        console.log('REN TOKEN ADDRESS', renPoolAddr)
+        // if (isNaN(value)) {
+        //     // alert("invalid value")
+        //     return
+        // }
+        console.log(typeof value, isNumber(value), value > 0)
 
-        this.setState({ amount, isApproved })
+        let isApproved = false
+        if (isNumber(value) && value > 0) {
+            isApproved = await renToken.methods.allowance(renPoolAddr, value).call()
+            console.log('IS APPROVED')
+        }
+
+        this.setState({ amount: value, isApproved })
     }
 
     handleApprove = async (e) => {
         e.preventDefault()
 
-        const { accounts, renToken, renPool, amount } = this.state
+        const { accounts, renToken, renPoolAddr, renPool, amount } = this.state
 
         const value = parseInt(amount)
         if (isNaN(value)) {
@@ -111,12 +124,16 @@ class App extends Component {
             return
         }
 
-        await renToken.methods.approve(value).send({ from: accounts[0] })
+        console.log(renPoolAddr, value)
+
+        await renToken.methods.approve(renPoolAddr, value).send({ from: accounts[0] })
             .on('receipt', async () => {
+                console.log('ON RECEIPT')
                 this.setState({
-                    isApproved: await renToken.methods.allowance(renPool.address, amount).call()
+                    isApproved: await renToken.methods.allowance(renPoolAddr, value).call()
                 })
             })
+            .on('error', (e) => { console.log('ERROR', e) })
     }
 
     handleDeposit = async (e) => {
@@ -185,7 +202,7 @@ class App extends Component {
                         <br/>
                         <input
                             name="amount"
-                            type="text"
+                            type="number"
                             value={amount}
                             onChange={(e) => { this.handleChange(e.target.value) }}
                         />
