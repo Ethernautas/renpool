@@ -9,13 +9,10 @@ class App extends Component {
     state = {
         web3: null,
         accounts: null,
-        chainid: null,
-        vyperStorage: null,
-        vyperValue: 0,
-        vyperInput: 0,
-        solidityStorage: null,
-        solidityValue: 0,
-        solidityInput: 0,
+        chainId: null,
+        renPool: null,
+        totalPooled: 0,
+        inputValue: 0,
     }
 
     componentDidMount = async () => {
@@ -37,38 +34,33 @@ class App extends Component {
         const accounts = await web3.eth.getAccounts()
 
         // Get the current chain id
-        const chainid = parseInt(await web3.eth.getChainId())
+        const chainId = parseInt(await web3.eth.getChainId())
 
         this.setState({
             web3,
             accounts,
-            chainid
+            chainId
         }, await this.loadInitialContracts)
 
     }
 
     loadInitialContracts = async () => {
-        if (this.state.chainid <= 42) {
+        if (this.state.chainId <= 42) {
             // Wrong Network!
             return
         }
 
-        const vyperStorage = await this.loadContract("dev", "VyperStorage")
-        const solidityStorage = await this.loadContract("dev", "SolidityStorage")
+        // const renToken = await this.loadContract("dev", "ERC20")
+        // ^ TODO: we need RenToken contract (instance of ERC20) in order to approve transaction before deposit
+        const renPool = await this.loadContract("dev", "RenPool")
 
-        if (!vyperStorage || !solidityStorage) {
+        if (renPool == null) {
             return
         }
 
-        const vyperValue = await vyperStorage.methods.get().call()
-        const solidityValue = await solidityStorage.methods.get().call()
+        const totalPooled = await renPool.methods.totalPooled().call()
 
-        this.setState({
-            vyperStorage,
-            vyperValue,
-            solidityStorage,
-            solidityValue,
-        })
+        this.setState({ renPool, totalPooled })
     }
 
     loadContract = async (chain, contractName) => {
@@ -96,110 +88,66 @@ class App extends Component {
         return new web3.eth.Contract(contractArtifact.abi, address)
     }
 
-    changeVyper = async (e) => {
-        const {accounts, vyperStorage, vyperInput} = this.state
+    handleDeposit = async (e) => {
+        const {accounts, renPool, inputValue} = this.state
         e.preventDefault()
-        const value = parseInt(vyperInput)
+        const value = parseInt(inputValue)
         if (isNaN(value)) {
             alert("invalid value")
             return
         }
-        await vyperStorage.methods.set(value).send({from: accounts[0]})
+        await renPool.methods.deposit(value).send({from: accounts[0]})
             .on('receipt', async () => {
                 this.setState({
-                    vyperValue: await vyperStorage.methods.get().call()
-                })
-            })
-    }
-
-    changeSolidity = async (e) => {
-        const {accounts, solidityStorage, solidityInput} = this.state
-        e.preventDefault()
-        const value = parseInt(solidityInput)
-        if (isNaN(value)) {
-            alert("invalid value")
-            return
-        }
-        await solidityStorage.methods.set(value).send({from: accounts[0]})
-            .on('receipt', async () => {
-                this.setState({
-                    solidityValue: await solidityStorage.methods.get().call()
+                    totalPooled: await renPool.methods.totalPooled().call()
                 })
             })
     }
 
     render() {
-        const {
-            web3, accounts, chainid,
-            vyperStorage, vyperValue, vyperInput,
-            solidityStorage, solidityValue, solidityInput
-        } = this.state
+        const { web3, accounts, chainId, renPool, totalPooled, inputValue } = this.state
 
-        if (!web3) {
+        if (web3 == null) {
             return <div>Loading Web3, accounts, and contracts...</div>
         }
 
-        if (isNaN(chainid) || chainid <= 42) {
+        if (isNaN(chainId) || chainId <= 42) {
             return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your Web3 provider (e.g. Metamask)</div>
         }
 
-        if (!vyperStorage || !solidityStorage) {
+        if (renPool == null) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
 
-        return (<div className="App">
-            <h1>Your Brownie Mix is installed and ready.</h1>
-            <p>
-                If your contracts compiled and deployed successfully, you can see the current
-                storage values below.
-            </p>
-            {
-                !isAccountsUnlocked ?
+        return (
+            <div className="App">
+                {!isAccountsUnlocked && (
                     <p><strong>Connect with Metamask and refresh the page to
-                        be able to edit the storage fields.</strong>
+                            be able to edit the storage fields.</strong>
                     </p>
-                    : null
-            }
-            <h2>Vyper Storage Contract</h2>
+                )}
+                <h2>RenPool Contract</h2>
 
-            <div>The stored value is: {vyperValue}</div>
-            <br/>
-            <form onSubmit={(e) => this.changeVyper(e)}>
-                <div>
-                    <label>Change the value to: </label>
-                    <br/>
-                    <input
-                        name="vyperInput"
-                        type="text"
-                        value={vyperInput}
-                        onChange={(e) => this.setState({vyperInput: e.target.value})}
-                    />
-                    <br/>
-                    <button type="submit" disabled={!isAccountsUnlocked}>Submit</button>
-                </div>
-            </form>
-
-            <h2>Solidity Storage Contract</h2>
-            <div>The stored value is: {solidityValue}</div>
-            <br/>
-            <form onSubmit={(e) => this.changeSolidity(e)}>
-                <div>
-                    <label>Change the value to: </label>
-                    <br/>
-                    <input
-                        name="solidityInput"
-                        type="text"
-                        value={solidityInput}
-                        onChange={(e) => this.setState({solidityInput: e.target.value})}
-                    />
-                    <br/>
-                    <button type="submit" disabled={!isAccountsUnlocked}>Submit</button>
-
-                </div>
-            </form>
-        </div>)
+                <div>The stored value is: {totalPooled}</div>
+                <br/>
+                <form onSubmit={(e) => { this.handleDeposit(e) }}>
+                    <div>
+                        <label>Deposit REN: </label>
+                        <br/>
+                        <input
+                            name="inputValue"
+                            type="text"
+                            value={inputValue}
+                            onChange={(e) => { this.setState({ inputValue: e.target.value }) }}
+                        />
+                        <br/>
+                        <button type="submit" disabled={!isAccountsUnlocked}>Submit</button>
+                    </div>
+                </form>
+            </div>
+        )
     }
 }
 
