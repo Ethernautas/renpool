@@ -108,17 +108,10 @@ class App extends Component {
 
         const value = amount != null ? parseInt(amount, 10) : amount
         this.setState({ amount: value })
-        console.log('REN TOKEN ADDRESS', renPoolAddr)
-        // if (isNaN(value)) {
-        //     // alert("invalid value")
-        //     return
-        // }
-        console.log(typeof value, isNumber(value), value > 0)
 
         const isApproved = isNumber(value) && value > 0
             ? await this.isTransferApproved(value)
             : false
-        console.log('IS APPROVED', isApproved)
 
         this.setState({ isApproved })
     }
@@ -129,14 +122,7 @@ class App extends Component {
         const { accounts, renToken, renPoolAddr, amount } = this.state
 
         const value = parseInt(amount)
-        // if (isNaN(value)) {
-        //     alert("invalid value")
-        //     return
-        // }
 
-        // console.log(renPoolAddr, value)
-
-        // await renToken.methods.approve(renPoolAddr, value).send({ from: accounts[0] })
         await renToken.methods.approve(renPoolAddr, MAX_UINT256).send({ from: accounts[0] })
             .on('receipt', async () => {
                 console.log('ON RECEIPT')
