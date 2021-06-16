@@ -175,3 +175,9 @@ To get started with Brownie:
 
 
 Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channel to chat and share with others in the community.
+
+# Further read
+1. [https://github.com/renproject](https://github.com/renproject)
+2. [https://renproject.io/](https://renproject.io/)
+3. [https://ethereum.org/en/developers/docs/standards/tokens/erc-20/](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
+4. REN token [https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38](https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38)
