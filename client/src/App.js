@@ -3,7 +3,8 @@ import isNumber from 'lodash/isNumber'
 import './App.css'
 import {getWeb3} from "./getWeb3"
 import map from "./artifacts/deployments/map.json"
-import {getEthereum} from "./getEthereum"
+import { getEthereum } from "./getEthereum"
+import { MAX_UINT256 } from './constants'
 
 class App extends Component {
 
@@ -26,8 +27,9 @@ class App extends Component {
         const web3 = await getWeb3()
 
         // Try and enable accounts (connect metamask)
+        let ethereum
         try {
-            const ethereum = await getEthereum()
+            ethereum = await getEthereum()
             ethereum.enable()
         } catch (e) {
             console.log(`Could not enable accounts. Interaction with contracts not available.
@@ -36,7 +38,8 @@ class App extends Component {
         }
 
         // Use web3 to get the user's accounts
-        const accounts = await web3.eth.getAccounts()
+        // const accounts = await web3.eth.getAccounts()
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
 
         // Get the current chain id
         const chainId = parseInt(await web3.eth.getChainId())
@@ -56,7 +59,6 @@ class App extends Component {
         }
 
         const [renTokenAddr, renToken] = await this.loadContract("dev", "ERC20")
-        // ^ TODO: we need RenToken contract (instance of ERC20) in order to approve transaction before deposit
         const [renPoolAddr, renPool] = await this.loadContract("dev", "RenPool")
 
         if (renToken == null || renPool == null) {
@@ -93,10 +95,19 @@ class App extends Component {
         return [address, new web3.eth.Contract(contractArtifact.abi, address)]
     }
 
-    handleChange = async (amount) => {
-        const { renToken, renPoolAddr } = this.state
+    isTransferApproved = async (amount) => {
+        const { accounts, renToken, renPoolAddr } = this.state
 
-        const value = amount != null ? parseInt(amount) : amount
+        const allowance = await renToken.methods.allowance(accounts[0], renPoolAddr).call()
+
+        return allowance - amount >= 0
+    }
+
+    handleChange = async (amount) => {
+        const { renPoolAddr } = this.state
+
+        const value = amount != null ? parseInt(amount, 10) : amount
+        this.setState({ amount: value })
         console.log('REN TOKEN ADDRESS', renPoolAddr)
         // if (isNaN(value)) {
         //     // alert("invalid value")
@@ -104,34 +115,32 @@ class App extends Component {
         // }
         console.log(typeof value, isNumber(value), value > 0)
 
-        let isApproved = false
-        if (isNumber(value) && value > 0) {
-            isApproved = await renToken.methods.allowance(renPoolAddr, value).call()
-            console.log('IS APPROVED')
-        }
+        const isApproved = isNumber(value) && value > 0
+            ? await this.isTransferApproved(value)
+            : false
+        console.log('IS APPROVED', isApproved)
 
-        this.setState({ amount: value, isApproved })
+        this.setState({ isApproved })
     }
 
     handleApprove = async (e) => {
         e.preventDefault()
 
-        const { accounts, renToken, renPoolAddr, renPool, amount } = this.state
+        const { accounts, renToken, renPoolAddr, amount } = this.state
 
         const value = parseInt(amount)
-        if (isNaN(value)) {
-            alert("invalid value")
-            return
-        }
+        // if (isNaN(value)) {
+        //     alert("invalid value")
+        //     return
+        // }
 
-        console.log(renPoolAddr, value)
+        // console.log(renPoolAddr, value)
 
-        await renToken.methods.approve(renPoolAddr, value).send({ from: accounts[0] })
+        // await renToken.methods.approve(renPoolAddr, value).send({ from: accounts[0] })
+        await renToken.methods.approve(renPoolAddr, MAX_UINT256).send({ from: accounts[0] })
             .on('receipt', async () => {
                 console.log('ON RECEIPT')
-                this.setState({
-                    isApproved: await renToken.methods.allowance(renPoolAddr, value).call()
-                })
+                this.setState({ isApproved: await this.isTransferApproved(value) })
             })
             .on('error', (e) => { console.log('ERROR', e) })
     }
