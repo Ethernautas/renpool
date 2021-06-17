@@ -24,5 +24,6 @@ module.exports = {
     // e.g. '@typescript-eslint/explicit-function-return-type': 'off',
     semi: ['error', 'never'],
     indent: [2, 2, { SwitchCase: 1 }],
+    quotes: ['error', 'single'],
   },
 }

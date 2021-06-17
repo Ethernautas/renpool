@@ -1,12 +1,12 @@
-import React, {Component,} from "react"
+import React, { Component } from 'react'
 import isNumber from 'lodash/isNumber'
 import './App.css'
-import {getWeb3,} from "./getWeb3"
-import map from "./artifacts/deployments/map.json"
-import { getEthereum, } from "./getEthereum"
-import { MAX_UINT256, } from './constants'
+import { getWeb3 } from './getWeb3'
+import map from './artifacts/deployments/map.json'
+import { getEthereum } from './getEthereum'
+import { MAX_UINT256 } from './constants'
 
-class App extends Component {
+export class App extends Component {
 
     state = {
       web3: null,
@@ -58,8 +58,8 @@ class App extends Component {
         return
       }
 
-      const [renTokenAddr, renToken,] = await this.loadContract("dev", "ERC20",)
-      const [renPoolAddr, renPool,] = await this.loadContract("dev", "RenPool",)
+      const [renTokenAddr, renToken,] = await this.loadContract('dev', 'ERC20',)
+      const [renPoolAddr, renPool,] = await this.loadContract('dev', 'RenPool',)
 
       if (renToken == null || renPool == null) {
         return
@@ -137,13 +137,13 @@ class App extends Component {
       const { accounts, renPool, isApproved, amount, } = this.state
 
       if (!isApproved) {
-        alert("you need to approve the transaction first",)
+        alert('you need to approve the transaction first',)
         return
       }
 
       const value = parseInt(amount,)
       if (isNaN(value,)) {
-        alert("invalid value",)
+        alert('invalid value',)
         return
       }
 
@@ -214,5 +214,3 @@ class App extends Component {
       )
     }
 }
-
-export default App
