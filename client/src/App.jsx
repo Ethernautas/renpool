@@ -163,7 +163,7 @@ class App extends Component {
       }
 
       if (isNaN(chainId,) || chainId <= 42) {
-        return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your Web3 provider (e.g. Metamask)</div>
+        return <div>Wrong Network! Switch to your local RPC &quot;Localhost: 8545&quot; in your Web3 provider (e.g. Metamask)</div>
       }
 
       if (renPool == null) {
