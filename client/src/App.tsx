@@ -27,7 +27,7 @@ export const App = (): ReactElement => {
   const [isApproved, setIsApproved] = useState(false)
   const [amount, setAmount] = useState(0)
 
-  // Load provider on component mount
+  // Load connector on component mount
   useEffect(() => {
     getConnector()
       .then(setConnector)
@@ -35,7 +35,7 @@ export const App = (): ReactElement => {
       Use a modern browser with a Web3 plugin to fix this issue.`, e) })
   }, [])
 
-  // Load contracts once provider is ready
+  // Load contracts once connector is ready
   useEffect(() => {
     if (connector != null) {
       loadInitialContracts()
