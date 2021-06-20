@@ -1,6 +1,6 @@
 import Web3 from 'web3'
-import './types'
-import { getEthereum } from './getEthereum'
+import '../../types/index.d.ts'
+import { getEthereum } from './ethereum'
 
 const HTTP_PROVIDER = 'http://127.0.0.1:8545'
 

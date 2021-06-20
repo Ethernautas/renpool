@@ -1,4 +1,4 @@
-import './types'
+import '../../types/index.d.ts'
 
 export const getEthereum = async (): Promise<any> => {
   // event listener is not reliable
