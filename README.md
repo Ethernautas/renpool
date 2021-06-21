@@ -39,6 +39,14 @@ Bringing community pools to the REN ecosystem
     brownie test
     ```
 
+## Manual deploy
+
+[https://www.freecodecamp.org/news/how-to-deploy-a-react-application-to-netlify-363b8a98a985/](https://www.freecodecamp.org/news/how-to-deploy-a-react-application-to-netlify-363b8a98a985/)
+
+Install Netlify CLI: `npm install netlify-cli -g`.
+
+Then `yarn run deploy`.
+
 # Brownie React Mix
 
 This mix comes with everything you need to start using [React](https://reactjs.org/) with a Brownie project.
