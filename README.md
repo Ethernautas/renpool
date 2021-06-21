@@ -47,6 +47,8 @@ Install Netlify CLI: `npm install netlify-cli -g`.
 
 Then `yarn run deploy`.
 
+The app is deployed to [https://renpool.netlify.app/](https://renpool.netlify.app/)
+
 # Brownie React Mix
 
 This mix comes with everything you need to start using [React](https://reactjs.org/) with a Brownie project.
