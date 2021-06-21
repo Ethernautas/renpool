@@ -1,3 +1,54 @@
+# RenPool project
+
+Bringing community pools to the REN ecosystem
+
+## Getting started
+1. Install brownie:
+- [https://iamdefinitelyahuman.medium.com/getting-started-with-brownie-part-1-9b2181f4cb99](https://iamdefinitelyahuman.medium.com/getting-started-with-brownie-part-1-9b2181f4cb99)
+- [https://eth-brownie.readthedocs.io/en/stable/install.html](https://eth-brownie.readthedocs.io/en/stable/install.html)
+- [https://www.youtube.com/watch?v=nkvIFE2QVp0](https://www.youtube.com/watch?v=nkvIFE2QVp0)
+
+2. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth.
+
+    ```bash
+    brownie console
+    ```
+
+3. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
+
+    ```bash
+    renToken, renPool = run('deploy')
+    ```
+
+4. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
+
+    ```bash
+    renToken.balanceOf(accounts[0])
+    999999999999991000000
+    ```
+
+    ```bash
+    tx1 = renToken.approve(renPool.address, 100, {'from': accounts[0]})
+    tx2 = renPool.deposit(100, {'from': accounts[0]})
+    renPool.totalPooled()
+    ```
+
+5. Running tests (open a new terminal).
+
+    ```bash
+    brownie test
+    ```
+
+## Manual deploy
+
+[https://www.freecodecamp.org/news/how-to-deploy-a-react-application-to-netlify-363b8a98a985/](https://www.freecodecamp.org/news/how-to-deploy-a-react-application-to-netlify-363b8a98a985/)
+
+Install Netlify CLI: `npm install netlify-cli -g`.
+
+Then `yarn run deploy`.
+
+The app is deployed to [https://renpool.netlify.app/](https://renpool.netlify.app/)
+
 # Brownie React Mix
 
 This mix comes with everything you need to start using [React](https://reactjs.org/) with a Brownie project.
@@ -134,3 +185,9 @@ To get started with Brownie:
 
 
 Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channel to chat and share with others in the community.
+
+# Further read
+1. [https://github.com/renproject](https://github.com/renproject)
+2. [https://renproject.io/](https://renproject.io/)
+3. [https://ethereum.org/en/developers/docs/standards/tokens/erc-20/](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
+4. REN token [https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38](https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38)

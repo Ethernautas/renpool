@@ -9,18 +9,16 @@ def setup(fn_isolation):
     """
     pass
 
+@pytest.fixture(scope="module")
+def ren_token(accounts, ERC20):
+    """
+    Yield a `ERC20` object for the RenPool contract.
+    """
+    yield ERC20.deploy("REN", "REN", 18, 1e21, {'from': accounts[0]})
 
 @pytest.fixture(scope="module")
-def vyper_storage(accounts, VyperStorage):
+def ren_pool(accounts, RenPool, ren_token):
     """
-    Yield a `Contract` object for the VyperStorage contract.
+    Yield a `Contract` object for the RenPool contract.
     """
-    yield accounts[0].deploy(VyperStorage)
-
-
-@pytest.fixture(scope="module")
-def solidity_storage(accounts, SolidityStorage):
-    """
-    Yield a `Contract` object for the SolidityStorage contract.
-    """
-    yield accounts[0].deploy(SolidityStorage)
+    yield RenPool.deploy(ren_token, {'from': accounts[0]})
