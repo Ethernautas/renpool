@@ -6,4 +6,3 @@ __pycache__
 client/src/artifacts
 reports/
 venv
-.env
