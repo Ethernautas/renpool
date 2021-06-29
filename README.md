@@ -39,7 +39,7 @@ Bringing community pools to the REN ecosystem
     brownie test
     ```
 
-## Manual deploy
+## Manually deploy client app
 
 [https://www.freecodecamp.org/news/how-to-deploy-a-react-application-to-netlify-363b8a98a985/](https://www.freecodecamp.org/news/how-to-deploy-a-react-application-to-netlify-363b8a98a985/)
 
@@ -48,6 +48,16 @@ Install Netlify CLI: `npm install netlify-cli -g`.
 Then `yarn run deploy`.
 
 The app is deployed to [https://renpool.netlify.app/](https://renpool.netlify.app/)
+
+## Deploy smart contract
+
+[https://www.quicknode.com/guides/vyper/how-to-write-an-ethereum-smart-contract-using-vyper](https://www.quicknode.com/guides/vyper/how-to-write-an-ethereum-smart-contract-using-vyper)
+
+## Setup and deploy to test networks
+
+1. [https://youtu.be/5jiqOUljfG8](https://youtu.be/5jiqOUljfG8)
+
+2. [https://youtu.be/KNBneUpFaGo](https://youtu.be/KNBneUpFaGo)
 
 # Brownie React Mix
 
@@ -139,6 +149,13 @@ This mix comes with everything you need to start using [React](https://reactjs.o
 When you close the Brownie console, the Ganache instance also terminates and the deployment artifacts are deleted.
 
 To retain your deployment artifacts (and their functionality) you can launch Ganache yourself prior to launching Brownie. Brownie automatically attaches to the ganache instance where you can deploy the contracts. After closing Brownie, the chain and deployment artifacts will persist.
+
+## Switching Networks
+
+```bash
+export WEB3_INFURA_PROJECT_ID=YourProjectID
+brownie console --network mainnet-fork
+```
 
 ## Further Possibilities
 

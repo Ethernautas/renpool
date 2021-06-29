@@ -10,7 +10,7 @@ enum EnvName {
 }
 
 enum ContractName {
-  ERC20 = 'ERC20',
+  RenToken = 'RenToken',
   RenPool = 'RenPool',
 }
 
@@ -81,7 +81,7 @@ export const App = (): ReactElement => {
       return
     }
 
-    const renToken = await loadContract(EnvName.dev, ContractName.ERC20)
+    const renToken = await loadContract(EnvName.dev, ContractName.RenToken)
     const renPool = await loadContract(EnvName.dev, ContractName.RenPool)
 
     setRenToken(renToken)

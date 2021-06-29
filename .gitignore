@@ -5,3 +5,4 @@ __pycache__
 .hypothesis/
 client/src/artifacts
 reports/
+venv
