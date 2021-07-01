@@ -133,6 +133,12 @@ export const App = (): ReactElement => {
     }
   }
 
+  const getFromFaucet = async () => {
+    await renToken.methods.getFromFaucet().send({ from: connector.accounts[0] })
+      .on('receipt', console.log)
+      .on('error', (e: any) => { console.log('Could not get from faucet', e) })
+  }
+
   if (connector?.web3 == null) {
     return <div>Loading Web3, accounts, and contracts...</div>
   }
@@ -175,6 +181,13 @@ export const App = (): ReactElement => {
           </button>
         </div>
       </form>
+      <br/>
+      <button
+        onClick={getFromFaucet}
+        disabled={!isAccountsUnlocked}
+      >
+        Get from faucet
+      </button>
     </div>
   )
 }

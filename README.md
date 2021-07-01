@@ -8,19 +8,21 @@ Bringing community pools to the REN ecosystem
 - [https://eth-brownie.readthedocs.io/en/stable/install.html](https://eth-brownie.readthedocs.io/en/stable/install.html)
 - [https://www.youtube.com/watch?v=nkvIFE2QVp0](https://www.youtube.com/watch?v=nkvIFE2QVp0)
 
-2. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth.
+2. Go to brownie-config.yalm and add your own Metamask mnemonic
+
+3. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask.
 
     ```bash
     brownie console
     ```
 
-3. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
+4. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
 
     ```bash
     renToken, renPool = run('deploy')
     ```
 
-4. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
+5. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
 
     ```bash
     renToken.balanceOf(accounts[0])
@@ -33,7 +35,7 @@ Bringing community pools to the REN ecosystem
     renPool.totalPooled()
     ```
 
-5. Running tests (open a new terminal).
+6. Running tests (open a new terminal).
 
     ```bash
     brownie test
@@ -204,7 +206,9 @@ To get started with Brownie:
 Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channel to chat and share with others in the community.
 
 # Further read
-1. [https://github.com/renproject](https://github.com/renproject)
-2. [https://renproject.io/](https://renproject.io/)
-3. [https://ethereum.org/en/developers/docs/standards/tokens/erc-20/](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
-4. REN token [https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38](https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38)
+1. [https://renproject.io/](https://renproject.io/)
+2. [https://github.com/renproject](https://github.com/renproject)
+3. [https://docs.renproject.io/developers/docs/deployed-contracts](https://docs.renproject.io/developers/docs/deployed-contracts)
+4. [https://ethereum.org/en/developers/docs/standards/tokens/erc-20/](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
+5. REN token [https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38](https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38)
+6. REN token testnet addresses [https://renproject.github.io/contracts-ts/#/testnet](https://renproject.github.io/contracts-ts/#/testnet)

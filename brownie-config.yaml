@@ -7,7 +7,13 @@ networks:
   default: development
   development:
     cmd_settings:
-      mnemonic: hill law jazz limb penalty escape public dish stand bracket blue jar
+      #mnemonic: hill law jazz limb penalty escape public dish stand bracket blue jar
+      # ^ Add your own mneminic and restart the brownie console
 
 # enable output of development artifacts to load with react
 dev_deployment_artifacts: true
+
+dependencies:
+  - OpenZeppelin/openzeppelin-contracts@4.0.0
+
+dotenv: .env
