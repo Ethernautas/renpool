@@ -13,7 +13,7 @@ def main():
   3. Deploy RenPool contract;
   """
   renToken = RenToken.deploy({'from': accounts[0]})
-  distribute_tokens(renToken)
+  # distribute_tokens(renToken)
   renPool = RenPool.deploy(renToken, {'from': accounts[0]})
   return renToken, renPool
 
