@@ -23,7 +23,7 @@ contract RenToken is ERC20 {
     function getFromFaucet() public returns (bool) {
         address beneficiary = msg.sender;
 
-        require(this.balanceOf(beneficiary) == 0, 'Beneficiary already payed from faucet');
+        require(this.balanceOf(owner) >= FAUCET_AMOUNT, 'The faucet is empty');
 
         _transfer(owner, beneficiary, FAUCET_AMOUNT);
         emit Transfer(owner, beneficiary, FAUCET_AMOUNT);

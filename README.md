@@ -8,38 +8,49 @@ Bringing community pools to the REN ecosystem
 - [https://eth-brownie.readthedocs.io/en/stable/install.html](https://eth-brownie.readthedocs.io/en/stable/install.html)
 - [https://www.youtube.com/watch?v=nkvIFE2QVp0](https://www.youtube.com/watch?v=nkvIFE2QVp0)
 
-2. Go to brownie-config.yalm and add your own Metamask mnemonic
+2. Create a new file called `.env` from `.env.sample`. Add your Metamask mnemonic and Infura project id.
 
 3. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask.
 
-    ```bash
-    brownie console
-    ```
+```bash
+>> brownie console
+```
 
 4. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
 
-    ```bash
-    renToken, renPool = run('deploy')
-    ```
+```bash
+>> renToken, renPool = run('deploy')
+```
 
 5. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
 
-    ```bash
-    renToken.balanceOf(accounts[0])
-    999999999999991000000
-    ```
+Get some ren tokens from the faucet
+```bash
+>> acc = accounts[1]
+>> renToken.balanceOf(acc)
+>> 0
+>> renToken.getFromFaucet({'from': acc})
+>> renToken.balanceOf(acc)
+>> 1000000000000000000000
+```
 
-    ```bash
-    tx1 = renToken.approve(renPool.address, 100, {'from': accounts[0]})
-    tx2 = renPool.deposit(100, {'from': accounts[0]})
-    renPool.totalPooled()
-    ```
+Deposit ren tokens into the ren pool
+```bash
+>> tx1 = renToken.approve(renPool.address, 100, {'from': acc})
+>> tx2 = renPool.deposit(100, {'from': acc})
+```
+
+Verify that the ren pool balance has increased
+```bash
+>> renPool.totalPooled()
+>> 100
+```
 
 6. Running tests (open a new terminal).
 
-    ```bash
-    brownie test
-    ```
+```bash
+>> brownie test
+```
 
 ## Manually deploy client app
 

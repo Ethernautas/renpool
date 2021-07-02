@@ -7,8 +7,7 @@ networks:
   default: development
   development:
     cmd_settings:
-      #mnemonic: hill law jazz limb penalty escape public dish stand bracket blue jar
-      # ^ Add your own mneminic and restart the brownie console
+      mnemonic: ${WALLET_MNEMONIC}
 
 # enable output of development artifacts to load with react
 dev_deployment_artifacts: true
