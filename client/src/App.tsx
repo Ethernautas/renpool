@@ -5,9 +5,7 @@ import { getConnector, Connector } from './utils/connectors'
 import map from './artifacts/deployments/map.json'
 import { MAX_UINT256 } from './constants'
 
-enum EnvName {
-  dev = 'dev',
-}
+const CHAIN = 42
 
 enum ContractName {
   RenToken = 'RenToken',
@@ -51,38 +49,41 @@ export const App = (): ReactElement => {
     }
   }, [renPool])
 
-  const loadContract = async (chain: EnvName, contractName: ContractName): Promise<any | null> => {
+  const loadContract = async (contractName: ContractName): Promise<any | null> => {
+    console.log('LOAD CONTRACT')
     if (connector == null) return null
 
     // Get the address of the most recent deployment from the deployment map
     let address
     try {
-      address = map[chain][contractName][0]
+      address = map[CHAIN][contractName][0]
     } catch (e) {
-      console.log(`Couldn't find any deployed contract "${contractName}" on the chain "${chain}".`,)
+      console.log(`Couldn't find any deployed contract "${contractName}" on the chain "${CHAIN}".`,)
       return null
     }
 
     // Load the artifact with the specified address
     let contractArtifact
     try {
-      contractArtifact = await import(`./artifacts/deployments/${chain}/${address}.json`)
+      contractArtifact = await import(`./artifacts/deployments/${CHAIN}/${address}.json`)
     } catch (e) {
-      console.log(`Failed to load contract artifact "./artifacts/deployments/${chain}/${address}.json"`,)
+      console.log(`Failed to load contract artifact "./artifacts/deployments/${CHAIN}/${address}.json"`,)
       return null
     }
+
+    console.log({ address, contractArtifact })
 
     return { ...new connector.web3.eth.Contract(contractArtifact.abi, address), _addr: address }
   }
 
   const loadInitialContracts = async (): Promise<void> => {
-    if (connector == null || connector.chainId <= 42) {
+    if (connector == null || connector.chainId != CHAIN) {
       // Wrong Network!
       return
     }
 
-    const renToken = await loadContract(EnvName.dev, ContractName.RenToken)
-    const renPool = await loadContract(EnvName.dev, ContractName.RenPool)
+    const renToken = await loadContract(ContractName.RenToken)
+    const renPool = await loadContract(ContractName.RenPool)
 
     setRenToken(renToken)
     setRenPool(renPool)
@@ -143,7 +144,7 @@ export const App = (): ReactElement => {
     return <div>Loading Web3, accounts, and contracts...</div>
   }
 
-  if (isNaN(connector?.chainId) || connector?.chainId <= 42) {
+  if (isNaN(connector?.chainId) || connector?.chainId != CHAIN) {
     return <div>Wrong Network! Switch to your local RPC &quot;Localhost: 8545&quot; in your Web3 provider (e.g. Metamask)</div>
   }
 

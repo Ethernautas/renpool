@@ -4,8 +4,11 @@ project_structure:
 
 # set a custom mnemonic for the development network
 networks:
-  default: development
+  default: ${DEFAULT_NETWORK}
   development:
+    cmd_settings:
+      mnemonic: ${WALLET_MNEMONIC}
+  kovan:
     cmd_settings:
       mnemonic: ${WALLET_MNEMONIC}
 
