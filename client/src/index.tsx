@@ -1,15 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Web3ReactProvider } from '@web3-react/core'
-import { ethers } from 'ethers'
+import { Web3Provider } from '@ethersproject/providers'
 import './index.css'
 import { App } from './App'
 import { reportWebVitals } from './reportWebVitals'
 import { Web3ProviderNetwork } from './components/Web3ProviderNetwork'
 import { Web3ReactManager } from './components/Web3ReactManager'
 
-const getLibrary = (provider: any): ethers.providers.Web3Provider => {
-  const library = new ethers.providers.Web3Provider(provider)
+const getLibrary = (provider: any): Web3Provider => {
+  // console.log({ provider })
+  const library = new Web3Provider(provider)
   library.pollingInterval = 12_000
   return library
 }

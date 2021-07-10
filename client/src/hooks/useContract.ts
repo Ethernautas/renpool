@@ -2,26 +2,25 @@ import { useState, useRef, useEffect } from 'react'
 import { useWeb3React } from '@web3-react/core'
 import { ethers } from 'ethers'
 import artifact from '../artifacts/deployments/map.json'
+import { useActiveWeb3React } from './useActiveWeb3React'
+
 
 const CHAIN_ID = 42
 
-interface IExtContract extends ethers.Contract {
-  _addr?: string
-}
+// export type IExtContract = ethers.Contract & {
+//   _addr: string
+// }
+// export interface IExtContract extends ethers.Contract {
+//   _addr: string
+// }
 
-export const useContract = (contractName: 'RenToken' | 'RenPool'): Promise<IExtContract> => {
-  const { library, chainId } = useWeb3React<ethers.providers.Web3Provider>()
+export const useContract = (contractName: 'RenToken' | 'RenPool'): ethers.Contract | null => {
+  const { library, chainId } = useActiveWeb3React()
+  // const contract = useRef<ethers.Contract>(null)
+  // console.log({ library, chainId })
+  const [contract, setContract] = useState<ethers.Contract>()
 
-  let address: string
-  try {
-    // contractAddress = artifact[chainId][CONTRACT_NAME][0]
-    address = artifact[CHAIN_ID][contractName][0]
-  } catch (e) {
-    console.log(`Couldn't find any deployed contract "${contractName}" on the chain "${chainId}".`,)
-    return null
-  }
 
-  const contract = useRef<ethers.Contract>()
   // const [contract, setContract] = useState()
   // const [count, setCount] = useState()
 
@@ -40,31 +39,41 @@ export const useContract = (contractName: 'RenToken' | 'RenPool'): Promise<IExtC
 
   useEffect(() => {
     // this is only run once on component mounting
-    const load = async (): Promise<void> => {
-      //       const provider = new ethers.providers.JsonRpcProvider()
-      //       const network = await library.getNetwork()
+    const load = async (): Promise<ethers.Contract> => {
+      const address = artifact[CHAIN_ID][contractName][0]
+      // console.log({address})
 
-      // Load the artifact with the specified address
-      let abi
-      try {
-        abi = await import(`./artifacts/deployments/${chainId}/${address}.json`)
-      } catch (e) {
-        console.log(`Failed to load contract artifact "./artifacts/deployments/${chainId}/${address}.json"`,)
-        return null
-      }
+      // load the artifact with the specified address
+      const abi = await import(`../artifacts/deployments/${chainId}/${address}.json`)
+      // console.log({abi})
 
-      // instantiate contract instance and assign to component ref variable
-      contract.current = new ethers.Contract(
+      const randomSigner = ethers.Wallet.createRandom().connect(library)
+      console.log('RANDOM SIGNER', randomSigner, 'SIGNER', library.getSigner())
+
+      // instantiate contract and assign to component ref variable
+      return new ethers.Contract(
         address,
-        abi,
-        library.getSigner(),
+        abi.abi,
+        // library?.getSigner() || ethers.Wallet.createRandom().connect(library),
+        // library.getSigner()  || ,
+        library.getSigner()._address != null ? library.getSigner() : ethers.Wallet.createRandom().connect(library),
       )
-
-      // update count on UI
-      // updateCount()
+      // setContract({
+      //   ...(new ethers.Contract(
+      //     address,
+      //     abi,
+      //     library.getSigner(),
+      //   )),
+      //   _addr: address,
+      // })
     }
-    load()
-  }, [library])
 
-  return { ...contract.current, _addr: address }
+    if (chainId != null) {
+      // load().then((c) => { contract.current = c; console.log({ contract: c }) })
+      load().then((c) => { setContract(c); console.log({ contract: c }) })
+    }
+  }, [chainId])
+
+  // return contract.current
+  return contract
 }

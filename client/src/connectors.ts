@@ -14,15 +14,15 @@ if (INFURA_PROJECT_ID == null) {
 // it will use the Infura URL set as web3Context. The term injected means code or
 // data that comes from a user's browser and is available for the website to use.
 const RPC_URLS = {
-  1: `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`,
-  4: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
+  // 1: `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`,
+  // 4: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
   42: `https://kovan.infura.io/v3/${INFURA_PROJECT_ID}`,
 }
 
 // Infura as a JSON-RPC connection to the mainnet or testnets
 export const network = new NetworkConnector({
   urls: RPC_URLS,
-  defaultChainId: 1,
+  defaultChainId: 42, // 1,
 })
 
 // MetaMask to serve as the user’s wallet and web3 provider

@@ -193,7 +193,7 @@
 //   )
 // }
 
-import { Web3ReactProvider, useWeb3React, UnsupportedChainIdError } from '@web3-react/core'
+// import { Web3ReactProvider, useWeb3React, UnsupportedChainIdError } from '@web3-react/core'
 import {
   NoEthereumProviderError,
   UserRejectedRequestError as UserRejectedRequestErrorInjected
@@ -202,8 +202,8 @@ import { InjectedConnector } from '@web3-react/injected-connector'
 import { NetworkConnector } from '@web3-react/network-connector'
 // import { UserRejectedRequestError as UserRejectedRequestErrorWalletConnect } from '@web3-react/walletconnect-connector'
 // import { UserRejectedRequestError as UserRejectedRequestErrorFrame } from '@web3-react/frame-connector'
-// import { Web3Provider } from '@ethersproject/providers'
-import Web3 from 'web3'
+import { Web3Provider } from '@ethersproject/providers'
+// import Web3 from 'web3'
 // import { formatEther } from '@ethersproject/units'
 import { useEagerConnect } from './hooks/useEagerConnect'
 import { useInactiveListener } from './hooks/useInactiveListener'
@@ -213,18 +213,22 @@ import React, { useState, useEffect, ChangeEvent, FormEvent, ReactElement } from
 import isNumber from 'lodash/isNumber'
 import './App.css'
 // import { getConnector, Connector } from './utils/connectors'
-import map from './artifacts/deployments/map.json'
+// import map from './artifacts/deployments/map.json'
+import { useContract } from './hooks/useContract'
 import { MAX_UINT256 } from './constants'
 import { Header } from './components/Header'
+import { Wallet } from './components/Wallet'
+import { ethers } from 'ethers'
+import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 
 const CHAIN = 42
 
-enum ContractName {
+enum ContractNames {
   RenToken = 'RenToken',
   RenPool = 'RenPool',
 }
 
-enum ActionName {
+enum ActionNames {
   approve = 'approve',
   deposit = 'deposit',
 }
@@ -239,43 +243,31 @@ const connectorsByName: { [connectorName in ConnectorNames]: any } = {
   [ConnectorNames.Network]: network,
 }
 
-const getErrorMessage = (error: Error): string => {
-  if (error instanceof NoEthereumProviderError) {
-    return 'No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.'
-  } else if (error instanceof UnsupportedChainIdError) {
-    return 'You\'re connected to an unsupported network.'
-  } else if (
-    error instanceof UserRejectedRequestErrorInjected // ||
-    // error instanceof UserRejectedRequestErrorWalletConnect ||
-    // error instanceof UserRejectedRequestErrorFrame
-  ) {
-    return 'Please authorize this website to access your Ethereum account.'
-  } else {
-    console.error(error)
-    return 'An unknown error occurred. Check the console for more details.'
-  }
-}
+
 
 export const App = () => {
-  const context = useWeb3React<Web3>()
+  const context = useActiveWeb3React()
   const { connector, library, chainId, account, activate, deactivate, active, error } = context
+  console.log('ACTIVE CONNECTION', chainId, activate, error)
 
+  const renToken = useContract(ContractNames.RenToken)
+  const renPool = useContract(ContractNames.RenPool)
   // handle logic to recognize the connector currently being activated
-  const [activatingConnector, setActivatingConnector] = React.useState<any>()
-  React.useEffect(() => {
-    if (activatingConnector && activatingConnector === connector) {
-      setActivatingConnector(undefined)
-    }
-  }, [activatingConnector, connector])
+  // const [activatingConnector, setActivatingConnector] = useState<any>()
+  // useEffect(() => {
+  //   if (activatingConnector && activatingConnector === connector) {
+  //     setActivatingConnector(undefined)
+  //   }
+  // }, [activatingConnector, connector])
 
-  // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
-  const triedEager = useEagerConnect()
+  // // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
+  // const triedEager = useEagerConnect()
 
-  // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
-  useInactiveListener(!triedEager || !!activatingConnector)
+  // // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
+  // useInactiveListener(!triedEager || !!activatingConnector)
   // const [connector, setConnector] = useState<Connector | null>(null)
-  const [renToken, setRenToken] = useState(null)
-  const [renPool, setRenPool] = useState(null)
+  // const [renToken, setRenToken] = useState(null)
+  // const [renPool, setRenPool] = useState(null)
   const [totalPooled, setTotalPooled] = useState(0)
   const [isApproved, setIsApproved] = useState(false)
   const [amount, setAmount] = useState(0)
@@ -289,111 +281,114 @@ export const App = () => {
   // }, [])
 
   // Load contracts once connector is ready
-  useEffect(() => {
-    if (connector != null) {
-      loadInitialContracts()
-        .catch((e) => { console.log('Could not load contracts', e) })
-    }
-  }, [connector])
+  // useEffect(() => {
+  //   if (connector != null) {
+  //     loadInitialContracts()
+  //       .catch((e) => { console.log('Could not load contracts', e) })
+  //   }
+  // }, [connector])
 
   // Query totalPooled once contracts are ready
   useEffect(() => {
+    console.log(renPool)
     if (renPool != null) {
-      renPool.methods.totalPooled().call()
-        .then(setTotalPooled)
+      console.log(renPool.address)
+      console.log(renPool)
+      // renPool.totalPooled({ gasLimit: 60000 }).then(setTotalPooled)
+      renPool.totalPooled({ gasLimit: 60000 }).then((tp: ethers.BigNumber) => { setTotalPooled(tp.toNumber()) })
     }
   }, [renPool])
 
-  const loadContract = async (contractName: ContractName): Promise<any | null> => {
-    console.log('LOAD CONTRACT')
-    if (connector == null) return null
+  // const loadContract = async (contractName: ContractName): Promise<any | null> => {
+  //   console.log('LOAD CONTRACT')
+  //   if (connector == null) return null
 
-    // Get the address of the most recent deployment from the deployment map
-    let address
-    try {
-      address = map[CHAIN][contractName][0]
-    } catch (e) {
-      console.log(`Couldn't find any deployed contract "${contractName}" on the chain "${CHAIN}".`,)
-      return null
-    }
+  //   // Get the address of the most recent deployment from the deployment map
+  //   let address
+  //   try {
+  //     address = map[CHAIN][contractName][0]
+  //   } catch (e) {
+  //     console.log(`Couldn't find any deployed contract "${contractName}" on the chain "${CHAIN}".`,)
+  //     return null
+  //   }
 
-    // Load the artifact with the specified address
-    let contractArtifact
-    try {
-      contractArtifact = await import(`./artifacts/deployments/${CHAIN}/${address}.json`)
-    } catch (e) {
-      console.log(`Failed to load contract artifact "./artifacts/deployments/${CHAIN}/${address}.json"`,)
-      return null
-    }
+  //   // Load the artifact with the specified address
+  //   let contractArtifact
+  //   try {
+  //     contractArtifact = await import(`./artifacts/deployments/${CHAIN}/${address}.json`)
+  //   } catch (e) {
+  //     console.log(`Failed to load contract artifact "./artifacts/deployments/${CHAIN}/${address}.json"`,)
+  //     return null
+  //   }
 
-    console.log({ address, contractArtifact })
+  //   console.log({ address, contractArtifact })
 
-    return { ...new library.eth.Contract(contractArtifact.abi, address), _addr: address }
-  }
+  //   return { ...new library.eth.Contract(contractArtifact.abi, address), _addr: address }
+  // }
 
-  const loadInitialContracts = async (): Promise<void> => {
-    if (chainId != CHAIN) {
-      // Wrong Network!
-      return
-    }
+  // const loadInitialContracts = async (): Promise<void> => {
+  //   if (chainId != CHAIN) {
+  //     // Wrong Network!
+  //     return
+  //   }
 
-    const renToken = await loadContract(ContractName.RenToken)
-    const renPool = await loadContract(ContractName.RenPool)
+  //   const renToken = await loadContract(ContractName.RenToken)
+  //   const renPool = await loadContract(ContractName.RenPool)
 
-    setRenToken(renToken)
-    setRenPool(renPool)
-  }
+  //   setRenToken(renToken)
+  //   setRenPool(renPool)
+  // }
 
-  const isTransferApproved = async (amount?: number): Promise<boolean> => {
-    if (renToken == null) return false
-    if (!isNumber(amount) || amount < 1) return false
-    const allowance = await renToken.methods.allowance(account, renPool._addr).call()
-    return allowance - amount >= 0
-  }
+  // const isTransferApproved = async (amount?: number): Promise<boolean> => {
+  //   if (renToken == null) return false
+  //   if (!isNumber(amount) || amount < 1) return false
+  //   const allowance = await renToken.methods.allowance(account, renPool._addr).call()
+  //   return allowance - amount >= 0
+  // }
 
-  const handleChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
-    const value = parseInt(e.target.value || '', 10)
-    setAmount(value)
-    if (value == null) return
-    const isApproved = await isTransferApproved(value)
-    setIsApproved(isApproved)
-  }
+  // const handleChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
+  //   const value = parseInt(e.target.value || '', 10)
+  //   setAmount(value)
+  //   if (value == null) return
+  //   const isApproved = await isTransferApproved(value)
+  //   setIsApproved(isApproved)
+  // }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: ActionName): Promise<void> => {
-    e.preventDefault()
+  // const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: ActionNames): Promise<void> => {
+  //   e.preventDefault()
 
-    if (renPool == null) return
-    if (!isNumber(amount) || isNaN(amount) || amount < 1) {
-      alert('invalid amount')
-      return
-    }
+  //   if (renPool == null) return
+  //   if (!isNumber(amount) || isNaN(amount) || amount < 1) {
+  //     alert('invalid amount')
+  //     return
+  //   }
 
-    if (action === ActionName.approve) {
-      await renToken.methods.approve(renPool._addr, MAX_UINT256).send({ from: account })
-        .on('receipt', async () => { setIsApproved(await isTransferApproved(amount)) })
-        .on('error', (e: any) => { console.log('Could not approve transfer', e) })
-    }
+  //   if (action === ActionNames.approve) {
+  //     await renToken.methods.approve(renPool._addr, MAX_UINT256).send({ from: account })
+  //       .on('receipt', async () => { setIsApproved(await isTransferApproved(amount)) })
+  //       .on('error', (e: any) => { console.log('Could not approve transfer', e) })
+  //   }
 
-    if (action === ActionName.deposit) {
-      if (!isApproved) {
-        alert('you need to approve the transaction first',)
-        return
-      }
+  //   if (action === ActionNames.deposit) {
+  //     if (!isApproved) {
+  //       alert('you need to approve the transaction first',)
+  //       return
+  //     }
 
-      await renPool.methods.deposit(amount).send({ from: account })
-        .on('receipt', async () => {
-          setTotalPooled(await renPool.methods.totalPooled().call())
-          setAmount(0)
-        })
-        .on('error', (e: any) => { console.log('Could not deposit', e) })
-    }
-  }
+  //     await renPool.methods.deposit(amount).send({ from: account })
+  //       .on('receipt', async () => {
+  //         setTotalPooled(await renPool.methods.totalPooled().call())
+  //         setAmount(0)
+  //       })
+  //       .on('error', (e: any) => { console.log('Could not deposit', e) })
+  //   }
+  // }
 
-  const getFromFaucet = async () => {
-    await renToken.methods.getFromFaucet().send({ from: account })
-      .on('receipt', console.log)
-      .on('error', (e: any) => { console.log('Could not get from faucet', e) })
-  }
+  // const getFromFaucet = async () => {
+  //   await renToken.methods.getFromFaucet().send({ from: account })
+  //     .on('receipt', console.log)
+  //     .on('error', (e: any) => { console.log('Could not get from faucet', e) })
+  // }
 
   // if (library == null) {
   //   return <div>Loading Web3, accounts, and contracts...</div>
@@ -403,9 +398,9 @@ export const App = () => {
   //   return <div>Wrong Network! Switch to your local RPC &quot;Localhost: 8545&quot; in your Web3 provider (e.g. Metamask)</div>
   // }
 
-  if (renToken == null || renPool == null) {
-    return <div>Could not find a deployed contract. Check console for details.</div>
-  }
+  // if (renToken == null || renPool == null) {
+  //   return <div>Could not find a deployed contract. Check console for details.</div>
+  // }
 
   const isAccountsUnlocked = account != null
   console.log({ account })
@@ -414,8 +409,9 @@ export const App = () => {
   return (
     <>
       <Header />
+      <Wallet />
       <hr />
-      <div>
+      {/* <div>
         {(['Injected', 'Network'] as const).map(name => {
           const currentConnector = connectorsByName[name] as (InjectedConnector | NetworkConnector)
           const activating = currentConnector === activatingConnector
@@ -444,20 +440,8 @@ export const App = () => {
             </button>
           )
         })}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {(active || error) && (
-          <button
-            onClick={() => {
-              deactivate()
-            }}
-          >
-            Deactivate
-          </button>
-        )}
+      </div> */}
 
-        {!!error && <h4>{getErrorMessage(error)}</h4>}
-      </div>
 
       <hr style={{ margin: '2rem' }} />
 
@@ -497,7 +481,7 @@ export const App = () => {
         <h2>RenPool Contract</h2>
         <div>The stored value is: {totalPooled}</div>
         <br/>
-        <form onSubmit={(e) => { handleSubmit(e, isApproved ? ActionName.deposit : ActionName.approve) }}>
+        {/* <form onSubmit={(e) => { handleSubmit(e, isApproved ? ActionNames.deposit : ActionNames.approve) }}>
           <div>
             <label>Deposit REN: </label>
             <br/>
@@ -522,7 +506,7 @@ export const App = () => {
           disabled={!isAccountsUnlocked}
         >
         Get from faucet
-        </button>
+        </button> */}
       </div>
     </>
   )

@@ -21,6 +21,8 @@ export const Web3ReactManager = ({ children }: { children: JSX.Element }): JSX.E
   const { active } = useWeb3React()
   const { active: networkActive, error: networkError, activate: activateNetwork } = useWeb3React(NETWORK_CONTEXT_NAME)
 
+  // console.log({ active, library, account, chainId })
+
   // try to eagerly connect to an injected provider, if it exists and has granted access already
   const triedEager = useEagerConnect()
 
