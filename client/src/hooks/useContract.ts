@@ -1,21 +1,16 @@
-import { useState, useRef, useEffect } from 'react'
-import { useWeb3React } from '@web3-react/core'
+import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
-import artifact from '../artifacts/deployments/map.json'
+import map from '../artifacts/deployments/map.json'
 import { useActiveWeb3React } from './useActiveWeb3React'
 
+const CHAIN_ID = 1337 // process.env.REACT_APP_CHAIN_ID
 
-const CHAIN_ID = 42
-
-// export type IExtContract = ethers.Contract & {
-//   _addr: string
-// }
-// export interface IExtContract extends ethers.Contract {
-//   _addr: string
-// }
+if (CHAIN_ID == null) {
+  throw new Error('Missing env var REACT_APP_CHAIN_ID')
+}
 
 export const useContract = (contractName: 'RenToken' | 'RenPool'): ethers.Contract | null => {
-  const { library, chainId } = useActiveWeb3React()
+  const { connector, library, chainId, account } = useActiveWeb3React()
   // const contract = useRef<ethers.Contract>(null)
   // console.log({ library, chainId })
   const [contract, setContract] = useState<ethers.Contract>()
@@ -38,42 +33,34 @@ export const useContract = (contractName: 'RenToken' | 'RenPool'): ethers.Contra
   // }
 
   useEffect(() => {
-    // this is only run once on component mounting
-    const load = async (): Promise<ethers.Contract> => {
-      const address = artifact[CHAIN_ID][contractName][0]
-      // console.log({address})
+    const load = async (): Promise<ethers.Contract | null> => {
+      let address
+      let artifact
 
-      // load the artifact with the specified address
-      const abi = await import(`../artifacts/deployments/${chainId}/${address}.json`)
-      // console.log({abi})
+      try {
+        address = map[CHAIN_ID][contractName][0]
+        // load the artifact with the specified address
+        artifact = await import(`../artifacts/deployments/${chainId}/${address}.json`)
+      } catch (e) {
+        console.log(`Could not load contract ${contractName}`)
+        return Promise.resolve(null)
+      }
 
-      const randomSigner = ethers.Wallet.createRandom().connect(library)
-      console.log('RANDOM SIGNER', randomSigner, 'SIGNER', library.getSigner())
+      const wallet = library.getSigner(account)
+      const randWallet = ethers.Wallet.createRandom().connect(library)
 
       // instantiate contract and assign to component ref variable
       return new ethers.Contract(
         address,
-        abi.abi,
-        // library?.getSigner() || ethers.Wallet.createRandom().connect(library),
-        // library.getSigner()  || ,
-        library.getSigner()._address != null ? library.getSigner() : ethers.Wallet.createRandom().connect(library),
+        artifact.abi,
+        wallet._address != null ? wallet : randWallet,
       )
-      // setContract({
-      //   ...(new ethers.Contract(
-      //     address,
-      //     abi,
-      //     library.getSigner(),
-      //   )),
-      //   _addr: address,
-      // })
     }
 
     if (chainId != null) {
-      // load().then((c) => { contract.current = c; console.log({ contract: c }) })
-      load().then((c) => { setContract(c); console.log({ contract: c }) })
+      load().then((c) => { setContract(c) })
     }
-  }, [chainId])
+  }, [connector, account, chainId])
 
-  // return contract.current
   return contract
 }

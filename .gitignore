@@ -7,3 +7,6 @@ client/src/artifacts
 reports/
 venv
 .env
+.env.kovan
+.env.development
+.env.mainnet

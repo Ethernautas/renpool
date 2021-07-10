@@ -205,8 +205,8 @@ import { NetworkConnector } from '@web3-react/network-connector'
 import { Web3Provider } from '@ethersproject/providers'
 // import Web3 from 'web3'
 // import { formatEther } from '@ethersproject/units'
-import { useEagerConnect } from './hooks/useEagerConnect'
-import { useInactiveListener } from './hooks/useInactiveListener'
+// import { useEagerConnect } from './hooks/useEagerConnect'
+// import { useInactiveListener } from './hooks/useInactiveListener'
 import { injected, network } from './connectors'
 
 import React, { useState, useEffect, ChangeEvent, FormEvent, ReactElement } from 'react'
@@ -221,7 +221,7 @@ import { Wallet } from './components/Wallet'
 import { ethers } from 'ethers'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 
-const CHAIN = 42
+const CHAIN_ID = 1337
 
 enum ContractNames {
   RenToken = 'RenToken',
@@ -252,137 +252,67 @@ export const App = () => {
 
   const renToken = useContract(ContractNames.RenToken)
   const renPool = useContract(ContractNames.RenPool)
-  // handle logic to recognize the connector currently being activated
-  // const [activatingConnector, setActivatingConnector] = useState<any>()
-  // useEffect(() => {
-  //   if (activatingConnector && activatingConnector === connector) {
-  //     setActivatingConnector(undefined)
-  //   }
-  // }, [activatingConnector, connector])
 
-  // // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
-  // const triedEager = useEagerConnect()
-
-  // // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
-  // useInactiveListener(!triedEager || !!activatingConnector)
-  // const [connector, setConnector] = useState<Connector | null>(null)
-  // const [renToken, setRenToken] = useState(null)
-  // const [renPool, setRenPool] = useState(null)
   const [totalPooled, setTotalPooled] = useState(0)
   const [isApproved, setIsApproved] = useState(false)
   const [amount, setAmount] = useState(0)
-
-  // Load connector on component mount
-  // useEffect(() => {
-  //   getConnector()
-  //     .then(setConnector)
-  //     .catch((e) => { console.log(`Could not enable accounts. Interaction with contracts not available.
-  //     Use a modern browser with a Web3 plugin to fix this issue.`, e) })
-  // }, [])
-
-  // Load contracts once connector is ready
-  // useEffect(() => {
-  //   if (connector != null) {
-  //     loadInitialContracts()
-  //       .catch((e) => { console.log('Could not load contracts', e) })
-  //   }
-  // }, [connector])
+  const [disabled, setDisabled] = useState(false)
 
   // Query totalPooled once contracts are ready
   useEffect(() => {
-    console.log(renPool)
     if (renPool != null) {
-      console.log(renPool.address)
-      console.log(renPool)
-      // renPool.totalPooled({ gasLimit: 60000 }).then(setTotalPooled)
-      renPool.totalPooled({ gasLimit: 60000 }).then((tp: ethers.BigNumber) => { setTotalPooled(tp.toNumber()) })
+      renPool.totalPooled({ gasLimit: 60000 })
+        .then((totalPooled: ethers.BigNumber) => { setTotalPooled(totalPooled.toNumber()) })
     }
   }, [renPool])
 
-  // const loadContract = async (contractName: ContractName): Promise<any | null> => {
-  //   console.log('LOAD CONTRACT')
-  //   if (connector == null) return null
+  const isTransferApproved = async (amount?: number): Promise<boolean> => {
+    if (renToken == null) return false
+    if (!isNumber(amount) || amount < 1) return false
+    const allowance = await renToken.allowance(account, renPool.address)
+    return allowance - amount >= 0
+  }
 
-  //   // Get the address of the most recent deployment from the deployment map
-  //   let address
-  //   try {
-  //     address = map[CHAIN][contractName][0]
-  //   } catch (e) {
-  //     console.log(`Couldn't find any deployed contract "${contractName}" on the chain "${CHAIN}".`,)
-  //     return null
-  //   }
+  const handleChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const value = parseInt(e.target.value || '', 10)
+    setAmount(value)
+    if (value == null) return
+    const isApproved = await isTransferApproved(value)
+    setIsApproved(isApproved)
+  }
 
-  //   // Load the artifact with the specified address
-  //   let contractArtifact
-  //   try {
-  //     contractArtifact = await import(`./artifacts/deployments/${CHAIN}/${address}.json`)
-  //   } catch (e) {
-  //     console.log(`Failed to load contract artifact "./artifacts/deployments/${CHAIN}/${address}.json"`,)
-  //     return null
-  //   }
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: ActionNames): Promise<void> => {
+    e.preventDefault()
 
-  //   console.log({ address, contractArtifact })
+    if (renPool == null) return
+    if (!isNumber(amount) || isNaN(amount) || amount < 1) {
+      alert('invalid amount')
+      return
+    }
 
-  //   return { ...new library.eth.Contract(contractArtifact.abi, address), _addr: address }
-  // }
+    if (action === ActionNames.approve) {
+      const tx = await renToken.approve(renPool.address, MAX_UINT256)
+      await tx.wait() // wait for mining
+      setIsApproved(await isTransferApproved(amount))
+      // .on('receipt', async () => { setIsApproved(await isTransferApproved(amount)) })
+      // .on('error', (e: any) => { console.log('Could not approve transfer', e) })
+    }
 
-  // const loadInitialContracts = async (): Promise<void> => {
-  //   if (chainId != CHAIN) {
-  //     // Wrong Network!
-  //     return
-  //   }
+    if (action === ActionNames.deposit) {
+      if (!isApproved) {
+        alert('you need to approve the transaction first',)
+        return
+      }
 
-  //   const renToken = await loadContract(ContractName.RenToken)
-  //   const renPool = await loadContract(ContractName.RenPool)
-
-  //   setRenToken(renToken)
-  //   setRenPool(renPool)
-  // }
-
-  // const isTransferApproved = async (amount?: number): Promise<boolean> => {
-  //   if (renToken == null) return false
-  //   if (!isNumber(amount) || amount < 1) return false
-  //   const allowance = await renToken.methods.allowance(account, renPool._addr).call()
-  //   return allowance - amount >= 0
-  // }
-
-  // const handleChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
-  //   const value = parseInt(e.target.value || '', 10)
-  //   setAmount(value)
-  //   if (value == null) return
-  //   const isApproved = await isTransferApproved(value)
-  //   setIsApproved(isApproved)
-  // }
-
-  // const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: ActionNames): Promise<void> => {
-  //   e.preventDefault()
-
-  //   if (renPool == null) return
-  //   if (!isNumber(amount) || isNaN(amount) || amount < 1) {
-  //     alert('invalid amount')
-  //     return
-  //   }
-
-  //   if (action === ActionNames.approve) {
-  //     await renToken.methods.approve(renPool._addr, MAX_UINT256).send({ from: account })
-  //       .on('receipt', async () => { setIsApproved(await isTransferApproved(amount)) })
-  //       .on('error', (e: any) => { console.log('Could not approve transfer', e) })
-  //   }
-
-  //   if (action === ActionNames.deposit) {
-  //     if (!isApproved) {
-  //       alert('you need to approve the transaction first',)
-  //       return
-  //     }
-
-  //     await renPool.methods.deposit(amount).send({ from: account })
-  //       .on('receipt', async () => {
-  //         setTotalPooled(await renPool.methods.totalPooled().call())
-  //         setAmount(0)
-  //       })
-  //       .on('error', (e: any) => { console.log('Could not deposit', e) })
-  //   }
-  // }
+      const tx = await renPool.deposit(ethers.utils.hexlify(amount), { gasLimit: 60000 })
+      await tx.wait() // wait for mining
+      // .on('receipt', async () => {
+      setTotalPooled(await renPool.totalPooled({ gasLimit: 60000 }))
+      setAmount(0)
+      // })
+      // .on('error', (e: any) => { console.log('Could not deposit', e) })
+    }
+  }
 
   // const getFromFaucet = async () => {
   //   await renToken.methods.getFromFaucet().send({ from: account })
@@ -411,39 +341,6 @@ export const App = () => {
       <Header />
       <Wallet />
       <hr />
-      {/* <div>
-        {(['Injected', 'Network'] as const).map(name => {
-          const currentConnector = connectorsByName[name] as (InjectedConnector | NetworkConnector)
-          const activating = currentConnector === activatingConnector
-          const connected = currentConnector === connector
-          const disabled = !triedEager || !!activatingConnector || connected || !!error
-
-          return (
-            <button
-              style={{ borderColor: activating ? 'orange' : connected ? 'green' : 'unset' }}
-              disabled={disabled}
-              key={name}
-              onClick={() => {
-                setActivatingConnector(currentConnector)
-                activate(currentConnector)
-              }}
-            >
-              <div>
-                {activating && <div>Loading...</div>}
-                {connected && (
-                  <span role="img" aria-label="check">
-                    ✅
-                  </span>
-                )}
-              </div>
-              {name}
-            </button>
-          )
-        })}
-      </div> */}
-
-
-      <hr style={{ margin: '2rem' }} />
 
       <div>
         {!!(library && account) && (
@@ -478,10 +375,14 @@ export const App = () => {
           <p><strong>Connect with Metamask and refresh the page to be able to edit the storage fields.</strong></p>
         )}
 
+        {chainId != CHAIN_ID && (
+          <p><strong>Connect to chainId {CHAIN_ID}.</strong></p>
+        )}
+
         <h2>RenPool Contract</h2>
         <div>The stored value is: {totalPooled}</div>
         <br/>
-        {/* <form onSubmit={(e) => { handleSubmit(e, isApproved ? ActionNames.deposit : ActionNames.approve) }}>
+        <form onSubmit={(e) => { handleSubmit(e, isApproved ? ActionNames.deposit : ActionNames.approve) }}>
           <div>
             <label>Deposit REN: </label>
             <br/>
@@ -501,11 +402,11 @@ export const App = () => {
           </div>
         </form>
         <br/>
-        <button
+        {/* <button
           onClick={getFromFaucet}
           disabled={!isAccountsUnlocked}
         >
-        Get from faucet
+          Get free REN
         </button> */}
       </div>
     </>
