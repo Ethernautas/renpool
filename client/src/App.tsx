@@ -63,10 +63,12 @@ export const App = (): JSX.Element => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: ActionNames): Promise<void> => {
     e.preventDefault()
+    setDisabled(true)
 
     if (renPool == null) return
     if (BigNumber.from(input).lt(1)) {
       alert('invalid amount')
+      setDisabled(false)
       return
     }
 
@@ -80,6 +82,7 @@ export const App = (): JSX.Element => {
     if (action === ActionNames.deposit) {
       if (!isApproved) {
         alert('you need to approve the transaction first',)
+        setDisabled(false)
         return
       }
 
@@ -95,6 +98,8 @@ export const App = (): JSX.Element => {
         alert(`Could not deposit, ${JSON.stringify(e, null, 2)}`)
       }
     }
+
+    setDisabled(false)
   }
 
   const getFromFaucet = async () => {
@@ -174,7 +179,7 @@ export const App = (): JSX.Element => {
             <br/>
             <button
               type="submit"
-              disabled={!isAccountsUnlocked}
+              disabled={!isAccountsUnlocked || disabled}
             >
               {isApproved ? 'Deposit' : 'Approve'}
             </button>
