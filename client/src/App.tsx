@@ -1,30 +1,11 @@
-import {
-  NoEthereumProviderError,
-  UserRejectedRequestError as UserRejectedRequestErrorInjected
-} from '@web3-react/injected-connector'
-import { InjectedConnector } from '@web3-react/injected-connector'
-import { NetworkConnector } from '@web3-react/network-connector'
-// import { UserRejectedRequestError as UserRejectedRequestErrorWalletConnect } from '@web3-react/walletconnect-connector'
-// import { UserRejectedRequestError as UserRejectedRequestErrorFrame } from '@web3-react/frame-connector'
-// import { Web3Provider } from '@ethersproject/providers'
-import Web3 from 'web3'
-// import { formatEther } from '@ethersproject/units'
-// import { useEagerConnect } from './hooks/useEagerConnect'
-// import { useInactiveListener } from './hooks/useInactiveListener'
-import { injected, network } from './connectors'
-
-import React, { useState, useEffect, ChangeEvent, FormEvent, ReactElement } from 'react'
-import isNumber from 'lodash/isNumber'
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import './App.css'
-// import { getConnector, Connector } from './utils/connectors'
-// import map from './artifacts/deployments/map.json'
 import { useContract } from './hooks/useContract'
 import { MAX_UINT256 } from './constants'
 import { Header } from './components/Header'
 import { Wallet } from './components/Wallet'
-import { ethers, BigNumber } from 'ethers'
+import { BigNumber } from 'ethers'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
-import { type } from 'os'
 
 const CHAIN_ID = 1337 // process.env.REACT_APP_CHAIN_ID
 const DECIMALS = 18
@@ -39,10 +20,9 @@ enum ActionNames {
   deposit = 'deposit',
 }
 
-export const App = () => {
+export const App = (): JSX.Element => {
   const context = useActiveWeb3React()
-  const { connector, library, chainId, account, activate, deactivate, active, error } = context
-  console.log('ACTIVE CONNECTION', chainId, 'ACCOUNT', account)
+  const { chainId, account } = context
 
   const renToken = useContract(ContractNames.RenToken)
   const renPool = useContract(ContractNames.RenPool)
@@ -73,7 +53,8 @@ export const App = () => {
   const handleChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const str: string = e.target.value
     const regex = /[0-9]/g
-    const value = str.match(regex)?.join('')
+    const value = str.match(regex)?.join('') || ''
+    console.log('VALUE', value)
     setInput(value)
     if (value == null) return
     const isApproved = await isTransferApproved(BigNumber.from(value.padEnd(value.length + DECIMALS, '0')))
@@ -103,12 +84,13 @@ export const App = () => {
       }
 
       try {
-        await renPool.methods.deposit(BigNumber.from(input.padEnd(input.length + DECIMALS, '0')).toString()).send({ from: account })
+        const renAmount = BigNumber.from(input.padEnd(input.length + DECIMALS, '0')).toString()
+        await renPool.methods.deposit(renAmount).send({ from: account })
           .on('receipt', async () => {
             setTotalPooled(await renPool.methods.totalPooled().call())
             setInput('0')
           })
-          .on('error', (e: any) => { console.log('Could not deposit', e) })
+          .on('error', (e: Error) => { console.log('Could not deposit', JSON.stringify(e, null, 2)) })
       } catch (e) {
         alert(`Could not deposit, ${JSON.stringify(e, null, 2)}`)
       }
