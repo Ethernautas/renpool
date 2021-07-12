@@ -42,7 +42,7 @@ export const useContract = (contractName: 'RenToken' | 'RenPool'): ethers.Contra
         // load the artifact with the specified address
         artifact = await import(`../artifacts/deployments/${chainId}/${address}.json`)
       } catch (e) {
-        console.log(`Could not load contract ${contractName}`)
+        alert(`Could not load contract ${contractName}, ${JSON.stringify(e, null, 2)}`)
         return Promise.resolve(null)
       }
 

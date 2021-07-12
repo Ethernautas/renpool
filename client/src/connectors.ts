@@ -23,7 +23,7 @@ const RPC_URLS = {
 // Infura as a JSON-RPC connection to the mainnet or testnets
 export const network = new NetworkConnector({
   urls: RPC_URLS,
-  defaultChainId: 1,
+  defaultChainId: 1337,
 })
 
 // MetaMask to serve as the user’s wallet and web3 provider
