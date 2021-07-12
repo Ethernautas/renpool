@@ -6,8 +6,8 @@ import { InjectedConnector } from '@web3-react/injected-connector'
 import { NetworkConnector } from '@web3-react/network-connector'
 // import { UserRejectedRequestError as UserRejectedRequestErrorWalletConnect } from '@web3-react/walletconnect-connector'
 // import { UserRejectedRequestError as UserRejectedRequestErrorFrame } from '@web3-react/frame-connector'
-import { Web3Provider } from '@ethersproject/providers'
-// import Web3 from 'web3'
+// import { Web3Provider } from '@ethersproject/providers'
+import Web3 from 'web3'
 // import { formatEther } from '@ethersproject/units'
 // import { useEagerConnect } from './hooks/useEagerConnect'
 // import { useInactiveListener } from './hooks/useInactiveListener'
@@ -24,6 +24,7 @@ import { Header } from './components/Header'
 import { Wallet } from './components/Wallet'
 import { ethers, BigNumber } from 'ethers'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
+import { type } from 'os'
 
 const CHAIN_ID = 1337 // process.env.REACT_APP_CHAIN_ID
 const DECIMALS = 18
@@ -41,7 +42,7 @@ enum ActionNames {
 export const App = () => {
   const context = useActiveWeb3React()
   const { connector, library, chainId, account, activate, deactivate, active, error } = context
-  console.log('ACTIVE CONNECTION', chainId, activate, error)
+  console.log('ACTIVE CONNECTION', chainId, 'ACCOUNT', account)
 
   const renToken = useContract(ContractNames.RenToken)
   const renPool = useContract(ContractNames.RenPool)
@@ -54,10 +55,10 @@ export const App = () => {
   // Query totalPooled once contracts are ready
   useEffect(() => {
     if (renPool != null) {
-      renPool.totalPooled({ gasLimit: 60000 })
-        .then((totalPooled: BigNumber) => {
-          console.log('TOTAL POLLED', totalPooled.toString())
-          setTotalPooled(totalPooled) })
+      renPool.methods.totalPooled().call()
+        .then((totalPooled: string) => {
+          console.log('TOTAL POLLED', typeof totalPooled, totalPooled)
+          setTotalPooled(BigNumber.from(totalPooled)) })
         .catch((e: Error) => { console.log(`Error while trying to query totalPooled ${JSON.stringify(e, null, 2)}`) })
     }
   }, [renPool])
@@ -65,9 +66,8 @@ export const App = () => {
   const isTransferApproved = async (value: BigNumber): Promise<boolean> => {
     if (renToken == null) return false
     if (value.lt(1)) return false
-    const allowance: BigNumber = await renToken.allowance(account, renPool.address)
-    console.log('ALLOWANCE', allowance.toString())
-    return allowance.sub(value).gte(0)
+    const allowance: string = await renToken.methods.allowance(account, renPool.options.address).call()
+    return BigNumber.from(allowance).sub(value).gte(0)
   }
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -90,8 +90,7 @@ export const App = () => {
     }
 
     if (action === ActionNames.approve) {
-      const tx = await renToken.approve(renPool.address, MAX_UINT256)
-      await tx.wait() // wait for mining
+      await renToken.methods.approve(renPool.options.address, MAX_UINT256).send({ from: account })
       setIsApproved(await isTransferApproved(BigNumber.from(input.padEnd(input.length + DECIMALS, '0'))))
       // .on('receipt', async () => { setIsApproved(await isTransferApproved(amount)) })
       // .on('error', (e: any) => { console.log('Could not approve transfer', e) })
@@ -104,20 +103,12 @@ export const App = () => {
       }
 
       try {
-        // renPool.connect(account)
-        // console.log('WEI', BigNumber.from(input.padEnd(input.length + DECIMALS, '0')).toString())
-        // const gasPrice = await library.getGasPrice()
-        // console.log('GAS PRICE', gasPrice)
-        console.log('REN POOL', renPool)
-        // const gasLimit = await library.estimateGas()
-        // const tx = await renPool.deposit(ethers.utils.big(1000), { gasLimit: 60000, gasPrice })
-        // const tx = await renPool.deposit(BigNumber.from(input.padEnd(input.length + DECIMALS, '0')), { gasLimit: 60000, gasPrice })
-        const tx = await renPool.deposit({ gasLimit: 60000 })
-        // const tx = await renPool.deposit(BigNumber.from(1000), { gasLimit: 60000, gasPrice })
-        // const tx = await renPool.deposit(1000, { gasLimit: 60000, gasPrice })
-        // await tx.wait() // wait for mining
-        // setTotalPooled((await renPool.totalPooled({ gasLimit: 60000 })) as BigNumber)
-        // setInput('0')
+        await renPool.methods.deposit(BigNumber.from(input.padEnd(input.length + DECIMALS, '0')).toString()).send({ from: account })
+          .on('receipt', async () => {
+            setTotalPooled(await renPool.methods.totalPooled().call())
+            setInput('0')
+          })
+          .on('error', (e: any) => { console.log('Could not deposit', e) })
       } catch (e) {
         alert(`Could not deposit, ${JSON.stringify(e, null, 2)}`)
       }
@@ -125,23 +116,12 @@ export const App = () => {
   }
 
   const getFromFaucet = async () => {
-    const tx = await renToken.getFromFaucet({ gasLimit: 60000 })
-    await tx.wait() // wait for mining
-    // .on('receipt', console.log)
-    // .on('error', (e: any) => { console.log('Could not get from faucet', e) })
+    try {
+      await renToken.methods.getFromFaucet().send({ from: account })
+    } catch (e) {
+      alert(`Could not get from faucet ${JSON.stringify(e, null, 2)}`)
+    }
   }
-
-  // if (library == null) {
-  //   return <div>Loading Web3, accounts, and contracts...</div>
-  // }
-
-  // if (isNaN(chainId) || chainId != CHAIN) {
-  //   return <div>Wrong Network! Switch to your local RPC &quot;Localhost: 8545&quot; in your Web3 provider (e.g. Metamask)</div>
-  // }
-
-  // if (renToken == null || renPool == null) {
-  //   return <div>Could not find a deployed contract. Check console for details.</div>
-  // }
 
   const isAccountsUnlocked = account != null
   console.log({ account })
@@ -206,6 +186,7 @@ export const App = () => {
               name="amount"
               type="text"
               value={input}
+              disabled={!isAccountsUnlocked}
               onChange={handleChange}
             />
             <br/>
@@ -225,7 +206,7 @@ export const App = () => {
           Get free REN
         </button>
       </div>
-      <div>RenToken contract {renToken?.address || ''}</div>
+      <div>RenToken contract {renToken?.options?.address || ''}</div>
     </>
   )
 }

@@ -66,51 +66,25 @@ def _unlockPool():
     self.isLocked = False
     log PoolUnlocked(block.timestamp)
 
-
 @external
-# @nonreentrant('lock')
-def deposit():
-    _amount: uint256 = 1000
+@nonreentrant('lock')
+def deposit(_amount: uint256):
     addr: address = msg.sender
-    # now: uint256 = block.timestamp
+    now: uint256 = block.timestamp
 
-    # assert _amount > 0, "Amount must be positive"
-    # assert _amount + self.totalPooled <= TARGET, "Amount surpasses pool target"
+    assert _amount > 0, "Amount must be positive"
+    assert _amount + self.totalPooled <= TARGET, "Amount surpasses pool target"
 
     self.renToken.transferFrom(addr, self, _amount)
     # ^ user needs approve this transaction (give allowance) for the transferFrom method to pass.
     # See: https://ethereum.org/nl/developers/tutorials/erc20-annotated-code/
-    # self.balances[addr] += _amount # uint256 is set to zero by default
-    # self.totalPooled += _amount
-    # log RenDeposited(addr, _amount, now)
+    self.balances[addr] += _amount # uint256 is set to zero by default
+    self.totalPooled += _amount
+    log RenDeposited(addr, _amount, now)
 
-    # if self.totalPooled == TARGET:
-    #     self._lockPool()
-    #     log PoolTargetReached(now)
-
-    # return self.totalPooled
-
-
-
-# @external
-# @nonreentrant('lock')
-# def deposit(_amount: uint256):
-#     addr: address = msg.sender
-#     now: uint256 = block.timestamp
-
-#     assert _amount > 0, "Amount must be positive"
-#     assert _amount + self.totalPooled <= TARGET, "Amount surpasses pool target"
-
-#     self.renToken.transferFrom(addr, self, _amount)
-#     # ^ user needs approve this transaction (give allowance) for the transferFrom method to pass.
-#     # See: https://ethereum.org/nl/developers/tutorials/erc20-annotated-code/
-#     self.balances[addr] += _amount # uint256 is set to zero by default
-#     self.totalPooled += _amount
-#     log RenDeposited(addr, _amount, now)
-
-#     if self.totalPooled == TARGET:
-#         self._lockPool()
-#         log PoolTargetReached(now)
+    if self.totalPooled == TARGET:
+        self._lockPool()
+        log PoolTargetReached(now)
 
 @external
 @nonreentrant('lock')
