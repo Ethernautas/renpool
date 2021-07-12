@@ -56,6 +56,16 @@ def __init__(_renTokenAddr: address):
     self.totalPooled = 0 # this might be decimal in case of slash
     self.fee = 10 # TODO
 
+@internal
+def _lockPool():
+    self.isLocked = True
+    log PoolLocked(block.timestamp)
+
+@internal
+def _unlockPool():
+    self.isLocked = False
+    log PoolUnlocked(block.timestamp)
+
 @external
 @nonreentrant('lock')
 def deposit(_amount: uint256):
@@ -70,9 +80,10 @@ def deposit(_amount: uint256):
     # See: https://ethereum.org/nl/developers/tutorials/erc20-annotated-code/
     self.balances[addr] += _amount # uint256 is set to zero by default
     self.totalPooled += _amount
-
     log RenDeposited(addr, _amount, now)
+
     if self.totalPooled == TARGET:
+        self._lockPool()
         log PoolTargetReached(now)
 
 @external
@@ -99,16 +110,6 @@ def withdraw(_amount: uint256):
 @external
 def balanceOf(_addr: address) -> uint256:
     return self.balances[_addr]
-
-@internal
-def _lockPool():
-    self.isLocked = True
-    log PoolLocked(block.timestamp)
-
-@internal
-def _unlockPool():
-    self.isLocked = False
-    log PoolUnlocked(block.timestamp)
 
 @external
 def submit():
