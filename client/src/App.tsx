@@ -1,31 +1,24 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import './App.css'
 import { useContract } from './hooks/useContract'
-import { MAX_UINT256 } from './constants'
+import { NETWORKS, CONTRACT_NAMES, MAX_UINT256 } from './constants'
 import { Header } from './components/Header'
 import { Wallet } from './components/Wallet'
 import { BigNumber } from 'ethers'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 
-const CHAIN_ID = 1337 // process.env.REACT_APP_CHAIN_ID
+const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 const DECIMALS = 18
 
-enum ContractNames {
-  RenToken = 'RenToken',
-  RenPool = 'RenPool',
-}
-
-enum ActionNames {
+enum Actions {
   approve = 'approve',
   deposit = 'deposit',
 }
 
 export const App = (): JSX.Element => {
-  const context = useActiveWeb3React()
-  const { chainId, account } = context
-
-  const renToken = useContract(ContractNames.RenToken)
-  const renPool = useContract(ContractNames.RenPool)
+  const { chainId, account } = useActiveWeb3React()
+  const renToken = useContract(CONTRACT_NAMES.RenToken)
+  const renPool = useContract(CONTRACT_NAMES.RenPool)
 
   const [totalPooled, setTotalPooled] = useState<BigNumber>(BigNumber.from(0))
   const [isApproved, setIsApproved] = useState(false)
@@ -54,32 +47,32 @@ export const App = (): JSX.Element => {
     const str: string = e.target.value
     const regex = /[0-9]/g
     const value = str.match(regex)?.join('') || ''
-    console.log('VALUE', value)
     setInput(value)
     if (value == null) return
     const isApproved = await isTransferApproved(BigNumber.from(value.padEnd(value.length + DECIMALS, '0')))
     setIsApproved(isApproved)
   }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: ActionNames): Promise<void> => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: Actions): Promise<void> => {
     e.preventDefault()
     setDisabled(true)
 
     if (renPool == null) return
+
     if (BigNumber.from(input).lt(1)) {
       alert('invalid amount')
       setDisabled(false)
       return
     }
 
-    if (action === ActionNames.approve) {
+    if (action === Actions.approve) {
       await renToken.methods.approve(renPool.options.address, MAX_UINT256).send({ from: account })
       setIsApproved(await isTransferApproved(BigNumber.from(input.padEnd(input.length + DECIMALS, '0'))))
       // .on('receipt', async () => { setIsApproved(await isTransferApproved(amount)) })
       // .on('error', (e: any) => { console.log('Could not approve transfer', e) })
     }
 
-    if (action === ActionNames.deposit) {
+    if (action === Actions.deposit) {
       if (!isApproved) {
         alert('you need to approve the transaction first',)
         setDisabled(false)
@@ -158,14 +151,14 @@ export const App = (): JSX.Element => {
           <p><strong>Connect with Metamask and refresh the page to be able to edit the storage fields.</strong></p>
         )}
 
-        {chainId != CHAIN_ID && (
-          <p><strong>Connect to chainId {CHAIN_ID}.</strong></p>
+        {chainId != parseInt(CHAIN_ID, 10) && (
+          <p><strong>Connect to {NETWORKS[CHAIN_ID]}.</strong></p>
         )}
 
         <h2>RenPool Contract</h2>
         <div>The stored value is: {strTotalPooled.length > DECIMALS ? strTotalPooled.slice(0, strTotalPooled.length - DECIMALS) : strTotalPooled}</div>
         <br/>
-        <form onSubmit={(e) => { handleSubmit(e, isApproved ? ActionNames.deposit : ActionNames.approve) }}>
+        <form onSubmit={(e) => { handleSubmit(e, isApproved ? Actions.deposit : Actions.approve) }}>
           <div>
             <label>Deposit REN: </label>
             <br/>

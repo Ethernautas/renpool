@@ -1,4 +1,4 @@
-import { useWeb3React as useWeb3ReactCore } from '@web3-react/core'
+import { useWeb3React } from '@web3-react/core'
 import { useEffect } from 'react'
 import { injected } from '../connectors'
 
@@ -7,7 +7,7 @@ import { injected } from '../connectors'
  * and out after checking what network they are on
  */
 export const useInactiveListener = (suppress = false): void => {
-  const { active, error, activate } = useWeb3ReactCore() // specifically using useWeb3React because of what this hook does
+  const { active, error, activate } = useWeb3React() // specifically using useWeb3React because of what this hook does
 
   useEffect(() => {
     const { ethereum } = window
