@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Web3ReactProvider } from '@web3-react/core'
-// import { Web3Provider } from '@ethersproject/providers'
 import Web3 from 'web3'
 import { Web3ProviderNetwork } from './components/Web3ProviderNetwork'
 import { Web3ReactManager } from './components/Web3ReactManager'
@@ -10,7 +9,6 @@ import { App } from './App'
 import { reportWebVitals } from './reportWebVitals'
 
 const getLibrary = (provider: any): Web3 => {
-  // console.log({ provider })
   const library = new Web3(provider)
   // library.pollingInterval = 12_000
   return library

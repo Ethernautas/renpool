@@ -6,7 +6,7 @@ import { useActiveWeb3React } from './useActiveWeb3React'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
-export const useContract = (contractName: 'RenToken' | 'RenPool'): Contract | null => {
+export const useContract = (contractName: keyof typeof CONTRACT_NAMES): Contract | null => {
   const { connector, library, chainId } = useActiveWeb3React()
   // console.log({ library, chainId })
   const [contract, setContract] = useState<Contract>()
