@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Contract } from 'web3-eth-contract'
+import { Contract } from '@ethersproject/contracts'
 import { CONTRACT_NAMES } from '../constants'
 import map from '../artifacts/deployments/map.json'
+import { injected } from '../connectors'
 import { useActiveWeb3React } from './useActiveWeb3React'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
 export const useContract = (contractName: keyof typeof CONTRACT_NAMES): Contract | null => {
-  const { connector, library, chainId } = useActiveWeb3React()
+  const { connector, library, chainId, account } = useActiveWeb3React()
   // console.log({ library, chainId })
   const [contract, setContract] = useState<Contract>()
 
@@ -41,7 +42,16 @@ export const useContract = (contractName: keyof typeof CONTRACT_NAMES): Contract
         return Promise.resolve(null)
       }
 
-      return new library.eth.Contract(artifact.abi, address)
+      // const wallet = library.getSigner(account)
+      // const randWallet = ethers.Wallet.createRandom().connect(library)
+
+      // instantiate contract and assign to component ref variable
+      return new Contract(
+        address,
+        artifact.abi,
+        // wallet._address != null ? wallet : randWallet,
+        connector === injected ? library.getSigner(account) : library,
+      )
     }
 
     if (chainId === parseInt(CHAIN_ID, 10)) {

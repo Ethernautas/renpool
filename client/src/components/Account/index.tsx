@@ -2,7 +2,7 @@ import React from 'react'
 import { useWeb3React } from '@web3-react/core'
 
 export const Account = (): JSX.Element => {
-  const { account } = useWeb3React()
+  const { account } = useWeb3React() // MetaMask / injected
 
   return (
     <>

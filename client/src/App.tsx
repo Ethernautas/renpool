@@ -1,10 +1,10 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
+import { BigNumber } from '@ethersproject/bignumber'
 import './App.css'
 import { useContract } from './hooks/useContract'
 import { NETWORKS, CONTRACT_NAMES, MAX_UINT256 } from './constants'
 import { Header } from './components/Header'
 import { Wallet } from './components/Wallet'
-import BigNumber from 'bignumber.js'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
@@ -16,11 +16,11 @@ enum Actions {
 }
 
 export const App = (): JSX.Element => {
-  const { chainId, account } = useActiveWeb3React()
+  const { chainId, library, account } = useActiveWeb3React()
   const renToken = useContract(CONTRACT_NAMES.RenToken)
   const renPool = useContract(CONTRACT_NAMES.RenPool)
 
-  const [totalPooled, setTotalPooled] = useState<BigNumber>(new BigNumber(0))
+  const [totalPooled, setTotalPooled] = useState<BigNumber>(BigNumber.from(0))
   const [isApproved, setIsApproved] = useState(false)
   const [input, setInput] = useState<string | null>()
   const [disabled, setDisabled] = useState(false)
@@ -28,8 +28,10 @@ export const App = (): JSX.Element => {
   // Query totalPooled once contracts are ready
   useEffect(() => {
     if (renPool != null) {
-      renPool.methods.totalPooled().call()
-        .then((totalPooled: string) => { setTotalPooled(new BigNumber(totalPooled)) })
+      renPool.totalPooled({ gasLimit: 60000 })
+        .then((totalPooled: BigNumber) => {
+          console.log('TOTAL POOLED', totalPooled)
+          setTotalPooled(totalPooled) })
         .catch((e: Error) => { alert(`Error while trying to query totalPooled ${JSON.stringify(e, null, 2)}`) })
     }
   }, [renPool])
@@ -37,8 +39,9 @@ export const App = (): JSX.Element => {
   const isTransferApproved = async (value: BigNumber): Promise<boolean> => {
     if (renToken == null) return false
     if (value.lt(1)) return false
-    const allowance: string = await renToken.methods.allowance(account, renPool.options.address).call()
-    return new BigNumber(allowance).minus(value).gte(new BigNumber(0))
+    const allowance: BigNumber = await renToken.allowance(account, renPool.address)
+    console.log('ALLOWANCE', allowance)
+    return allowance.sub(value).gte(BigNumber.from(0))
   }
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -47,7 +50,7 @@ export const App = (): JSX.Element => {
     const value = str.match(regex)?.join('') || ''
     setInput(value)
     if (value == null) return
-    const isApproved = await isTransferApproved(new BigNumber(value.padEnd(value.length + DECIMALS, '0')))
+    const isApproved = await isTransferApproved(BigNumber.from(value.padEnd(value.length + DECIMALS, '0')))
     setIsApproved(isApproved)
   }
 
@@ -57,15 +60,16 @@ export const App = (): JSX.Element => {
 
     if (renPool == null) return
 
-    if (new BigNumber(input).lt(new BigNumber(1))) {
+    if (BigNumber.from(input).lt(BigNumber.from(1))) {
       alert('invalid amount')
       setDisabled(false)
       return
     }
 
     if (action === Actions.approve) {
-      await renToken.methods.approve(renPool.options.address, MAX_UINT256).send({ from: account })
-      setIsApproved(await isTransferApproved(new BigNumber(input.padEnd(input.length + DECIMALS, '0'))))
+      const tx = await renToken.approve(renPool.address, MAX_UINT256)
+      await tx.wait() // wait for mining
+      setIsApproved(await isTransferApproved(BigNumber.from(input.padEnd(input.length + DECIMALS, '0'))))
       // .on('receipt', async () => { setIsApproved(await isTransferApproved(amount)) })
       // .on('error', (e: any) => { console.log('Could not approve transfer', e) })
     }
@@ -78,13 +82,17 @@ export const App = (): JSX.Element => {
       }
 
       try {
-        const renAmount = new BigNumber(input.padEnd(input.length + DECIMALS, '0')).toString()
-        await renPool.methods.deposit(renAmount).send({ from: account })
-          .on('receipt', async () => {
-            setTotalPooled(await renPool.methods.totalPooled().call())
-            setInput('0')
-          })
-          .on('error', (e: Error) => { console.log('Could not deposit', JSON.stringify(e, null, 2)) })
+        const gasLimit = await library.estimateGas(renPool.deposit)
+        console.log('GAS LIMIT', gasLimit.toString())
+        const renAmount = BigNumber.from(input.padEnd(input.length + DECIMALS, '0')).toString()
+        console.log('REN AMOUNT', renAmount)
+        const tx = await renPool.deposit(renAmount, { gasLimit: 172503 })
+        await tx.wait() // wait for mining
+        // await renPool.methods.deposit(renAmount).send({ from: account })
+        // .on('receipt', async () => {
+        const tp: string = await renPool.totalPooled({ gasLimit: 60000 })
+        setTotalPooled(BigNumber.from(tp))
+        setInput('0')
       } catch (e) {
         alert(`Could not deposit, ${JSON.stringify(e, null, 2)}`)
       }
@@ -95,7 +103,9 @@ export const App = (): JSX.Element => {
 
   const getFromFaucet = async () => {
     try {
-      await renToken.methods.getFromFaucet().send({ from: account })
+      const tx = await renToken.getFromFaucet({ gasLimit: 60000 })
+      await tx.wait() // wait for mining
+      // await renToken.methods.getFromFaucet().send({ from: account })
     } catch (e) {
       alert(`Could not get from faucet ${JSON.stringify(e, null, 2)}`)
     }
@@ -184,7 +194,7 @@ export const App = (): JSX.Element => {
           Get free REN
         </button>
       </div>
-      <div>RenToken contract {renToken?.options?.address || ''}</div>
+      <div>RenToken contract {renToken?.address || ''}</div>
     </>
   )
 }
