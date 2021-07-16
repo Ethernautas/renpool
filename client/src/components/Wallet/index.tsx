@@ -1,40 +1,39 @@
 import React from 'react'
-import { useWeb3React as useWeb3ReactCore } from '@web3-react/core'
-// import { Web3Provider } from '@ethersproject/providers'
-import Web3 from 'web3'
+import { useWeb3React } from '@web3-react/core'
+import { Web3Provider } from '@ethersproject/providers'
 import { injected } from '../../connectors'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
 import { getErrorMessage } from '../../utils/getErrorMessage'
 
 
 export const Wallet = (): JSX.Element => {
-  const { active, account, activate, deactivate, error } = useWeb3ReactCore<Web3>() // Metamask/injected
+  const { active, account, activate, deactivate, error } = useWeb3React<Web3Provider>() // MetaMask / injected
   const { chainId } = useActiveWeb3React()
 
-  const onClick = () => {
-	  activate(injected)
+  const handleConnect = () => {
+    activate(injected)
   }
 
   return (
-	  <div>
-	    <div>ChainId: {chainId}</div>
-	    <div>Account: {account}</div>
-	    {active ? (
-	      <div>✅ </div>
-	    ) : (
-	      <button type="button" onClick={onClick}>
-		Connect
-	      </button>
-	    )}
-	          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div>
+      <div>ChainId: {chainId}</div>
+      <div>Account: {account}</div>
+      {active ? (
+        <div>✅</div>
+      ) : (
+        <button type="button" onClick={handleConnect}>
+	  Connect
+        </button>
+      )}
+      <div>
         {(active || error) && (
           <button onClick={deactivate}>
-            Deactivate
+	    Deactivate
           </button>
         )}
 
         {!!error && <h4>{getErrorMessage(error)}</h4>}
       </div>
-	  </div>
+    </div>
   )
 }
