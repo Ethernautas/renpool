@@ -31,7 +31,6 @@ export const App = (): JSX.Element => {
     if (renPool != null) {
       renPool.totalPooled({ gasLimit: 60000 })
         .then((totalPooled: BigNumber) => {
-          console.log('TOTAL POOLED', totalPooled)
           setTotalPooled(totalPooled) })
         .catch((e: Error) => { alert(`Error while trying to query totalPooled ${JSON.stringify(e, null, 2)}`) })
     }
@@ -41,7 +40,6 @@ export const App = (): JSX.Element => {
     if (renToken == null) return false
     if (value.lt(BigNumber.from(1))) return false
     const allowance: BigNumber = await renToken.allowance(account, renPool.address)
-    console.log('ALLOWANCE', allowance)
     return allowance.sub(value).gte(BigNumber.from(0))
   }
 
