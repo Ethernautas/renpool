@@ -6,6 +6,7 @@ import { useContract } from './hooks/useContract'
 import { NETWORKS, CONTRACT_NAMES, MAX_UINT256 } from './constants'
 import { Header } from './components/Header'
 import { Wallet } from './components/Wallet'
+import { Balance } from './components/Balance'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
@@ -110,6 +111,7 @@ export const App = (): JSX.Element => {
     <>
       <Header />
       <Wallet />
+      <Balance />
       <hr />
 
       <div className="App">
