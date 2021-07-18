@@ -2,12 +2,11 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
 import './App.css'
-import { useContract } from './hooks/useContract'
 import { NETWORKS, CONTRACT_NAMES, MAX_UINT256 } from './constants'
+import { useActiveWeb3React } from './hooks/useActiveWeb3React'
+import { useContract } from './hooks/useContract'
 import { Header } from './components/Header'
 import { Wallet } from './components/Wallet'
-import { Balance } from './components/Balance'
-import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 const DECIMALS = 18
@@ -111,7 +110,6 @@ export const App = (): JSX.Element => {
     <>
       <Header />
       <Wallet />
-      <Balance />
       <hr />
 
       <div className="App">

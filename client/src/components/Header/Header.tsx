@@ -2,6 +2,7 @@ import React from 'react'
 import { useWeb3React } from '@web3-react/core'
 import { ChainId } from '../ChainId'
 import { Account } from '../Account'
+import { Balance } from '../Balance'
 
 export const Header = (): JSX.Element => {
   const { active, error } = useWeb3React()
@@ -13,7 +14,7 @@ export const Header = (): JSX.Element => {
         <ChainId />
         {/* <BlockNumber /> */}
         <Account />
-        {/* <Balance /> */}
+        <Balance />
       </h3>
     </>
   )
