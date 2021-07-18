@@ -2,12 +2,11 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
 import './App.css'
-import { useContract } from './hooks/useContract'
 import { NETWORKS, CONTRACT_NAMES, MAX_UINT256 } from './constants'
+import { useActiveWeb3React } from './hooks/useActiveWeb3React'
+import { useContract } from './hooks/useContract'
 import { Header } from './components/Header'
 import { Wallet } from './components/Wallet'
-import { Balance } from './components/Balance'
-import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 const DECIMALS = 18
@@ -37,7 +36,7 @@ export const App = (): JSX.Element => {
     }
   }, [renPool])
 
-  const isTransferApproved = async (value: BigNumber): Promise<boolean> => {
+  const checkForApproval = async (value: BigNumber): Promise<boolean> => {
     if (renToken == null) return false
     if (value.lt(BigNumber.from(1))) return false
     const allowance: BigNumber = await renToken.allowance(account, renPool.address)
@@ -50,7 +49,7 @@ export const App = (): JSX.Element => {
     const value = str.match(regex)?.join('') || ''
     setInput(value)
     if (value == null || value === '') return
-    const _isApproved = await isTransferApproved(BigNumber.from(parseUnits(value, DECIMALS)))
+    const _isApproved = await checkForApproval(BigNumber.from(parseUnits(value, DECIMALS)))
     setIsApproved(_isApproved)
   }
 
@@ -69,7 +68,7 @@ export const App = (): JSX.Element => {
     if (action === Actions.approve) {
       const tx = await renToken.approve(renPool.address, MAX_UINT256)
       await tx.wait() // wait for mining
-      const _isApproved = await isTransferApproved(BigNumber.from(parseUnits(input, DECIMALS)))
+      const _isApproved = await checkForApproval(BigNumber.from(parseUnits(input, DECIMALS)))
       setIsApproved(_isApproved)
     }
 
@@ -111,7 +110,6 @@ export const App = (): JSX.Element => {
     <>
       <Header />
       <Wallet />
-      <Balance />
       <hr />
 
       <div className="App">
