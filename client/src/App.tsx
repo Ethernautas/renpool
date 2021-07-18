@@ -37,7 +37,7 @@ export const App = (): JSX.Element => {
     }
   }, [renPool])
 
-  const isTransferApproved = async (value: BigNumber): Promise<boolean> => {
+  const checkForApproval = async (value: BigNumber): Promise<boolean> => {
     if (renToken == null) return false
     if (value.lt(BigNumber.from(1))) return false
     const allowance: BigNumber = await renToken.allowance(account, renPool.address)
@@ -50,7 +50,7 @@ export const App = (): JSX.Element => {
     const value = str.match(regex)?.join('') || ''
     setInput(value)
     if (value == null || value === '') return
-    const _isApproved = await isTransferApproved(BigNumber.from(parseUnits(value, DECIMALS)))
+    const _isApproved = await checkForApproval(BigNumber.from(parseUnits(value, DECIMALS)))
     setIsApproved(_isApproved)
   }
 
@@ -69,7 +69,7 @@ export const App = (): JSX.Element => {
     if (action === Actions.approve) {
       const tx = await renToken.approve(renPool.address, MAX_UINT256)
       await tx.wait() // wait for mining
-      const _isApproved = await isTransferApproved(BigNumber.from(parseUnits(input, DECIMALS)))
+      const _isApproved = await checkForApproval(BigNumber.from(parseUnits(input, DECIMALS)))
       setIsApproved(_isApproved)
     }
 

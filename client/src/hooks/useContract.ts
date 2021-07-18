@@ -30,32 +30,27 @@ export const useContract = (contractName: keyof typeof CONTRACT_NAMES): Contract
   // }
 
   useEffect(() => {
-    const load = async (): Promise<Contract> => {
+    const load = (): Contract => {
       let address
       let artifact
 
       try {
         address = map[CHAIN_ID][contractName][0]
-        artifact = await import(`../artifacts/deployments/${CHAIN_ID}/${address}.json`)
+        artifact = require(`../artifacts/deployments/${CHAIN_ID}/${address}.json`)
       } catch (e) {
         alert(`Could not load contract ${contractName}, ${JSON.stringify(e, null, 2)}`)
-        return Promise.resolve(null)
+        return null
       }
 
-      // const wallet = library.getSigner(account)
-      // const randWallet = ethers.Wallet.createRandom().connect(library)
-
-      // instantiate contract and assign to component ref variable
       return new Contract(
         address,
         artifact.abi,
-        // wallet._address != null ? wallet : randWallet,
         connector === injected ? library.getSigner(account) : library,
       )
     }
 
     if (chainId === parseInt(CHAIN_ID, 10)) {
-      load().then((c) => { setContract(c) })
+      setContract(load())
     }
   }, [connector, chainId])
 
