@@ -16,7 +16,7 @@ export const Balance = (): JSX.Element => {
 
   return (
     <div>
-      REN Balance: {parseFloat(formatUnits(balance, DECIMALS)).toPrecision(4)} {renToken?.symbol}
+      REN Balance: {parseFloat(formatUnits(balance, DECIMALS))} {renToken?.symbol}
     </div>
   )
 }

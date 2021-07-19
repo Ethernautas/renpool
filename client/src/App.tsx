@@ -1,12 +1,12 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
+import { Box, EthAddress } from 'rimble-ui'
 import './App.css'
 import { NETWORKS, CONTRACT_NAMES, MAX_UINT256 } from './constants'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { useContract } from './hooks/useContract'
 import { Header } from './components/Header'
-import { Wallet } from './components/Wallet'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 const DECIMALS = 18
@@ -109,8 +109,6 @@ export const App = (): JSX.Element => {
   return (
     <>
       <Header />
-      <Wallet />
-      <hr />
 
       <div className="App">
         {!isAccountsUnlocked && (
@@ -152,7 +150,10 @@ export const App = (): JSX.Element => {
           Get free REN
         </button>
       </div>
-      <div>RenToken contract {renToken?.address || ''}</div>
+      <Box bg="salmon" color="white" fontSize={4} p={3} width={[1, 1, 0.5]}>
+        RenToken contract address
+        <EthAddress address={renToken?.address || ''} textLabels />
+      </Box>
     </>
   )
 }
