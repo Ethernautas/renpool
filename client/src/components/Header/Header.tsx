@@ -22,7 +22,7 @@ export const Header = (): JSX.Element => {
       <Box>ChainId: {chainId ?? ''}</Box>
       {/* <BlockNumber /> */}
       <Box>Account: {account == null
-        ? '-'
+        ? 'disconnected'
         : `${account.substring(0, 6)}...${account.substring(account.length - 4)}`
       }
       </Box>

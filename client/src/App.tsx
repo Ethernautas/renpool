@@ -1,12 +1,13 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
-import { Box, EthAddress } from 'rimble-ui'
+import { Heading, Text, Flex, Box, EthAddress, Flash } from 'rimble-ui'
 import './App.css'
 import { NETWORKS, CONTRACT_NAMES, MAX_UINT256 } from './constants'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { useContract } from './hooks/useContract'
 import { Header } from './components/Header'
+import { RenFaucet } from './components/RenFaucet'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 const DECIMALS = 18
@@ -95,16 +96,8 @@ export const App = (): JSX.Element => {
     setDisabled(false)
   }
 
-  const getFromFaucet = async () => {
-    try {
-      const tx = await renToken.getFromFaucet({ gasLimit: 60000 })
-      await tx.wait() // wait for mining
-    } catch (e) {
-      alert(`Could not get from faucet ${JSON.stringify(e, null, 2)}`)
-    }
-  }
-
   const isAccountsUnlocked = account != null
+  const wrongChain = chainId != parseInt(CHAIN_ID, 10)
 
   return (
     <>
@@ -112,11 +105,15 @@ export const App = (): JSX.Element => {
 
       <div className="App">
         {!isAccountsUnlocked && (
-          <p><strong>Connect with Metamask and refresh the page to be able to edit the storage fields.</strong></p>
+          <Flash my={3} variant="warning">
+            Connect with Metamask and refresh the page to be able to edit the storage fields.
+          </Flash>
         )}
 
-        {chainId != parseInt(CHAIN_ID, 10) && (
-          <p><strong>Connect to {NETWORKS[CHAIN_ID]}.</strong></p>
+        {wrongChain && (
+          <Flash my={3} variant="warning">
+            Connect to {NETWORKS[CHAIN_ID]}.
+          </Flash>
         )}
 
         <h2>RenPool Contract</h2>
@@ -142,18 +139,43 @@ export const App = (): JSX.Element => {
             </button>
           </div>
         </form>
-        <br/>
-        <button
-          onClick={getFromFaucet}
-          disabled={!isAccountsUnlocked}
-        >
-          Get free REN
-        </button>
       </div>
-      <Box bg="salmon" color="white" fontSize={4} p={3} width={[1, 1, 0.5]}>
-        RenToken contract address
-        <EthAddress address={renToken?.address || ''} textLabels />
-      </Box>
+      <Flex flexDirection="column" alignItems="center" justifyContent="center">
+        <Box p={2} width={[1, 1, 0.5]}>
+          <Heading.h3>How it works?</Heading.h3>
+        </Box>
+        <Box p={2} width={[1, 1, 0.5]}>
+          <Heading.h4>1. Connect with MetaMask</Heading.h4>
+          <Text.p>Connect your MetaMask to the {NETWORKS[CHAIN_ID]} network</Text.p>
+        </Box>
+        <Box p={2} width={[1, 1, 0.5]}>
+          <Heading.h4>2. Get some ETH</Heading.h4>
+          <Text.p>Head over <a href="https://faucet.rinkeby.io/">https://faucet.rinkeby.io/</a> and get some test ETH to pay for transactions</Text.p>
+        </Box>
+        <Box p={2} width={[1, 1, 0.5]}>
+          <Heading.h4>3. Get some REN</Heading.h4>
+          <Text.p>Get 1000 REN tokens by pressing the button below.</Text.p>
+          <RenFaucet disabled={!isAccountsUnlocked || wrongChain} />
+          <Text.p>To verify that the REN tokens are in your wallet, switch to the ASSETS tab in your MetaMask and press the &apos;ADD TOKEN&apos; button.
+          There, you can paste the address of the REN token contract:</Text.p>
+          <EthAddress address={renToken?.address || ''} textLabels />
+        </Box>
+        <Box p={2} width={[1, 1, 0.5]}>
+          <Heading.h4>4. Deposite REN into the pool</Heading.h4>
+          <Text.p>Head over the form above, enter the amount of REN you would like to deposit into the pool and hit the Approve button.
+            Once the transaction is apporved you will be able to Deposit the desired amount of REN into the pool until the 100_000 target is reached.
+            Once that happens the pool is locked and the REN tokens are transaferred to the REN protocol to instantiate the Dark node.</Text.p>
+          <Text.p>You can find more info on how the Dark node is setup in the following link <a href=""></a></Text.p>
+        </Box>
+        <Box p={2} width={[1, 1, 0.5]}>
+          <Heading.h4>5. Withdraw</Heading.h4>
+          <Text.p>TODO</Text.p>
+        </Box>
+        <Box p={2} width={[1, 1, 0.5]}>
+          <Heading.h4>5. Claim rewards</Heading.h4>
+          <Text.p>TODO</Text.p>
+        </Box>
+      </Flex>
     </>
   )
 }
