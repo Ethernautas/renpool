@@ -1,38 +1,56 @@
-.App {
-  text-align: center;
+/**
+ * Building on the RNWeb reset:
+ * https://github.com/necolas/react-native-web/blob/master/packages/react-native-web/src/exports/StyleSheet/initialRules.js
+ */
+html,
+body,
+#root {
+  width: 100%;
+  /* To smooth any scrolling behavior */
+  -webkit-overflow-scrolling: touch;
+  margin: 0px;
+  padding: 0px;
+  /* Allows content to fill the viewport and go beyond the bottom */
+  min-height: 100%;
+  /* Custom rules */
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: Rajdhani;
+  font-weight: 400;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+#root {
+  flex-shrink: 0;
+  flex-basis: auto;
+  flex-grow: 1;
+  display: flex;
+  flex: 1;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+html {
+  scroll-behavior: smooth;
+  /* Prevent text size change on orientation change https://gist.github.com/tfausak/2222823#file-ios-8-web-app-html-L138 */
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
+  /* background-image: url('https://res.cloudinary.com/dp4vo5nq4/image/upload/v1576175693/vector-gym-pattern-seamless-background-illustration-113988755.jpg'); */
+  /* background-image: url('https://res.cloudinary.com/dp4vo5nq4/image/upload/v1576175716/sports.png'); */
+  background-color: rgba(0,0,0,.03);
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: #fff;
+  height: 62px;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App {
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  margin-top: 62px;
+  padding: 10px;
 }

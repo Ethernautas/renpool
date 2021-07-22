@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Web3ReactProvider } from '@web3-react/core'
 import { Web3Provider } from '@ethersproject/providers'
+import { BaseStyles } from 'rimble-ui'
 import { Web3ProviderNetwork } from './components/Web3ProviderNetwork'
 import { Web3ReactManager } from './components/Web3ReactManager'
 import './index.css'
@@ -23,7 +24,9 @@ ReactDOM.render(
     <Web3ReactProvider getLibrary={getLibrary}>
       <Web3ProviderNetwork getLibrary={getLibrary}>
         <Web3ReactManager>
-          <App />
+          <BaseStyles>
+            <App />
+          </BaseStyles>
         </Web3ReactManager>
       </Web3ProviderNetwork>
     </Web3ReactProvider>

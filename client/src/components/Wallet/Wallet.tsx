@@ -1,39 +1,50 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useWeb3React } from '@web3-react/core'
 import { Web3Provider } from '@ethersproject/providers'
+import { formatUnits } from '@ethersproject/units'
+import { Flex, MetaMaskButton, Text, Pill, Box, Blockie } from 'rimble-ui'
 import { injected } from '../../connectors'
-import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
+import { useRenBalance } from '../../hooks/useRenBalance'
 import { getErrorMessage } from '../../utils/getErrorMessage'
+import { shortAccount } from '../../utils/shortAccount'
 
+const DECIMALS = 18
 
 export const Wallet = (): JSX.Element => {
-  const { active, account, activate, deactivate, error } = useWeb3React<Web3Provider>() // MetaMask / injected
-  const { chainId } = useActiveWeb3React()
+  const { active, error, account, activate } = useWeb3React<Web3Provider>() // MetaMask / injected
+  const balance = useRenBalance()
 
-  const handleConnect = () => {
-    activate(injected)
+  useEffect(() => {
+    if (!!error) {
+      console.error(getErrorMessage(error))
+    }
+  }, [error])
+
+  if (!!error) {
+    <Text>SOMETHING WENT WRONG</Text>
+  }
+
+  if (!active) {
+    return (
+      <MetaMaskButton.Outline
+        size="small"
+        onClick={() => { activate(injected) }}
+      >
+        Connect wallet
+      </MetaMaskButton.Outline>
+    )
   }
 
   return (
-    <div>
-      <div>ChainId: {chainId}</div>
-      <div>Account: {account}</div>
-      {active ? (
-        <div>✅</div>
-      ) : (
-        <button type="button" onClick={handleConnect}>
-	        Connect
-        </button>
-      )}
-      <div>
-        {(active || error) && (
-          <button onClick={deactivate}>
-	          Deactivate
-          </button>
-        )}
-
-        {!!error && <h4>{getErrorMessage(error)}</h4>}
-      </div>
-    </div>
+    <Flex
+      justifyContent="space-between"
+      alignItems="center"
+    >
+      <Text>{parseFloat(formatUnits(balance, DECIMALS))} REN</Text>
+      <Box p={1} />
+      <Pill>{shortAccount(account)}</Pill>
+      <Box p={1} />
+      <Blockie opts={{ seed: account }} />
+    </Flex>
   )
 }

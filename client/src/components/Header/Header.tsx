@@ -1,22 +1,20 @@
 import React from 'react'
-import { useWeb3React } from '@web3-react/core'
-import { ChainId } from '../ChainId'
-import { Account } from '../Account'
-import { Balance } from '../Balance'
+import { Flex, Heading } from 'rimble-ui'
+import { Wallet } from '../Wallet'
 
-export const Header = (): JSX.Element => {
-  const { active, error } = useWeb3React()
+export const Header = (): JSX.Element => (
+  <div className="App-header">
+    <Flex
+      justifyContent="space-between"
+      alignItems="center"
+      borderBottom={1}
+      borderColor="#e2dbe8"
+      p={2}
+    >
+      <Heading.h3>RenPool</Heading.h3>
+      <Wallet />
+    </Flex>
+  </div>
+)
 
-  return (
-    <>
-      <h1>{active ? '🟢' : error ? '🔴' : '🟠'}</h1>
-      <h3>
-        <ChainId />
-        {/* <BlockNumber /> */}
-        <Account />
-        <Balance />
-      </h3>
-    </>
-  )
-}
 
