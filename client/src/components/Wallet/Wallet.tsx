@@ -30,7 +30,7 @@ export const Wallet = (): JSX.Element => {
         size="small"
         onClick={() => { activate(injected) }}
       >
-          Connect wallet
+        Connect wallet
       </MetaMaskButton.Outline>
     )
   }
@@ -40,7 +40,7 @@ export const Wallet = (): JSX.Element => {
       justifyContent="space-between"
       alignItems="center"
     >
-      <Text>REN: {parseFloat(formatUnits(balance, DECIMALS))}</Text>
+      <Text>{parseFloat(formatUnits(balance, DECIMALS))} REN</Text>
       <Box p={1} />
       <Pill>{shortAccount(account)}</Pill>
       <Box p={1} />

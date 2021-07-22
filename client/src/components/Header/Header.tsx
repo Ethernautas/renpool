@@ -8,8 +8,8 @@ export const Header = (): JSX.Element => (
       justifyContent="space-between"
       alignItems="center"
       borderBottom={1}
-      borderColor="near-white"
-      p={[2, 3]}
+      borderColor="#e2dbe8"
+      p={2}
     >
       <Heading.h3>RenPool</Heading.h3>
       <Wallet />
