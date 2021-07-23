@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
-import { Heading, Text, Flex, Box, Form, Field, Input, Button } from 'rimble-ui'
+import { Heading, Text, Flex, Box, Form, Input, Button } from 'rimble-ui'
 import { CONTRACT_NAMES, MAX_UINT256 } from '../../constants'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
 import { useContract } from '../../hooks/useContract'
@@ -27,8 +27,7 @@ export const RenPool = (): JSX.Element => {
   useEffect(() => {
     if (renPool != null) {
       renPool.totalPooled({ gasLimit: 60000 })
-        .then((totalPooled: BigNumber) => {
-          setTotalPooled(totalPooled) })
+        .then((totalPooled: BigNumber) => { setTotalPooled(totalPooled) })
         .catch((e: Error) => { alert(`Error while trying to query totalPooled ${JSON.stringify(e, null, 2)}`) })
     }
   }, [renPool])
@@ -56,8 +55,8 @@ export const RenPool = (): JSX.Element => {
 
     if (renPool == null) return
 
-    if (BigNumber.from(input).lt(BigNumber.from(1))) {
-      alert('invalid amount')
+    if (input == null || input.replaceAll('0', '') === '' || BigNumber.from(input).lt(BigNumber.from(1))) {
+      alert('Please, enter a valid amount')
       setDisabled(false)
       return
     }
@@ -103,28 +102,25 @@ export const RenPool = (): JSX.Element => {
           alignItems="center"
           justifyContent="space-between"
         >
-          <Text>Total staked: {formatUnits(totalPooled, DECIMALS)}</Text>
+          <Text>Total staked: {parseInt(formatUnits(totalPooled, DECIMALS), 10)}</Text>
           <Text>Pool is locked: ?</Text>
         </Flex>
         <Form
           onSubmit={(e: FormEvent<HTMLFormElement>) => {
             handleSubmit(e, isApproved ? Actions.deposit : Actions.approve)
           }}
-          // validated={formValidated}
         >
-          <Field /* validated={validated} */ width={1}>
-            <Input
-              type="number"
-              required // set required attribute to use brower's HTML5 input validation
-              value={input}
-              width={1}
-              disabled={!isAccountsUnlocked || disabled}
-              onChange={handleChange}
-            />
-          </Field>
+          <Input
+            type="number"
+            value={input}
+            width={1}
+            disabled={!isAccountsUnlocked || disabled}
+            onChange={handleChange}
+          />
+          <Box p={2} />
           <Button
             type="submit"
-            disabled={!isAccountsUnlocked || disabled || input == null || input.replaceAll('0', '') === ''}
+            disabled={!isAccountsUnlocked || disabled}
             width={1}
           >
             {isApproved ? 'Deposit' : 'Approve'}

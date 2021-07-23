@@ -23,11 +23,12 @@ export const RenFaucet: FC<RenFaucetProps> = ({
 
   return (
     <Button
-      size="small"
+      size="medium"
       disabled={disabled}
+      width={1}
       onClick={handleClick}
     >
-      Give me REN
+      Get REN
     </Button>
   )
 }
