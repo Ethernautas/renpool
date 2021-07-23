@@ -24,3 +24,21 @@ export enum CONTRACT_NAMES {
   RenToken = 'RenToken',
   RenPool = 'RenPool',
 }
+
+export const FAUCETS = {
+  1: 'Mainnet',
+  3: 'Ropsten',
+  4: 'https://faucet.rinkeby.io',
+  5: 'Goerli',
+  42: 'Kovan',
+  1337: 'https://faucet.rinkeby.io',
+}
+
+export const ETHERSCAN = {
+  1: 'https://etherscan.io/address/',
+  3: 'https://ropsten.etherscan.io/address/',
+  4: 'https://rinkeby.etherscan.io/address/',
+  5: 'https://goerli.etherscan.io/address/',
+  42: 'https://kovan.etherscan.io/address/',
+  1337: 'https://etherscan.io/address/',
+}
