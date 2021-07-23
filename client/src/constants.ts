@@ -30,7 +30,7 @@ export const FAUCETS = {
   3: 'Ropsten',
   4: 'https://faucet.rinkeby.io',
   5: 'Goerli',
-  42: 'Kovan',
+  42: 'https://support.mycrypto.com/how-to/getting-started/where-to-get-testnet-ether',
   1337: 'https://faucet.rinkeby.io',
 }
 

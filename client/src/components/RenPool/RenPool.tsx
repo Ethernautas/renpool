@@ -102,7 +102,7 @@ export const RenPool = (): JSX.Element => {
           alignItems="center"
           justifyContent="space-between"
         >
-          <Text>Total staked: {formatUnits(totalPooled, DECIMALS)}</Text>
+          <Text>Total staked: {parseInt(formatUnits(totalPooled, DECIMALS), 10)}</Text>
           <Text>Pool is locked: ?</Text>
         </Flex>
         <Form
