@@ -153,7 +153,7 @@ export const Stake = (): JSX.Element => {
             disabled={!isAccountsUnlocked || disabled || isApproved}
             width={1}
           >
-            Approve
+                Approve
           </Button>
           <Box p={2} />
           <Button

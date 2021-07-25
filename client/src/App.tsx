@@ -18,17 +18,20 @@ export const App = (): JSX.Element => {
   return (
     <>
       <Header />
+
       <div className="App">
         {!isAccountsUnlocked && (
           <Flash my={3} variant="warning">
             Please, connect with MetaMask
           </Flash>
         )}
+
         {wrongChain && (
           <Flash my={3} variant="warning">
             Please, switch network to {NETWORKS[CHAIN_ID]}
           </Flash>
         )}
+
         <Box p={2} />
         <Box>
           <Heading.h3 textAlign="center">Stake Ren</Heading.h3>
@@ -37,6 +40,7 @@ export const App = (): JSX.Element => {
             <Stake />
           </Box>
         </Box>
+
         <Box p={4} />
         <Box>
           <Heading.h3 textAlign="center">How it works</Heading.h3>
@@ -45,6 +49,7 @@ export const App = (): JSX.Element => {
             <HowItWorks />
           </Box>
         </Box>
+
         <Footer />
       </div>
     </>
