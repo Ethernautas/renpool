@@ -30,7 +30,7 @@ export const App = (): JSX.Element => {
           </Flash>
         )}
         <RenPool />
-        <Box p={3} />
+        <Box p={4} />
         <HowItWorks />
         <Footer />
       </div>

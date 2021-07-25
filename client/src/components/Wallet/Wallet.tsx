@@ -2,13 +2,12 @@ import React, { useEffect } from 'react'
 import { useWeb3React } from '@web3-react/core'
 import { Web3Provider } from '@ethersproject/providers'
 import { formatUnits } from '@ethersproject/units'
-import { Flex, MetaMaskButton, Text, Pill, Box, Blockie } from 'rimble-ui'
+import { Flex, MetaMaskButton, Text, Pill, Box } from 'rimble-ui'
+import { DECIMALS } from '../../constants'
 import { injected } from '../../connectors'
 import { useRenBalance } from '../../hooks/useRenBalance'
 import { getErrorMessage } from '../../utils/getErrorMessage'
 import { shortAccount } from '../../utils/shortAccount'
-
-const DECIMALS = 18
 
 export const Wallet = (): JSX.Element => {
   const { active, error, account, activate } = useWeb3React<Web3Provider>() // MetaMask / injected
@@ -41,10 +40,8 @@ export const Wallet = (): JSX.Element => {
       alignItems="center"
     >
       <Text>{parseFloat(formatUnits(balance, DECIMALS))} REN</Text>
-      <Box p={1} />
+      <Box p={2} />
       <Pill>{shortAccount(account)}</Pill>
-      <Box p={1} />
-      <Blockie opts={{ seed: account }} />
     </Flex>
   )
 }
