@@ -1,9 +1,9 @@
 import React from 'react'
-import { Flash, Box } from 'rimble-ui'
+import { Flash, Box, Heading } from 'rimble-ui'
 import { NETWORKS } from './constants'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
-import { RenPool } from './components/RenPool'
+import { Stake } from './components/Stake'
 import { HowItWorks } from './components/HowItWorks'
 import { Footer } from './components/Footer'
 
@@ -29,9 +29,22 @@ export const App = (): JSX.Element => {
             Please, switch network to {NETWORKS[CHAIN_ID]}
           </Flash>
         )}
-        <RenPool />
+        <Box p={2} />
+        <Box>
+          <Heading.h3 textAlign="center">Stake Ren</Heading.h3>
+          <Box p={2} />
+          <Box bg="white" p={3}>
+            <Stake />
+          </Box>
+        </Box>
         <Box p={4} />
-        <HowItWorks />
+        <Box>
+          <Heading.h3 textAlign="center">How it works</Heading.h3>
+          <Box p={2} />
+          <Box bg="white" p={3}>
+            <HowItWorks />
+          </Box>
+        </Box>
         <Footer />
       </div>
     </>

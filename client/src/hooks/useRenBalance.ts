@@ -13,24 +13,24 @@ export const useRenBalance = (): BigNumber => {
   useEffect(() => {
     if (library == null || renToken == null) return
 
-    const load = async () => {
+    const query = async () => {
       const _balance: BigNumber = await renToken.balanceOf(account, { gasLimit: 60000 })
       setBalance(_balance)
     }
 
-    load()
+    query()
 
     // Listen for changes on an Ethereum address
     console.log('listening for Transfer...')
     const fromMe = renToken.filters.Transfer(account, null)
     library.on(fromMe, (from, to, amount, event) => {
       console.log('Transfer|sent', { from, to, amount, event })
-      load()
+      query()
     })
     const toMe = renToken.filters.Transfer(null, account)
     library.on(toMe, (from, to, amount, event) => {
       console.log('Transfer|received', { from, to, amount, event })
-      load()
+      query()
     })
 
     // Remove listener when the component is unmounted

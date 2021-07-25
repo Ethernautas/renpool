@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
-import { Heading, Text, Flex, Box, Form, Input, Button } from 'rimble-ui'
+import { Text, Flex, Box, Form, Input, Button } from 'rimble-ui'
 import { CONTRACT_NAMES, MAX_UINT256, DECIMALS } from '../../constants'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
 import { useContract } from '../../hooks/useContract'
@@ -12,8 +12,7 @@ enum Actions {
   deposit = 'deposit',
 }
 
-// TODO: change name to Deposit?
-export const RenPool = (): JSX.Element => {
+export const Stake = (): JSX.Element => {
   const { account } = useActiveWeb3React()
   const renToken = useContract(CONTRACT_NAMES.RenToken)
   const renPool = useContract(CONTRACT_NAMES.RenPool)
@@ -124,53 +123,48 @@ export const RenPool = (): JSX.Element => {
   const isAccountsUnlocked = account != null
 
   return (
-    <Box>
-      <Heading.h3 textAlign="center">Stake Ren</Heading.h3>
-      <Box p={2} />
-      <Box bg="white" p={3}>
+    <>
+      <Flex
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Text>Total staked: {parseInt(formatUnits(totalPooled, DECIMALS), 10)} REN</Text>
+        <Text>Pool is full: {isLocked.toString()}</Text>
+      </Flex>
+      <Form
+        onSubmit={(e: FormEvent<HTMLFormElement>) => {
+          handleSubmit(e, isApproved ? Actions.deposit : Actions.approve)
+        }}
+      >
+        <Input
+          type="number"
+          value={input}
+          width={1}
+          disabled={!isAccountsUnlocked || disabled}
+          onChange={handleChange}
+        />
+        <Box p={2} />
         <Flex
-          alignItems="center"
           justifyContent="space-between"
+          alignItems="center"
         >
-          <Text>Total staked: {parseInt(formatUnits(totalPooled, DECIMALS), 10)} REN</Text>
-          <Text>Pool is full: {isLocked.toString()}</Text>
-        </Flex>
-        <Form
-          onSubmit={(e: FormEvent<HTMLFormElement>) => {
-            handleSubmit(e, isApproved ? Actions.deposit : Actions.approve)
-          }}
-        >
-          <Input
-            type="number"
-            value={input}
+          <Button
+            type="submit"
+            disabled={!isAccountsUnlocked || disabled || isApproved}
             width={1}
-            disabled={!isAccountsUnlocked || disabled}
-            onChange={handleChange}
-          />
-          <Box p={2} />
-          <Flex
-            justifyContent="space-between"
-            alignItems="center"
           >
-            <Button
-              type="submit"
-              disabled={!isAccountsUnlocked || disabled || isApproved}
-              width={1}
-            >
-              Approve
-            </Button>
-            <Box p={2} />
-            <Button
-              type="submit"
-              disabled={!isAccountsUnlocked || disabled || !isApproved}
-              width={1}
-            >
-              Deposit
-            </Button>
-
-          </Flex>
-        </Form>
-      </Box>
-    </Box>
+            Approve
+          </Button>
+          <Box p={2} />
+          <Button
+            type="submit"
+            disabled={!isAccountsUnlocked || disabled || !isApproved}
+            width={1}
+          >
+            Deposit
+          </Button>
+        </Flex>
+      </Form>
+    </>
   )
 }
