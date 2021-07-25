@@ -28,7 +28,7 @@ export const RenFaucet: FC<RenFaucetProps> = ({
       width={1}
       onClick={handleClick}
     >
-      Get REN
+      Request assets
     </Button>
   )
 }

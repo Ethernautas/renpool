@@ -103,7 +103,7 @@ export const RenPool = (): JSX.Element => {
           justifyContent="space-between"
         >
           <Text>Total staked: {parseInt(formatUnits(totalPooled, DECIMALS), 10)}</Text>
-          <Text>Pool is locked: ?</Text>
+          <Text>Pool is full: ?</Text>
         </Flex>
         <Form
           onSubmit={(e: FormEvent<HTMLFormElement>) => {
@@ -119,6 +119,7 @@ export const RenPool = (): JSX.Element => {
           />
           <Box p={2} />
           <Button
+            variant={isApproved ? 'success' : ''}
             type="submit"
             disabled={!isAccountsUnlocked || disabled}
             width={1}

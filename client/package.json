@@ -34,6 +34,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "setEnv:dev": "cp .env.dev .env",
+    "setEnv:kovan": "cp .env.kovan .env",
     "deploy": "yarn run build && cp ./_redirects ./build && netlify deploy --dir build --prod"
   },
   "eslintConfig": {

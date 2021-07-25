@@ -7,7 +7,7 @@ import { RenFaucet } from '../RenFaucet'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
-export const FAQs = (): JSX.Element => {
+export const HowItWorks = (): JSX.Element => {
   const { chainId, account } = useActiveWeb3React()
   const renToken = useContract(CONTRACT_NAMES.RenToken)
 
@@ -39,7 +39,7 @@ export const FAQs = (): JSX.Element => {
         <Text.p>
           4. Enter the amount of REN you would like to deposit in the form above and hit the <Text.span fontWeight="bold">Approve</Text.span> button (this is only required for the first time).
           After the transaction is approved, you will be able to <Text.span fontWeight="bold">Deposit</Text.span> the desired amount of REN until the 100_000 target is reached.
-          Once that happens the pool will be locked and the REN tokens will be transaferred to the REN protocol to spin up a new Dark Node instance.
+          Once the pool is full the REN tokens will be transaferred to the REN protocol to spin up a new Dark Node instance.
           {/* You can find more info on how the Dark node is setup in the following link <a href="">TODO</a>. */}
         </Text.p>
         <Text.p></Text.p>

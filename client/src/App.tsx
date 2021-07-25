@@ -1,11 +1,10 @@
 import React from 'react'
 import { Flash, Box } from 'rimble-ui'
-import './App.css'
 import { NETWORKS } from './constants'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
 import { RenPool } from './components/RenPool'
-import { FAQs } from './components/FAQs'
+import { HowItWorks } from './components/HowItWorks'
 import { Footer } from './components/Footer'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
@@ -32,7 +31,7 @@ export const App = (): JSX.Element => {
         )}
         <RenPool />
         <Box p={3} />
-        <FAQs />
+        <HowItWorks />
         <Footer />
       </div>
     </>
