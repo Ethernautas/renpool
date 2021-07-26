@@ -5,6 +5,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { CONTRACT_NAMES } from '../constants'
 import { useContract } from './useContract'
 
+// Try to move this to useRenToken
 export const useRenBalance = (account?: string): BigNumber => {
   const { library } = useWeb3React<Web3Provider>() // MetaMask / injected
 
@@ -29,6 +30,7 @@ export const useRenBalance = (account?: string): BigNumber => {
       console.log('Transfer|sent', { from, to, amount, event })
       query()
     })
+
     const toMe = renToken.filters.Transfer(null, account)
     library.on(toMe, (from, to, amount, event) => {
       console.log('Transfer|received', { from, to, amount, event })
