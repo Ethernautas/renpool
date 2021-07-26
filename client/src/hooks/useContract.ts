@@ -9,25 +9,7 @@ const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
 export const useContract = (contractName: keyof typeof CONTRACT_NAMES): Contract | null => {
   const { connector, library, chainId, account } = useActiveWeb3React()
-  // console.log({ library, chainId })
   const [contract, setContract] = useState<Contract>()
-
-
-  // const [contract, setContract] = useState()
-  // const [count, setCount] = useState()
-
-  // function to get current count and update UI
-  // const updateCount = async () => {
-  //   const newCount = await contract.current.getCount()
-  //   setCount(newCount.toString())
-  // }
-
-  // function to invoke a mutating method on our contract
-  // const increment = async () => {
-  //   const tx = await contract.current.increment()
-  //   await tx.wait() // wait for mining
-  //   updateCount() // update count on UI
-  // }
 
   useEffect(() => {
     const load = (): Contract => {

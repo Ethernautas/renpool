@@ -5,13 +5,15 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { CONTRACT_NAMES } from '../constants'
 import { useContract } from './useContract'
 
-export const useRenBalance = (): BigNumber => {
-  const { account, library } = useWeb3React<Web3Provider>()
+export const useRenBalance = (account?: string): BigNumber => {
+  const { library } = useWeb3React<Web3Provider>() // MetaMask / injected
+
   const renToken = useContract(CONTRACT_NAMES.RenToken)
+
   const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0))
 
   useEffect(() => {
-    if (library == null || renToken == null) return
+    if (library == null || renToken == null || account == null) return
 
     const query = async () => {
       const _balance: BigNumber = await renToken.balanceOf(account, { gasLimit: 60000 })
@@ -38,7 +40,7 @@ export const useRenBalance = (): BigNumber => {
       library.removeAllListeners(toMe)
       library.removeAllListeners(fromMe)
     }
-  }, [renToken])
+  }, [library, renToken, account])
 
   return balance
 }

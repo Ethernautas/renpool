@@ -16,7 +16,7 @@ export const Stake = (): JSX.Element => {
   const { account } = useActiveWeb3React()
   const renToken = useContract(CONTRACT_NAMES.RenToken)
   const renPool = useContract(CONTRACT_NAMES.RenPool)
-  const balance = useRenBalance()
+  const balance = useRenBalance(account)
 
   const [totalPooled, setTotalPooled] = useState<BigNumber>(BigNumber.from(0))
   const [isLocked, setIsLocked] = useState<boolean>(false)
