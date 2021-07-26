@@ -7,7 +7,7 @@ import { RenFaucet } from '../RenFaucet'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
-export const HowItWorks = (): JSX.Element => {
+export const Instructions = (): JSX.Element => {
   const { chainId, account } = useActiveWeb3React()
   const renToken = useContract(CONTRACT_NAMES.RenToken)
 

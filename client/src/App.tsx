@@ -4,7 +4,8 @@ import { NETWORKS } from './constants'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
 import { Stake } from './components/Stake'
-import { HowItWorks } from './components/HowItWorks'
+import { Withdraw } from './components/Withdraw'
+import { Instructions } from './components/Instructions'
 import { Footer } from './components/Footer'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
@@ -43,10 +44,19 @@ export const App = (): JSX.Element => {
 
         <Box p={4} />
         <Box>
-          <Heading.h3 textAlign="center">How it works</Heading.h3>
+          <Heading.h3 textAlign="center">Withdraw Ren</Heading.h3>
           <Box p={2} />
           <Box bg="white" p={3}>
-            <HowItWorks />
+            <Withdraw />
+          </Box>
+        </Box>
+
+        <Box p={4} />
+        <Box>
+          <Heading.h3 textAlign="center">Instructions</Heading.h3>
+          <Box p={2} />
+          <Box bg="white" p={3}>
+            <Instructions />
           </Box>
         </Box>
 

@@ -93,7 +93,7 @@ def withdraw(_amount: uint256):
     addrBalance: uint256 = self.balances[addr]
     now: uint256 = block.timestamp
 
-    assert addrBalance > 0 and addrBalance <= _amount, "Insufficient funds"
+    assert addrBalance > 0 and addrBalance >= _amount, "Insufficient funds"
     assert not self.isLocked, "Funds are locked"
 
     self.renToken.transfer(addr, _amount)

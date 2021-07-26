@@ -139,8 +139,8 @@ export const Stake = (): JSX.Element => {
         <Input
           type="number"
           value={input}
-          width={1}
           disabled={!isAccountsUnlocked || disabled}
+          width={1}
           onChange={handleChange}
         />
         <Box p={2} />
@@ -153,7 +153,7 @@ export const Stake = (): JSX.Element => {
             disabled={!isAccountsUnlocked || disabled || isApproved}
             width={1}
           >
-                Approve
+            Approve
           </Button>
           <Box p={2} />
           <Button

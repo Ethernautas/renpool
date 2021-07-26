@@ -11,7 +11,7 @@ import { shortAccount } from '../../utils/shortAccount'
 
 export const Wallet = (): JSX.Element => {
   const { active, error, account, activate } = useWeb3React<Web3Provider>() // MetaMask / injected
-  const balance = useRenBalance()
+  const balance = useRenBalance(account)
 
   useEffect(() => {
     if (!!error) {
