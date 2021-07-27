@@ -1,17 +1,18 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useWeb3React } from '@web3-react/core'
 import { Web3Provider } from '@ethersproject/providers'
 import { formatUnits } from '@ethersproject/units'
 import { Flex, MetaMaskButton, Text, Pill, Box } from 'rimble-ui'
 import { DECIMALS } from '../../constants'
 import { injected } from '../../connectors'
-import { useRenBalance } from '../../hooks/useRenBalance'
+import { RenTokenContext } from '../../context/RenTokenProvider'
 import { getErrorMessage } from '../../utils/getErrorMessage'
 import { shortAccount } from '../../utils/shortAccount'
 
 export const Wallet = (): JSX.Element => {
   const { active, error, account, activate } = useWeb3React<Web3Provider>() // MetaMask / injected
-  const balance = useRenBalance(account)
+
+  const { accountBalance } = useContext(RenTokenContext)
 
   useEffect(() => {
     if (!!error) {
@@ -39,7 +40,7 @@ export const Wallet = (): JSX.Element => {
       justifyContent="space-between"
       alignItems="center"
     >
-      <Text>{parseFloat(formatUnits(balance, DECIMALS))} REN</Text>
+      <Text>{parseFloat(formatUnits(accountBalance, DECIMALS))} REN</Text>
       <Box p={2} />
       <Pill>{shortAccount(account)}</Pill>
     </Flex>

@@ -17,7 +17,9 @@ import { NETWORK_CONTEXT_NAME } from '../../constants'
 // before falling back to a network connection. Alternatively use useWeb3Injected
 // for an injected web3 provider or useWeb3Network for a network provider
 // such as Infura or a private node.
-export const Web3ReactManager = ({ children }: { children: JSX.Element }): JSX.Element => {
+export const Web3ReactManager = (
+  { children }: { children: JSX.Element },
+): JSX.Element => {
   const { active } = useWeb3React()
   const { active: networkActive, error: networkError, activate: activateNetwork } = useWeb3React(NETWORK_CONTEXT_NAME)
 

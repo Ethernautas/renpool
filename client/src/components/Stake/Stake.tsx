@@ -1,52 +1,39 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react'
+import React, { useContext, useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
 import { Text, Flex, Box, Form, Input, Button } from 'rimble-ui'
-import { CONTRACT_NAMES, MAX_UINT256, DECIMALS } from '../../constants'
+import { MAX_UINT256, DECIMALS } from '../../constants'
+import { RenTokenContext } from '../../context/RenTokenProvider'
+import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
-import { useContract } from '../../hooks/useContract'
-import { useRenBalance } from '../../hooks/useRenBalance'
 
 enum Actions {
-  approve = 'approve',
-  deposit = 'deposit',
+  APPROVE = 'APPROVE',
+  DEPOSIT = 'DEPOSIT',
 }
 
 export const Stake = (): JSX.Element => {
   const { account } = useActiveWeb3React()
-  const renToken = useContract(CONTRACT_NAMES.RenToken)
-  const renPool = useContract(CONTRACT_NAMES.RenPool)
-  const balance = useRenBalance(account)
 
-  const [totalPooled, setTotalPooled] = useState<BigNumber>(BigNumber.from(0))
-  const [isLocked, setIsLocked] = useState<boolean>(false)
+  const { renToken, accountBalance } = useContext(RenTokenContext)
+  const {
+    renPool,
+    totalPooled,
+    isLocked,
+    refetchTotalPooled,
+    refetchIsLocked,
+    refetchAccountStaked,
+  } = useContext(RenPoolContext)
+
   const [isApproved, setIsApproved] = useState(false)
   const [input, setInput] = useState<string>('0')
   const [disabled, setDisabled] = useState(false)
 
-  // Query totalPooled once renPool contract is ready
-  useEffect(() => {
-    if (renPool != null) {
-      renPool.totalPooled({ gasLimit: 60000 })
-        .then((_totalPooled: BigNumber) => { setTotalPooled(_totalPooled) })
-        .catch((e: Error) => { alert(`Error while trying to query totalPooled ${JSON.stringify(e, null, 2)}`) })
-    }
-  }, [renPool])
-
-  // Query isLocked once renPool contract is ready
-  useEffect(() => {
-    if (renPool != null) {
-      renPool.isLocked({ gasLimit: 60000 })
-        .then((_isLocked: boolean) => { setIsLocked(_isLocked) })
-        .catch((e: Error) => { alert(`Error while trying to query isLocked ${JSON.stringify(e, null, 2)}`) })
-    }
-  }, [renPool])
-
   useEffect(() => {
     if (renToken != null) {
       checkForApproval(BigNumber.from(1))
-        .then((_isApproved: boolean) => { console.log('IS APP', _isApproved); setIsApproved(_isApproved) })
-        .catch((e: Error) => { alert(`Error while trying to check for approval ${JSON.stringify(e, null, 2)}`) })
+        .then((_isApproved: boolean) => { setIsApproved(_isApproved) })
+        .catch((e: Error) => { alert(`Error checking for approval ${JSON.stringify(e, null, 2)}`) })
     }
   }, [renToken])
 
@@ -75,7 +62,7 @@ export const Stake = (): JSX.Element => {
 
     let _input
     try {
-      _input = BigNumber.from(parseUnits(input, DECIMALS))
+      _input = BigNumber.from(parseUnits(input, DECIMALS)) // input * 10^18
     } catch (e) {
       _input = BigNumber.from(0)
     }
@@ -86,20 +73,20 @@ export const Stake = (): JSX.Element => {
       return
     }
 
-    if (_input.gt(balance)) {
-      alert(`Insuficient balance.\nYou have ${parseUnits(balance.toString(), DECIMALS)} REN.`)
+    if (_input.gt(accountBalance)) {
+      alert(`Insuficient balance.\nYou have ${parseInt(formatUnits(accountBalance.toString(), DECIMALS), 10)} REN.`)
       setDisabled(false)
       return
     }
 
-    if (action === Actions.approve) {
+    if (action === Actions.APPROVE) {
       const tx = await renToken.approve(renPool.address, MAX_UINT256)
       await tx.wait() // wait for mining
       const _isApproved = await checkForApproval(_input)
       setIsApproved(_isApproved)
     }
 
-    if (action === Actions.deposit) {
+    if (action === Actions.DEPOSIT) {
       if (!isApproved) {
         alert('Please, approve the transaction first.',)
         setDisabled(false)
@@ -109,8 +96,9 @@ export const Stake = (): JSX.Element => {
       try {
         const tx = await renPool.deposit(_input, { gasLimit: 200000 })
         await tx.wait() // wait for mining
-        const _totalPooled: BigNumber = await renPool.totalPooled({ gasLimit: 60000 })
-        setTotalPooled(BigNumber.from(_totalPooled))
+        await refetchTotalPooled()
+        await refetchIsLocked()
+        await refetchAccountStaked()
         setInput('0')
       } catch (e) {
         alert(`Could not deposit, ${JSON.stringify(e, null, 2)}`)
@@ -129,11 +117,11 @@ export const Stake = (): JSX.Element => {
         justifyContent="space-between"
       >
         <Text>Total staked: {parseInt(formatUnits(totalPooled, DECIMALS), 10)} REN</Text>
-        <Text>Pool is full: {isLocked.toString()}</Text>
+        <Text>Pool is locked: {isLocked.toString()}</Text>
       </Flex>
       <Form
         onSubmit={(e: FormEvent<HTMLFormElement>) => {
-          handleSubmit(e, isApproved ? Actions.deposit : Actions.approve)
+          handleSubmit(e, isApproved ? Actions.DEPOSIT : Actions.APPROVE)
         }}
       >
         <Input
@@ -144,26 +132,13 @@ export const Stake = (): JSX.Element => {
           onChange={handleChange}
         />
         <Box p={2} />
-        <Flex
-          justifyContent="space-between"
-          alignItems="center"
+        <Button
+          type="submit"
+          disabled={!isAccountsUnlocked || disabled}
+          width={1}
         >
-          <Button
-            type="submit"
-            disabled={!isAccountsUnlocked || disabled || isApproved}
-            width={1}
-          >
-            Approve
-          </Button>
-          <Box p={2} />
-          <Button
-            type="submit"
-            disabled={!isAccountsUnlocked || disabled || !isApproved}
-            width={1}
-          >
-            Deposit
-          </Button>
-        </Flex>
+          {isApproved ? 'Deposit' : 'Approve'}
+        </Button>
       </Form>
     </>
   )
