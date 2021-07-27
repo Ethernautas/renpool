@@ -127,14 +127,14 @@ export const Stake = (): JSX.Element => {
         <Input
           type="number"
           value={input}
-          disabled={!isAccountsUnlocked || disabled}
+          disabled={!isAccountsUnlocked || disabled || isLocked}
           width={1}
           onChange={handleChange}
         />
         <Box p={2} />
         <Button
           type="submit"
-          disabled={!isAccountsUnlocked || disabled}
+          disabled={!isAccountsUnlocked || disabled || isLocked}
           width={1}
         >
           {isApproved ? 'Deposit' : 'Approve'}

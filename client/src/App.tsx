@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Flash, Flex, Box, Heading, Link } from 'rimble-ui'
 import { NETWORKS } from './constants'
+import { RenPoolContext } from './context/RenPoolProvider'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
 import { Stake } from './components/Stake'
@@ -17,6 +18,8 @@ enum Views {
 
 export const App = (): JSX.Element => {
   const { chainId, account } = useActiveWeb3React()
+
+  const { isLocked } = useContext(RenPoolContext)
 
   const [view, setView] = useState<Views>(Views.STAKE)
 
@@ -40,6 +43,12 @@ export const App = (): JSX.Element => {
           </Flash>
         )}
 
+        {isLocked && (
+          <Flash my={3} variant="success">
+            The pool is locked
+          </Flash>
+        )}
+
         <Box p={2} />
 
         {view === Views.STAKE && (
@@ -49,7 +58,7 @@ export const App = (): JSX.Element => {
             <Box bg="white" p={3}>
               <Stake />
             </Box>
-            <Box p={1} />
+            <Box p={2} />
             <Flex justifyContent="center" alignItems="center">
               <Link
                 href=""
@@ -58,7 +67,7 @@ export const App = (): JSX.Element => {
                   setView(Views.WITHDRAW)
                 }}
               >
-              Withdraw
+                Withdraw
               </Link>
             </Flex>
           </Box>
@@ -71,7 +80,7 @@ export const App = (): JSX.Element => {
             <Box bg="white" p={3}>
               <Withdraw />
             </Box>
-            <Box p={1} />
+            <Box p={2} />
             <Flex justifyContent="center" alignItems="center">
               <Link
                 href=""
@@ -80,7 +89,7 @@ export const App = (): JSX.Element => {
                   setView(Views.STAKE)
                 }}
               >
-              Stake
+                Stake
               </Link>
             </Flex>
           </Box>
