@@ -8,6 +8,7 @@ import { Header } from './components/Header'
 import { Stats } from './components/Stats'
 import { Stake } from './components/Stake'
 import { Withdraw } from './components/Withdraw'
+import { Addresses } from './components/Addresses'
 import { Instructions } from './components/Instructions'
 import { Footer } from './components/Footer'
 
@@ -27,6 +28,7 @@ export const App = (): JSX.Element => {
 
   const isAccountsUnlocked = account != null
   const wrongChain = chainId != parseInt(CHAIN_ID, 10)
+  const stakeView = view === Views.STAKE
 
   return (
     <>
@@ -53,51 +55,26 @@ export const App = (): JSX.Element => {
 
         <Box p={2} />
 
-        {view === Views.STAKE && (
-          <Box>
-            <Heading.h3 textAlign="center">Stake Ren</Heading.h3>
-            <Box p={2} />
-            <Box bg="white" p={3}>
-              <Stake />
-            </Box>
-            <Box p={2} />
-            <Flex justifyContent="center" alignItems="center">
-              <Link
-                href=""
-                {...linkTheme}
-                onClick={(e: React.MouseEvent<HTMLElement>) => {
-                  e.preventDefault()
-                  setView(Views.WITHDRAW)
-                }}
-              >
-                Withdraw
-              </Link>
-            </Flex>
+        <Box>
+          <Heading.h3 textAlign="center">{stakeView ? 'Stake' : 'Withdraw'} Ren</Heading.h3>
+          <Box p={2} />
+          <Box bg="white" p={3}>
+            {stakeView ? <Stake /> : <Withdraw />}
           </Box>
-        )}
-
-        {view === Views.WITHDRAW && (
-          <Box>
-            <Heading.h3 textAlign="center">Withdraw Ren</Heading.h3>
-            <Box p={2} />
-            <Box bg="white" p={3}>
-              <Withdraw />
-            </Box>
-            <Box p={2} />
-            <Flex justifyContent="center" alignItems="center">
-              <Link
-                href=""
-                {...linkTheme}
-                onClick={(e: React.MouseEvent<HTMLElement>) => {
-                  e.preventDefault()
-                  setView(Views.STAKE)
-                }}
-              >
-                Stake
-              </Link>
-            </Flex>
-          </Box>
-        )}
+          <Box p={2} />
+          <Flex justifyContent="center" alignItems="center">
+            <Link
+              href=""
+              {...linkTheme}
+              onClick={(e: React.MouseEvent<HTMLElement>) => {
+                e.preventDefault()
+                setView(stakeView ? Views.WITHDRAW : Views.STAKE)
+              }}
+            >
+              Switch to {stakeView ? 'Withdraw' : 'Stake'}
+            </Link>
+          </Flex>
+        </Box>
 
         <Box p={2} />
         <Box>
@@ -107,6 +84,17 @@ export const App = (): JSX.Element => {
           <Box p={2} />
           <Box bg="white" p={3} py={1}>
             <Stats />
+          </Box>
+        </Box>
+
+        <Box p={3} />
+        <Box>
+          <Box px={3}>
+            <Heading.h4>Contract Addresses</Heading.h4>
+          </Box>
+          <Box p={2} />
+          <Box bg="white" p={3} py={1}>
+            <Addresses />
           </Box>
         </Box>
 

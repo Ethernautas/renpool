@@ -1,23 +1,20 @@
 import React from 'react'
 import { Text, Link } from 'rimble-ui'
-import { NETWORKS, CONTRACT_NAMES, FAUCETS, ETHERSCAN, TARGET } from '../../constants'
+import { NETWORKS, FAUCETS, TARGET } from '../../constants'
 import { linkTheme } from '../../theme'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
-import { useContract } from '../../hooks/useContract'
 import { RenFaucet } from '../RenFaucet'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
 export const Instructions = (): JSX.Element => {
   const { chainId, account } = useActiveWeb3React()
-  const renToken = useContract(CONTRACT_NAMES.RenToken)
 
   const isAccountsUnlocked = account != null
   const wrongChain = chainId != parseInt(CHAIN_ID, 10)
 
   const networkName = NETWORKS[CHAIN_ID]
   const faucet = FAUCETS[CHAIN_ID]
-  const etherscan = `${ETHERSCAN[CHAIN_ID]}${renToken?.address || ''}`
 
   return (
     <>
@@ -31,7 +28,7 @@ export const Instructions = (): JSX.Element => {
       <Text.p>
           3. Get 1000 REN tokens by pressing the button below.
           To verify that the tokens are in your wallet, switch to the <Text.span fontWeight="bold">Assets</Text.span> tab in your MetaMask and press the <Text.span fontWeight="bold">Add Tokens</Text.span> button.
-          Paste the address of the REN token contract from <Link target="blank" href={etherscan} {...linkTheme}>here</Link>.
+          Paste the address of the RenToken contract above.
       </Text.p>
       <RenFaucet disabled={!isAccountsUnlocked || wrongChain} />
       <Text.p>
