@@ -1,7 +1,7 @@
 import React, { useContext, useState, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
-import { Text, Flex, Box, Form, Input, Button } from 'rimble-ui'
+import { Box, Form, Input, Button } from 'rimble-ui'
 import { DECIMALS } from '../../constants'
 import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
@@ -68,32 +68,25 @@ export const Withdraw = (): JSX.Element => {
   const isAccountsUnlocked = account != null
 
   return (
-    <>
-      <Flex
-        alignItems="center"
-        justifyContent="space-between"
+    <Form
+      onSubmit={(e: FormEvent<HTMLFormElement>) => { handleSubmit(e) }}
+    >
+      <Input
+        type="text"
+        value={input}
+        disabled={!isAccountsUnlocked || disabled || isLocked}
+        width={1}
+        onChange={handleChange}
+      />
+      <Box p={2} />
+      <Button
+        type="submit"
+        variant="danger"
+        disabled={!isAccountsUnlocked || disabled || isLocked}
+        width={1}
       >
-        <Text>Balance: {parseInt(formatUnits(accountStaked, DECIMALS), 10)} REN</Text>
-      </Flex>
-      <Form
-        onSubmit={(e: FormEvent<HTMLFormElement>) => { handleSubmit(e) }}
-      >
-        <Input
-          type="number"
-          value={input}
-          disabled={!isAccountsUnlocked || disabled || isLocked}
-          width={1}
-          onChange={handleChange}
-        />
-        <Box p={2} />
-        <Button
-          type="submit"
-          disabled={!isAccountsUnlocked || disabled || isLocked}
-          width={1}
-        >
-          Withdraw
-        </Button>
-      </Form>
-    </>
+        Withdraw
+      </Button>
+    </Form>
   )
 }

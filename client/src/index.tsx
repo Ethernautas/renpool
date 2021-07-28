@@ -2,7 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Web3ReactProvider } from '@web3-react/core'
 import { Web3Provider } from '@ethersproject/providers'
-import { ThemeProvider, theme, BaseStyles } from 'rimble-ui'
+import { ThemeProvider } from 'styled-components'
+import { BaseStyles } from 'rimble-ui'
+import { theme } from './theme'
 import { Web3ProviderNetwork } from './context/Web3ProviderNetwork'
 import { RenTokenProvider } from './context/RenTokenProvider'
 import { RenPoolProvider } from './context/RenPoolProvider'
@@ -23,14 +25,7 @@ if (typeof window !== 'undefined' && !!window.ethereum) {
 
 ReactDOM.render(
   <React.StrictMode>
-    <ThemeProvider
-      theme={Object.assign({}, theme, {
-        colors: {
-          ...theme.colors, // keeps existing colors
-          primary: '#3385ff' // sets primary color
-        },
-      })}
-    >
+    <ThemeProvider theme={theme}>
       <BaseStyles>
         <Web3ReactProvider getLibrary={getLibrary}>
           <Web3ProviderNetwork getLibrary={getLibrary}>

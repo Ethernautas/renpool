@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
-import { Text, Flex, Box, Form, Input, Button } from 'rimble-ui'
+import { Box, Form, Input, Button } from 'rimble-ui'
 import { MAX_UINT256, DECIMALS } from '../../constants'
 import { RenTokenContext } from '../../context/RenTokenProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
@@ -18,7 +18,6 @@ export const Stake = (): JSX.Element => {
   const { renToken, accountBalance } = useContext(RenTokenContext)
   const {
     renPool,
-    totalPooled,
     isLocked,
     refetchTotalPooled,
     refetchIsLocked,
@@ -30,7 +29,7 @@ export const Stake = (): JSX.Element => {
   const [disabled, setDisabled] = useState(false)
 
   useEffect(() => {
-    if (renToken != null) {
+    if (renToken != null && account != null) {
       checkForApproval(BigNumber.from(1))
         .then((_isApproved: boolean) => { setIsApproved(_isApproved) })
         .catch((e: Error) => { alert(`Error checking for approval ${JSON.stringify(e, null, 2)}`) })
@@ -111,35 +110,27 @@ export const Stake = (): JSX.Element => {
   const isAccountsUnlocked = account != null
 
   return (
-    <>
-      <Flex
-        alignItems="center"
-        justifyContent="space-between"
+    <Form
+      onSubmit={(e: FormEvent<HTMLFormElement>) => {
+        handleSubmit(e, isApproved ? Actions.DEPOSIT : Actions.APPROVE)
+      }}
+    >
+      <Input
+        type="text"
+        value={input}
+        disabled={!isAccountsUnlocked || disabled || isLocked}
+        width={1}
+        onChange={handleChange}
+      />
+      <Box p={2} />
+      <Button
+        type="submit"
+        variant={isApproved ? 'success' : ''}
+        disabled={!isAccountsUnlocked || disabled || isLocked}
+        width={1}
       >
-        <Text>Total staked: {parseInt(formatUnits(totalPooled, DECIMALS), 10)} REN</Text>
-        <Text>Pool is locked: {isLocked.toString()}</Text>
-      </Flex>
-      <Form
-        onSubmit={(e: FormEvent<HTMLFormElement>) => {
-          handleSubmit(e, isApproved ? Actions.DEPOSIT : Actions.APPROVE)
-        }}
-      >
-        <Input
-          type="number"
-          value={input}
-          disabled={!isAccountsUnlocked || disabled || isLocked}
-          width={1}
-          onChange={handleChange}
-        />
-        <Box p={2} />
-        <Button
-          type="submit"
-          disabled={!isAccountsUnlocked || disabled || isLocked}
-          width={1}
-        >
-          {isApproved ? 'Deposit' : 'Approve'}
-        </Button>
-      </Form>
-    </>
+        {isApproved ? 'Deposit' : 'Approve'}
+      </Button>
+    </Form>
   )
 }

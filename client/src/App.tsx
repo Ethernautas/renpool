@@ -1,9 +1,11 @@
 import React, { useContext, useState } from 'react'
 import { Flash, Flex, Box, Heading, Link } from 'rimble-ui'
 import { NETWORKS } from './constants'
+import { linkTheme } from './theme'
 import { RenPoolContext } from './context/RenPoolProvider'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
+import { Stats } from './components/Stats'
 import { Stake } from './components/Stake'
 import { Withdraw } from './components/Withdraw'
 import { Instructions } from './components/Instructions'
@@ -62,6 +64,7 @@ export const App = (): JSX.Element => {
             <Flex justifyContent="center" alignItems="center">
               <Link
                 href=""
+                {...linkTheme}
                 onClick={(e: React.MouseEvent<HTMLElement>) => {
                   e.preventDefault()
                   setView(Views.WITHDRAW)
@@ -84,6 +87,7 @@ export const App = (): JSX.Element => {
             <Flex justifyContent="center" alignItems="center">
               <Link
                 href=""
+                {...linkTheme}
                 onClick={(e: React.MouseEvent<HTMLElement>) => {
                   e.preventDefault()
                   setView(Views.STAKE)
@@ -95,11 +99,24 @@ export const App = (): JSX.Element => {
           </Box>
         )}
 
-        <Box p={4} />
+        <Box p={2} />
         <Box>
-          <Heading.h3 textAlign="center">Instructions</Heading.h3>
+          <Box px={3}>
+            <Heading.h4>Stats</Heading.h4>
+          </Box>
           <Box p={2} />
-          <Box bg="white" p={3}>
+          <Box bg="white" p={3} py={1}>
+            <Stats />
+          </Box>
+        </Box>
+
+        <Box p={3} />
+        <Box>
+          <Box px={3}>
+            <Heading.h4>Instructions</Heading.h4>
+          </Box>
+          <Box p={2} />
+          <Box bg="white" p={3} py={1}>
             <Instructions />
           </Box>
         </Box>
