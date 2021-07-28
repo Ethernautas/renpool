@@ -12,7 +12,7 @@ enum Actions {
   DEPOSIT = 'DEPOSIT',
 }
 
-export const Stake = (): JSX.Element => {
+export const Deposit = (): JSX.Element => {
   const { account } = useActiveWeb3React()
 
   const { renToken, accountBalance } = useContext(RenTokenContext)
@@ -21,7 +21,7 @@ export const Stake = (): JSX.Element => {
     isLocked,
     refetchTotalPooled,
     refetchIsLocked,
-    refetchAccountStaked,
+    refetchAccountPooled,
   } = useContext(RenPoolContext)
 
   const [isApproved, setIsApproved] = useState(false)
@@ -97,7 +97,7 @@ export const Stake = (): JSX.Element => {
         await tx.wait() // wait for mining
         await refetchTotalPooled()
         await refetchIsLocked()
-        await refetchAccountStaked()
+        await refetchAccountPooled()
         setInput('0')
       } catch (e) {
         alert(`Could not deposit, ${JSON.stringify(e, null, 2)}`)

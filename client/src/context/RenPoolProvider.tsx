@@ -9,10 +9,10 @@ interface CtxValue {
   renPool: Contract | undefined
   totalPooled: BigNumber
   isLocked: boolean
-  accountStaked: BigNumber
+  accountPooled: BigNumber
   refetchTotalPooled: () => Promise<void>
   refetchIsLocked: () => Promise<void>
-  refetchAccountStaked: () => Promise<void>
+  refetchAccountPooled: () => Promise<void>
 }
 
 /**
@@ -25,10 +25,10 @@ const defaultValue: CtxValue = {
   renPool: undefined,
   totalPooled: BigNumber.from(0),
   isLocked: false,
-  accountStaked: BigNumber.from(0),
+  accountPooled: BigNumber.from(0),
   refetchTotalPooled: () => Promise.resolve(null),
   refetchIsLocked: () => Promise.resolve(null),
-  refetchAccountStaked: () => Promise.resolve(null),
+  refetchAccountPooled: () => Promise.resolve(null),
 }
 
 export const RenPoolContext = createContext<CtxValue>(defaultValue)
@@ -42,7 +42,7 @@ export const RenPoolProvider: FC = ({
 
   const [totalPooled, setTotalPooled] = useState<BigNumber>(BigNumber.from(0))
   const [isLocked, setIsLocked] = useState<boolean>(false)
-  const [accountStaked, setAccountStaked] = useState<BigNumber>(BigNumber.from(0))
+  const [accountPooled, setAccountPooled] = useState<BigNumber>(BigNumber.from(0))
 
   const getTotalPooled = async (): Promise<void> => {
     try {
@@ -65,7 +65,7 @@ export const RenPoolProvider: FC = ({
   const getBalanceOf = async (): Promise<void> => {
     try {
       const _staked: BigNumber = await renPool.balanceOf(account, { gasLimit: 60000 })
-      setAccountStaked(_staked)
+      setAccountPooled(_staked)
     } catch (e) {
       console.log(`Error querying balanceOf ${JSON.stringify(e, null, 2)}`)
     }
@@ -95,10 +95,10 @@ export const RenPoolProvider: FC = ({
         renPool,
         totalPooled,
         isLocked,
-        accountStaked,
+        accountPooled: accountPooled,
         refetchTotalPooled: getTotalPooled,
         refetchIsLocked: getIsLocked,
-        refetchAccountStaked: getBalanceOf,
+        refetchAccountPooled: getBalanceOf,
       }}
     >
       {children}

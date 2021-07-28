@@ -6,7 +6,7 @@ import { RenPoolContext } from './context/RenPoolProvider'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
 import { Stats } from './components/Stats'
-import { Stake } from './components/Stake'
+import { Deposit } from './components/Deposit'
 import { Withdraw } from './components/Withdraw'
 import { Addresses } from './components/Addresses'
 import { Instructions } from './components/Instructions'
@@ -15,7 +15,7 @@ import { Footer } from './components/Footer'
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
 enum Views {
-  STAKE = 'STAKE',
+  DEPOSIT = 'DEPOSIT',
   WITHDRAW = 'WITHDRAW',
 }
 
@@ -24,11 +24,11 @@ export const App = (): JSX.Element => {
 
   const { isLocked } = useContext(RenPoolContext)
 
-  const [view, setView] = useState<Views>(Views.STAKE)
+  const [view, setView] = useState<Views>(Views.DEPOSIT)
 
   const isAccountsUnlocked = account != null
   const wrongChain = chainId != parseInt(CHAIN_ID, 10)
-  const stakeView = view === Views.STAKE
+  const depositView = view === Views.DEPOSIT
 
   return (
     <>
@@ -62,9 +62,9 @@ export const App = (): JSX.Element => {
         <Box p={2} />
 
         <Box>
-          <Heading.h3 textAlign="center">{stakeView ? 'Stake' : 'Withdraw'} REN</Heading.h3>
+          <Heading.h3 textAlign="center">{depositView ? 'Deposit' : 'Withdraw'} REN</Heading.h3>
           <Box p={3}>
-            {stakeView ? <Stake /> : <Withdraw />}
+            {depositView ? <Deposit /> : <Withdraw />}
           </Box>
           <Box p={2} />
           <Flex justifyContent="center" alignItems="center">
@@ -73,10 +73,10 @@ export const App = (): JSX.Element => {
               {...linkTheme}
               onClick={(e: React.MouseEvent<HTMLElement>) => {
                 e.preventDefault()
-                setView(stakeView ? Views.WITHDRAW : Views.STAKE)
+                setView(depositView ? Views.WITHDRAW : Views.DEPOSIT)
               }}
             >
-              Switch to {stakeView ? 'Withdraw' : 'Stake'}
+              Switch to {depositView ? 'Withdraw' : 'Deposit'}
             </Link>
           </Flex>
         </Box>

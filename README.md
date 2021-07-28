@@ -224,3 +224,36 @@ Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channe
 5. REN token [https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38](https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38)
 6. REN token testnet addresses [https://renproject.github.io/contracts-ts/#/testnet](https://renproject.github.io/contracts-ts/#/testnet)
 7. [https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974](https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974)
+
+# How it works from renpool.io
+
+Get Access to Darknode Rewards without having to have 100k Ren or having to run a Darknode
+
+Create a Pool to Deposit Ren into and when it gets to 100k Ren, we will register the pool and run the darknode for you.
+
+Claim and Withdraw Rewards each Epoch. We do not have access to your rewards or your Ren.
+graph
+Withdrawing and Deregistering
+
+We have developed a solution that offers users to get access to their Ren before the pool is deregisered. You simply request a withdraw and if anyone wants to take your spot, they transfer Ren to your wallet and you swap your ownership of the pool to them. You are out and have your Ren, however you will be sacrificing the current epoch rewards as a penalty, which goes to the proud new owners.
+
+Once the pool collectively requests to withdraw more than 50K REN, Pool Owners can Deregister the Pool directly. This will initiate the Deregistering process within the Ren Protocol. Upon completion of the deregistration process, Pool Owners will be able to withdraw their credited Ren deposits.
+RISKS CAUTION
+Smart Contract Security
+
+Security is our number 1 focus, however RenPool is a project that is currently unaudited and therefore all users must proceed with caution knowing that funds might be lost if hacks are found. We have a test plan that runs through the scenarios and have been very patient developing the contracts, however we are only human. Our intention is to develop a system that works as designed and benefits the ecosystem as a whole. We strive to lower the barrier to entry for users to get access to darknodes while offering opportunities for flexible withdraws and ultimately increase the amount of nodes being run to further secure the Republic Protocol. As we raise funds, we will proceed with the proper audits.
+Darknode Operational Risks
+
+When RenPools are Registered and the Darknode is being run by the RenPool team, if for any reason the Darknode is not run properly funds are at risk of being slashed. If a slashing is occurred, there are plans in the future of using DAO funds collected by fees to insure the slashing. Until the nodes are decentralized and the DAO is setup, there are risks of being slashed if the nodes are not running effectively. Users can be rest assured, we have been running darknodes successfully for many months now. We plan on finding a solution that further decentralizes the running of the darknode. Users will still be able to request withdraws and if there is >50% in agreement, the darknode can be de-registered and users can withdraw their funds upon completion of the epochs per the Ren Protocol.
+Fees
+
+Keep in mind that Ethereum Gas Fees can fluctuate quite a bit and can be very costly. In order to keep the RenPool operational fees are required to be collected. You can view the Fee breakdown below. Fees are subject to change and eventually the rates could be controlled by a future DAO.
+Collected Fees FEES
+
+Understanding the Fees of the system.
+% of Ren Deposited into Pool
+
+When depositing tokens into a pool there is a X% fee that will be required to deposit tokens. The rate could eventually be controlled by a DAO; initially it will be set at 5%. To reach a 100k Ren deposited for registering the RenPool, 105k Ren will be required to be deposited.
+% of Rewards per Epoch
+
+Each epoch collects rewards for running the darknode. The rewards will be available to be withdrawn from the Ren Protocol to the RenPools by the Pool Owners minus X%; which could eventually be a parameter controlled by a DAO. Initially the rate will be set at 5%. For example, if $1,000 worth of rewards are collected by the Pool per epoch, $50 would be retained as fees to the RenPool contract.
