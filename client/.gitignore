@@ -15,7 +15,7 @@
 .DS_Store
 .env
 .env.kovan
-.env.development
+.env.dev
 
 npm-debug.log*
 yarn-debug.log*

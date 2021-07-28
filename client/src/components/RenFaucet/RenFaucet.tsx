@@ -1,7 +1,6 @@
-import React, { FC } from 'react'
+import React, { FC, useContext } from 'react'
 import { Button } from 'rimble-ui'
-import { CONTRACT_NAMES } from '../../constants'
-import { useContract } from '../../hooks/useContract'
+import { RenTokenContext } from '../../context/RenTokenProvider'
 
 export interface RenFaucetProps {
   disabled?: boolean
@@ -10,7 +9,7 @@ export interface RenFaucetProps {
 export const RenFaucet: FC<RenFaucetProps> = ({
   disabled = false,
 }): JSX.Element => {
-  const renToken = useContract(CONTRACT_NAMES.RenToken)
+  const { renToken } = useContext(RenTokenContext)
 
   const handleClick = async () => {
     try {
@@ -28,7 +27,7 @@ export const RenFaucet: FC<RenFaucetProps> = ({
       width={1}
       onClick={handleClick}
     >
-      Get REN
+      Request assets
     </Button>
   )
 }
