@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react'
-import { Flash, Flex, Box, Heading, Link } from 'rimble-ui'
+import { Flash, Flex, Box, Heading, Text, Link } from 'rimble-ui'
 import { NETWORKS } from './constants'
 import { linkTheme } from './theme'
 import { RenPoolContext } from './context/RenPoolProvider'
@@ -36,29 +36,34 @@ export const App = (): JSX.Element => {
 
       <div className="App">
         {!isAccountsUnlocked && (
-          <Flash my={3} variant="warning">
-            Please, connect with MetaMask
-          </Flash>
+          <Box p={3}>
+            <Flash my={3} variant="warning">
+              Please, connect with MetaMask
+            </Flash>
+          </Box>
         )}
 
         {wrongChain && (
-          <Flash my={3} variant="warning">
-            Please, switch network to {NETWORKS[CHAIN_ID]}
-          </Flash>
+          <Box p={3}>
+            <Flash my={3} variant="warning">
+              Please, switch network to <Text.span fontWeight={600}>{NETWORKS[CHAIN_ID]}</Text.span>
+            </Flash>
+          </Box>
         )}
 
         {isLocked && (
-          <Flash my={3} variant="success">
-            The pool is locked
-          </Flash>
+          <Box p={3}>
+            <Flash my={3} variant="success">
+              The pool is locked
+            </Flash>
+          </Box>
         )}
 
         <Box p={2} />
 
         <Box>
-          <Heading.h3 textAlign="center">{stakeView ? 'Stake' : 'Withdraw'} Ren</Heading.h3>
-          <Box p={2} />
-          <Box bg="white" p={3}>
+          <Heading.h3 textAlign="center">{stakeView ? 'Stake' : 'Withdraw'} REN</Heading.h3>
+          <Box p={3}>
             {stakeView ? <Stake /> : <Withdraw />}
           </Box>
           <Box p={2} />
@@ -76,35 +81,32 @@ export const App = (): JSX.Element => {
           </Flex>
         </Box>
 
-        <Box p={2} />
+        <Box p={3} />
         <Box>
           <Box px={3}>
             <Heading.h4>Stats</Heading.h4>
           </Box>
-          <Box p={2} />
-          <Box bg="white" p={3} py={1}>
+          <Box p={3} py={1}>
             <Stats />
           </Box>
         </Box>
 
-        <Box p={3} />
+        <Box p={2} />
         <Box>
           <Box px={3}>
             <Heading.h4>Contract Addresses</Heading.h4>
           </Box>
-          <Box p={2} />
-          <Box bg="white" p={3} py={1}>
+          <Box p={3} py={1}>
             <Addresses />
           </Box>
         </Box>
 
-        <Box p={3} />
+        <Box p={2} />
         <Box>
           <Box px={3}>
             <Heading.h4>Instructions</Heading.h4>
           </Box>
-          <Box p={2} />
-          <Box bg="white" p={3} py={1}>
+          <Box p={3} py={1}>
             <Instructions />
           </Box>
         </Box>
