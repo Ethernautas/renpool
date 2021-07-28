@@ -8,14 +8,14 @@ export const Stats = (): JSX.Element => {
   const {
     totalPooled,
     isLocked,
-    accountStaked
+    accountPooled,
   } = useContext(RenPoolContext)
 
   return (
     <>
       <Text.p>Total staked: {parseInt(formatUnits(totalPooled, DECIMALS), 10)} / {TARGET} REN</Text.p>
       <Text.p>Pool is locked: {isLocked.toString()}</Text.p>
-      <Text.p>Your staked balance: {parseInt(formatUnits(accountStaked, DECIMALS), 10)} REN</Text.p>
+      <Text.p>Your staked balance: {parseInt(formatUnits(accountPooled, DECIMALS), 10)} REN</Text.p>
     </>
   )
 }

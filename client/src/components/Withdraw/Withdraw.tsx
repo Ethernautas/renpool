@@ -12,9 +12,9 @@ export const Withdraw = (): JSX.Element => {
   const {
     renPool,
     isLocked,
-    accountStaked,
+    accountPooled,
     refetchTotalPooled,
-    refetchAccountStaked,
+    refetchAccountPooled,
   } = useContext(RenPoolContext)
 
   const [input, setInput] = useState<string>('0')
@@ -46,8 +46,8 @@ export const Withdraw = (): JSX.Element => {
       return
     }
 
-    if (_input.gt(accountStaked)) {
-      alert(`Insufficient balance.\nYou have deposited ${parseInt(formatUnits(accountStaked.toString(), DECIMALS), 10)} REN.`)
+    if (_input.gt(accountPooled)) {
+      alert(`Insufficient balance.\nYou have deposited ${parseInt(formatUnits(accountPooled.toString(), DECIMALS), 10)} REN.`)
       setDisabled(false)
       return
     }
@@ -56,7 +56,7 @@ export const Withdraw = (): JSX.Element => {
       const tx = await renPool.withdraw(_input, { gasLimit: 200000 })
       await tx.wait() // wait for mining
       await refetchTotalPooled()
-      await refetchAccountStaked()
+      await refetchAccountPooled()
       setInput('0')
     } catch (e) {
       alert(`Could not withdraw, ${JSON.stringify(e, null, 2)}`)
