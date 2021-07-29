@@ -1,18 +1,18 @@
-import React from 'react'
+import React, { FC } from 'react'
 import { Text, Link } from 'rimble-ui'
 import { NETWORKS, FAUCETS, TARGET } from '../../constants'
 import { linkTheme } from '../../theme'
-import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
 import { RenFaucet } from '../RenFaucet'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
-export const Instructions = (): JSX.Element => {
-  const { chainId, account } = useActiveWeb3React()
+export interface InstructionsProps {
+  disabled?: boolean
+}
 
-  const isAccountsUnlocked = account != null
-  const wrongChain = chainId != parseInt(CHAIN_ID, 10)
-
+export const Instructions: FC<InstructionsProps> = ({
+  disabled = false,
+}): JSX.Element => {
   const networkName = NETWORKS[CHAIN_ID]
   const faucet = FAUCETS[CHAIN_ID]
 
@@ -30,7 +30,7 @@ export const Instructions = (): JSX.Element => {
           To verify that the tokens are in your wallet, switch to the <Text.span fontWeight="bold">Assets</Text.span> tab in your MetaMask and press the <Text.span fontWeight="bold">Add Tokens</Text.span> button.
           Paste the address of the RenToken contract above.
       </Text.p>
-      <RenFaucet disabled={!isAccountsUnlocked || wrongChain} />
+      <RenFaucet disabled={disabled} />
       <Text.p>
           4. Enter the amount of REN you would like to deposit in the form above and hit the <Text.span fontWeight="bold">Approve</Text.span> button (this is only required for the first time).
           After the transaction is approved, you will be able to <Text.span fontWeight="bold">Deposit</Text.span> the desired amount of REN until the {TARGET} target is reached.

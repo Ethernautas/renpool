@@ -58,11 +58,20 @@ Verify that the ren pool balance has increased
 
 Install Netlify CLI: `npm install netlify-cli -g`.
 
-Then `yarn run deploy`.
+```bash
+>> yarn run setEnv:<TARGET_NETWORK>
+>> yarn run deploy
+```
 
 The app is deployed to [https://renpool.netlify.app/](https://renpool.netlify.app/)
 
 ## Deploy smart contract
+
+1. Get a funded wallet
+2. Set .env file pointing to the desired network
+3. run brownie console
+4. accounts.add('PRIVATE_KEY')
+5. renToken, renPool = run('deploy')
 
 [https://www.quicknode.com/guides/vyper/how-to-write-an-ethereum-smart-contract-using-vyper](https://www.quicknode.com/guides/vyper/how-to-write-an-ethereum-smart-contract-using-vyper)
 

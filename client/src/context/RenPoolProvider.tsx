@@ -45,6 +45,8 @@ export const RenPoolProvider: FC = ({
   const [accountPooled, setAccountPooled] = useState<BigNumber>(BigNumber.from(0))
 
   const getTotalPooled = async (): Promise<void> => {
+    if (renPool == null) return
+
     try {
       const _totalPooled: BigNumber = await renPool.totalPooled({ gasLimit: 60000 })
       setTotalPooled(BigNumber.from(_totalPooled))
@@ -54,6 +56,8 @@ export const RenPoolProvider: FC = ({
   }
 
   const getIsLocked = async (): Promise<void> => {
+    if (renPool == null) return
+
     try {
       const _isLocked: boolean = await renPool.isLocked({ gasLimit: 60000 })
       setIsLocked(_isLocked)
@@ -63,30 +67,20 @@ export const RenPoolProvider: FC = ({
   }
 
   const getBalanceOf = async (): Promise<void> => {
+    if (renPool == null) return
+
     try {
-      const _staked: BigNumber = await renPool.balanceOf(account, { gasLimit: 60000 })
-      setAccountPooled(_staked)
+      const _pooled: BigNumber = await renPool.balanceOf(account, { gasLimit: 60000 })
+      setAccountPooled(_pooled)
     } catch (e) {
       console.log(`Error querying balanceOf ${JSON.stringify(e, null, 2)}`)
     }
   }
 
   useEffect(() => {
-    if (renPool != null) {
-      getTotalPooled()
-    }
-  }, [renPool])
-
-  useEffect(() => {
-    if (renPool != null) {
-      getIsLocked()
-    }
-  }, [renPool])
-
-  useEffect(() => {
-    if (renPool != null) {
-      getBalanceOf()
-    }
+    getTotalPooled()
+    getIsLocked()
+    getBalanceOf()
   }, [renPool])
 
   return (
@@ -95,7 +89,7 @@ export const RenPoolProvider: FC = ({
         renPool,
         totalPooled,
         isLocked,
-        accountPooled: accountPooled,
+        accountPooled,
         refetchTotalPooled: getTotalPooled,
         refetchIsLocked: getIsLocked,
         refetchAccountPooled: getBalanceOf,

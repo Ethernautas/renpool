@@ -11,6 +11,9 @@ networks:
   kovan:
     cmd_settings:
       mnemonic: ${WALLET_MNEMONIC}
+  rinkeby:
+    cmd_settings:
+      mnemonic: ${WALLET_MNEMONIC}
 
 # enable output of development artifacts to load with react
 dev_deployment_artifacts: true
