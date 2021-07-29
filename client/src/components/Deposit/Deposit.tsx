@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, ChangeEvent, FormEvent } from 'react'
+import React, { FC, useContext, useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
 import { Box, Form, Input, Button } from 'rimble-ui'
@@ -12,13 +12,17 @@ enum Actions {
   DEPOSIT = 'DEPOSIT',
 }
 
-export const Deposit = (): JSX.Element => {
-  const { account } = useActiveWeb3React()
+export interface DepositProps {
+  disabled?: boolean
+}
 
+export const Deposit: FC<DepositProps> = ({
+  disabled: _disabled = false,
+}): JSX.Element => {
+  const { account } = useActiveWeb3React()
   const { renToken, accountBalance } = useContext(RenTokenContext)
   const {
     renPool,
-    isLocked,
     refetchTotalPooled,
     refetchIsLocked,
     refetchAccountPooled,
@@ -107,8 +111,6 @@ export const Deposit = (): JSX.Element => {
     setDisabled(false)
   }
 
-  const isAccountsUnlocked = account != null
-
   return (
     <Form
       onSubmit={(e: FormEvent<HTMLFormElement>) => {
@@ -118,7 +120,7 @@ export const Deposit = (): JSX.Element => {
       <Input
         type="text"
         value={input}
-        disabled={!isAccountsUnlocked || disabled || isLocked}
+        disabled={_disabled || disabled}
         width={1}
         onChange={handleChange}
       />
@@ -126,7 +128,7 @@ export const Deposit = (): JSX.Element => {
       <Button
         type="submit"
         variant={isApproved ? 'success' : ''}
-        disabled={!isAccountsUnlocked || disabled || isLocked}
+        disabled={_disabled || disabled}
         width={1}
       >
         {isApproved ? 'Deposit' : 'Approve'}

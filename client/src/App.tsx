@@ -21,14 +21,14 @@ enum Views {
 
 export const App = (): JSX.Element => {
   const { chainId, account } = useActiveWeb3React()
-
   const { isLocked } = useContext(RenPoolContext)
-
   const [view, setView] = useState<Views>(Views.DEPOSIT)
 
   const isAccountsUnlocked = account != null
   const wrongChain = chainId != parseInt(CHAIN_ID, 10)
+  const disabled = !isAccountsUnlocked || wrongChain || isLocked
   const depositView = view === Views.DEPOSIT
+  const View = depositView ? Deposit : Withdraw
 
   return (
     <>
@@ -64,7 +64,7 @@ export const App = (): JSX.Element => {
         <Box>
           <Heading.h3 textAlign="center">{depositView ? 'Deposit' : 'Withdraw'} REN</Heading.h3>
           <Box p={3}>
-            {depositView ? <Deposit /> : <Withdraw />}
+            <View disabled={disabled} />
           </Box>
           <Box p={2} />
           <Flex justifyContent="center" alignItems="center">
@@ -107,7 +107,7 @@ export const App = (): JSX.Element => {
             <Heading.h4>Instructions</Heading.h4>
           </Box>
           <Box p={3} py={1}>
-            <Instructions />
+            <Instructions disabled={disabled} />
           </Box>
         </Box>
 

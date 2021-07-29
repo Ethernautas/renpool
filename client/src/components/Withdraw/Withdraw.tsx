@@ -1,17 +1,19 @@
-import React, { useContext, useState, ChangeEvent, FormEvent } from 'react'
+import React, { FC, useContext, useState, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
 import { Box, Form, Input, Button } from 'rimble-ui'
 import { DECIMALS } from '../../constants'
 import { RenPoolContext } from '../../context/RenPoolProvider'
-import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
 
-export const Withdraw = (): JSX.Element => {
-  const { account } = useActiveWeb3React()
+export interface WithdrawProps {
+  disabled?: boolean
+}
 
+export const Withdraw: FC<WithdrawProps> = ({
+  disabled: _disabled = false,
+}): JSX.Element => {
   const {
     renPool,
-    isLocked,
     accountPooled,
     refetchTotalPooled,
     refetchAccountPooled,
@@ -65,8 +67,6 @@ export const Withdraw = (): JSX.Element => {
     setDisabled(false)
   }
 
-  const isAccountsUnlocked = account != null
-
   return (
     <Form
       onSubmit={(e: FormEvent<HTMLFormElement>) => { handleSubmit(e) }}
@@ -74,7 +74,7 @@ export const Withdraw = (): JSX.Element => {
       <Input
         type="text"
         value={input}
-        disabled={!isAccountsUnlocked || disabled || isLocked}
+        disabled={_disabled || disabled}
         width={1}
         onChange={handleChange}
       />
@@ -82,7 +82,7 @@ export const Withdraw = (): JSX.Element => {
       <Button
         type="submit"
         variant="danger"
-        disabled={!isAccountsUnlocked || disabled || isLocked}
+        disabled={_disabled || disabled}
         width={1}
       >
         Withdraw
