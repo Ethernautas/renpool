@@ -73,14 +73,14 @@ contract RenPool {
             require(withdrawRequests.length > 0);
 
             WithdrawRequest firstInLine = withdrawRequests[0];
-            if(amount == firstInLine.amount){
-                // The amount is exactly what the requester wants
-                balances[msg.sender] += amount;
-                balances[firstInLine.user] _= amount;
+            // For now, the user who wants to get in a locked pool has to
+            // replace exactly the first in lines
+            require(firstInLine.amount == msg.amount);
+            balances[msg.sender] += amount;
+            balances[firstInLine.user] -= amount;
 
-
-            }
-
+            // first in line withdraw funds
+            firstInLine.user.transfer(firstInLine.amount);
         }
 
 
