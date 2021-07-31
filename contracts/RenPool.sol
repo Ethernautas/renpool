@@ -54,36 +54,34 @@ contract RenPool {
         uint amount = msg.value;
         require (amount > 0, "Invalid ammount amount.");
         require (amount + totalPooled < target, "Amount surpasses pool target");
+        require(!isLocked);
 
+        balances[msg.sender] += amount;
+        totalPooled += amount;
 
-        if(!isLocked){
-            // If pool is not locked, funds are still necesarry so no need to worry about the withdraw queue
+        emit RenDeposited(msg.sender, amount);
 
-            balances[msg.sender] += amount;
-            totalPooled += amount;
-
-            emit RenDeposited(msg.sender, amount);
-
-            if(totalPooled == target){
-                _lockPool(); // Locking the pool is target is met
-            }
+        if(totalPooled == target){
+            _lockPool(); // Locking the pool is target is met
         }
-        else{
+
+    }
+
+    function fullfillWithdrawRequest(uint _withdrawId){
             // If pool is locked, look if there is a withdraw queue
+            require(isLocked);
             require(withdrawRequests.length > 0);
 
-            WithdrawRequest firstInLine = withdrawRequests[0];
-            // For now, the user who wants to get in a locked pool has to
-            // replace exactly the first in lines
-            require(firstInLine.amount == msg.amount);
+            WithdrawRequest withdrawRequest = withdrawRequests[_withdrawId];
+            require(withdrawRequest.amount == msg.amount);
             balances[msg.sender] += amount;
-            balances[firstInLine.user] -= amount;
+            balances[withdrawRequest.user] -= amount;
+
+
+            // removing the user in the queue
 
             // first in line withdraw funds
-            firstInLine.user.transfer(firstInLine.amount);
-        }
-
-
+            withdrawRequest.user.transfer(withdraw.amount);
 
     }
 
@@ -111,14 +109,14 @@ contract RenPool {
 
 
     // Function to remove element of array and changing the order accordingly
-    function _remove(WithdrawRequest index)  returns(WithdrawRequest[]) {
-        if (index >= array.length) return;
+    function _remove(uint index)  returns(WithdrawRequest[]) {
+        if (index >= withdrawRequests.length) return;
 
-        for (uint i = index; i<array.length-1; i++){
-            array[i] = array[i+1];
+        for (uint i = index; i<withdrawRequests.length-1; i++){
+            withdrawRequests[i] = withdrawRequests[i+1];
         }
-        array.length--;
-        return array;
+        withdrawRequests.length--;
+        return withdrawRequests;
     }
 
 }
