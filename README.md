@@ -8,21 +8,43 @@ Bringing community pools to the REN ecosystem
 - [https://eth-brownie.readthedocs.io/en/stable/install.html](https://eth-brownie.readthedocs.io/en/stable/install.html)
 - [https://www.youtube.com/watch?v=nkvIFE2QVp0](https://www.youtube.com/watch?v=nkvIFE2QVp0)
 
-2. Create a new file called `.env` from `.env.sample`. Add your Metamask mnemonic and Infura project id.
+2. Launch a python virtual env:
 
-3. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask.
+```bash
+>> python -m venv venv # create a new env called venv
+>> source venv/bin/activate # activate it
+>> deactivate # deactivate it once you are done
+```
+
+3. Install deps
+
+```bash
+>> pip install -r requirements.txt
+```
+
+4. Update requirements.txt
+
+In case you add some extra deps, please update requirements.txt
+
+```bash
+>> pip freeze > requirements.txt
+```
+
+5. Create a new file called `.env` from `.env.sample`. Add your Metamask mnemonic and Infura project id.
+
+6. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask.
 
 ```bash
 >> brownie console
 ```
 
-4. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
+7. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
 
 ```bash
 >> renToken, renPool = run('deploy')
 ```
 
-5. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
+8. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
 
 Get some ren tokens from the faucet
 ```bash
@@ -46,7 +68,7 @@ Verify that the ren pool balance has increased
 >> 100
 ```
 
-6. Running tests (open a new terminal).
+9. Running tests (open a new terminal).
 
 ```bash
 >> brownie test

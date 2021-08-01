@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.0.0/contracts/token/ERC20/IERC20.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
+// import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.0.0/contracts/token/ERC20/IERC20.sol";
 
 contract RenPool {
     ERC20 public renToken;
@@ -28,20 +29,18 @@ contract RenPool {
     event PoolLocked();
     event PoolUnlocked();
 
-
     constructor(address _renTokenAddr) {
         renToken = ERC20(_renTokenAddr);
-        // ^ We'll need to implement to implement the ren token
+        // ^ We'll need to implement the ren token
         // 0x408e41876cccdc0f92210600ef50372656052a38
         target = DEFAULT_TARGET; // TODO: we need a set method to be able to update this value
-        owner = '0x0000000000000000000000000000000000000000'; // TODO
+        owner = msg.sender; // TODO: this should be hardcoded in the contract
         admin = msg.sender;
         isLocked = false;
         totalPooled = 0;
         ownerFee = 5;
         adminFee = 5;
     }
-
 
     modifier onlyAdmin() {
         require (msg.sender == admin, "You must be the admin of the pool to execute this action.");
@@ -61,25 +60,25 @@ contract RenPool {
     function deposit(uint _amount) external {
         address addr = msg.sender;
 
-        require (amount > 0, "Invalid ammount amount.");
-        require (amount + totalPooled < target, "Amount surpasses pool target");
+        require (_amount > 0, "Invalid ammount");
+        require (_amount + totalPooled < target, "Amount surpasses pool target");
         require (isLocked == false, "Pool is locked");
 
         renToken.transferFrom(addr, this, _amount);
-        // ^ user needs approve this transaction (give allowance) for the transferFrom method to pass.
+        // ^ user needs approve this transaction first.
         // See: https://ethereum.org/nl/developers/tutorials/erc20-annotated-code/
-        balances[addr] += amount;
-        totalPooled += amount;
+        balances[addr] += _amount;
+        totalPooled += _amount;
 
-        emit RenDeposited(addr, amount);
+        emit RenDeposited(addr, _amount);
 
-        if(totalPooled == target){
+        if (totalPooled == target){
             _lockPool(); // Locking the pool if target is met
         }
     }
 
     function requestDeposit(uint _amount) external {
-        require (amount > 0, "Invalid ammount amount.");
+        require (amount > 0, "Invalid ammount");
         require (isLocked == true, "Pool is not locked");
         require(withdrawRequests.length > 0);
 
@@ -94,28 +93,24 @@ contract RenPool {
         firstInLine.user.transfer(firstInLine.amount);
     }
 
-    function withdraw(uint _amount) external payable {
+    function requestWithdraw(uint _amount) external {
         require(balances[msg.sender] > 0 && balances[msg.sender] >=  _amount);
         address payable user = payable(msg.sender);
 
-        if(!isLocked){
-            // The pool is not locked, user can withdraw right away
-            totalPooled -= _amount;
-            balances[msg.sender] += _amount;
-
-            // Again, we will transfer Ren no eth, will need to implement ren's ERC-20 smart contract later
-
-            user.transfer(_amount);
-        }
-        else{
-            // Pool is locked, withdraw will be put in the queue
-            withdrawRequests.push(WithdrawRequest(user, _amount));
-
-        }
-
-
+        withdrawRequests.push(WithdrawRequest(user, _amount));
     }
 
+    function withdraw(uint _amount) external {
+        require(balances[msg.sender] > 0 && balances[msg.sender] >=  _amount);
+        address payable user = payable(msg.sender);
+
+        totalPooled -= _amount;
+        balances[msg.sender] += _amount;
+
+        // Again, we will transfer Ren no eth, will need to implement ren's ERC-20 smart contract later
+
+        user.transfer(_amount);
+    }
 
     // Function to remove element of array and changing the order accordingly
     function _remove(WithdrawRequest index)  returns(WithdrawRequest[]) {
