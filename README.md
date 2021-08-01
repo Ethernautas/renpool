@@ -58,7 +58,7 @@ Get some ren tokens from the faucet
 
 Deposit ren tokens into the ren pool
 ```bash
->> tx1 = renToken.approve(renPool.address, 100, {'from': acc})
+>> tx1 = renToken.approve(renPool, 100, {'from': acc})
 >> tx2 = renPool.deposit(100, {'from': acc})
 ```
 
@@ -66,6 +66,13 @@ Verify that the ren pool balance has increased
 ```bash
 >> renPool.totalPooled()
 >> 100
+```
+
+Withdraw some tokens
+```bash
+>> renPool.withdraw(5, {'from': acc})
+>> renPool.totalPooled()
+>> 95
 ```
 
 9. Running tests (open a new terminal).
