@@ -67,13 +67,16 @@ contract RenPool {
 
     }
 
-    function fullfillWithdrawRequest(uint _withdrawId){
+    function fullfillWithdrawRequest(uint _withdrawId) external payable{
             // If pool is locked, look if there is a withdraw queue
             require(isLocked);
             require(withdrawRequests.length > 0);
 
-            WithdrawRequest withdrawRequest = withdrawRequests[_withdrawId];
-            require(withdrawRequest.amount == msg.amount);
+            uint amount = msg.value;
+
+            // Maybe storage is better?
+            WithdrawRequest memory withdrawRequest = withdrawRequests[_withdrawId];
+            require(withdrawRequest.amount == amount); // User has to exactly replace the user that wants out
             balances[msg.sender] += amount;
             balances[withdrawRequest.user] -= amount;
 
@@ -81,7 +84,7 @@ contract RenPool {
             // removing the user in the queue
 
             // first in line withdraw funds
-            withdrawRequest.user.transfer(withdraw.amount);
+            payable(withdrawRequest.user).transfer(withdrawRequest.amount);
 
     }
 
@@ -100,23 +103,11 @@ contract RenPool {
         }
         else{
             // Pool is locked, withdraw will be put in the queue
-            withdrawRequests.push(WithdrawRequest(user, _amount))
+            withdrawRequests.push(WithdrawRequest(user, _amount));
 
         }
 
 
-    }
-
-
-    // Function to remove element of array and changing the order accordingly
-    function _remove(uint index)  returns(WithdrawRequest[]) {
-        if (index >= withdrawRequests.length) return;
-
-        for (uint i = index; i<withdrawRequests.length-1; i++){
-            withdrawRequests[i] = withdrawRequests[i+1];
-        }
-        withdrawRequests.length--;
-        return withdrawRequests;
     }
 
 }
