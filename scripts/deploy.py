@@ -1,4 +1,4 @@
-from brownie import accounts, RenToken, RenPool
+from brownie import *
 # ^ accounts is coming from Ganache while RenToken and RenPool from the contracts folder.
 
 def distribute_tokens(renToken):

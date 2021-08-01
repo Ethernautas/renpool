@@ -6,6 +6,7 @@ project_structure:
 networks:
   default: ${DEFAULT_NETWORK}
   development:
+    port: 8545
     cmd_settings:
       mnemonic: ${WALLET_MNEMONIC}
   kovan:

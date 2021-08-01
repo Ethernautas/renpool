@@ -1,9 +1,13 @@
 pragma solidity ^0.8.0;
 
+import "./RenTokenV2.sol";
+
+
 contract RenPool {
+    RenToken public renToken;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
     address public admin;
-    mapping(address => uint) public balances;
+    mapping(address => uint) public balanceOf;
     uint public totalPooled;
     bool public isLocked;
     uint public fee;
@@ -23,7 +27,8 @@ contract RenPool {
     event PoolUnlocked();
 
 
-    constructor() {
+    constructor(address _renTokenAddr) {
+        renToken = RenToken(_renTokenAddr);
         target = 100000; // 100k ren for darknode
         owner = msg.sender;
         isLocked = false;
@@ -47,19 +52,21 @@ contract RenPool {
         emit PoolLocked();
     }
 
-    function deposit() external payable{
+    function deposit(uint _amount) external payable{
         // !! this is coded as if we were transfering ETH and not ren
         // We'll need to implement to implement the ren token 
+
         // 0x408e41876cccdc0f92210600ef50372656052a38
-        uint amount = msg.value;
-        require (amount > 0, "Invalid ammount amount.");
-        require (amount + totalPooled < target, "Amount surpasses pool target");
+        require (_amount > 0, "Invalid ammount amount.");
+        require (_amount + totalPooled < target, "Amount surpasses pool target");
         require(!isLocked);
 
-        balances[msg.sender] += amount;
-        totalPooled += amount;
+        require(renToken.transferFrom(msg.sender, address(this), _amount));
 
-        emit RenDeposited(msg.sender, amount);
+        balanceOf[msg.sender] += _amount;
+        totalPooled += _amount;
+
+        emit RenDeposited(msg.sender, _amount);
 
         if(totalPooled == target){
             _lockPool(); // Locking the pool is target is met
@@ -77,8 +84,8 @@ contract RenPool {
             // Maybe storage is better?
             WithdrawRequest memory withdrawRequest = withdrawRequests[_withdrawId];
             require(withdrawRequest.amount == amount); // User has to exactly replace the user that wants out
-            balances[msg.sender] += amount;
-            balances[withdrawRequest.user] -= amount;
+            balanceOf[msg.sender] += amount;
+            balanceOf[withdrawRequest.user] -= amount;
 
 
             // removing the user in the queue
@@ -88,22 +95,20 @@ contract RenPool {
 
     }
 
-    function withdraw(uint _amount) external payable {
-        require(balances[msg.sender] > 0 && balances[msg.sender] >=  _amount);
-        address payable user = payable(msg.sender);
+    function withdraw(uint _amount) external {
+        require(balanceOf[msg.sender] > 0 && balanceOf[msg.sender] >=  _amount);
 
         if(!isLocked){
             // The pool is not locked, user can withdraw right away
             totalPooled -= _amount;
-            balances[msg.sender] += _amount;
+            balanceOf[msg.sender] -= _amount;
 
-            // Again, we will transfer Ren no eth, will need to implement ren's ERC-20 smart contract later
+            renToken.transfer(msg.sender, _amount);
 
-            user.transfer(_amount);
         }
         else{
             // Pool is locked, withdraw will be put in the queue
-            withdrawRequests.push(WithdrawRequest(user, _amount));
+            withdrawRequests.push(WithdrawRequest(msg.sender, _amount));
 
         }
 
