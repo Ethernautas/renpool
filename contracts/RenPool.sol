@@ -75,25 +75,6 @@ contract RenPool {
     }
 
     function fullfillWithdrawRequest(uint _withdrawId) external payable{
-            /*// If pool is locked, look if there is a withdraw queue
-            require(isLocked);
-            require(withdrawRequests.length > 0);
-
-            uint amount = msg.value;
-
-            // Maybe storage is better?
-            WithdrawRequest memory withdrawRequest = withdrawRequests[_withdrawId];
-            require(withdrawRequest.amount == amount); // User has to exactly replace the user that wants out
-            balanceOf[msg.sender] += amount;
-            balanceOf[withdrawRequest.user] -= amount;
-
-
-            // removing the user in the queue
-
-            // first in line withdraw funds
-            payable(withdrawRequest.user).transfer(withdrawRequest.amount);*/
-
-
             // If pool is locked, look if there is a withdraw queue
             require(isLocked);
             require(withdrawRequests.length > 0);
