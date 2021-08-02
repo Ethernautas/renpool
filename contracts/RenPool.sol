@@ -29,7 +29,7 @@ contract RenPool {
 
     constructor(address _renTokenAddr) {
         renToken = RenToken(_renTokenAddr);
-        target = 100000; // 100k ren for darknode
+        target = 100000*10**18; // 100k ren for darknode
         owner = msg.sender;
         isLocked = false;
         totalPooled = 0;
@@ -58,7 +58,7 @@ contract RenPool {
 
         // 0x408e41876cccdc0f92210600ef50372656052a38
         require (_amount > 0, "Invalid ammount amount.");
-        require (_amount + totalPooled < target, "Amount surpasses pool target");
+        require (_amount + totalPooled <= target, "Amount surpasses pool target");
         require(!isLocked);
 
         require(renToken.transferFrom(msg.sender, address(this), _amount));
@@ -75,7 +75,7 @@ contract RenPool {
     }
 
     function fullfillWithdrawRequest(uint _withdrawId) external payable{
-            // If pool is locked, look if there is a withdraw queue
+            /*// If pool is locked, look if there is a withdraw queue
             require(isLocked);
             require(withdrawRequests.length > 0);
 
@@ -91,7 +91,27 @@ contract RenPool {
             // removing the user in the queue
 
             // first in line withdraw funds
-            payable(withdrawRequest.user).transfer(withdrawRequest.amount);
+            payable(withdrawRequest.user).transfer(withdrawRequest.amount);*/
+
+
+            // If pool is locked, look if there is a withdraw queue
+            require(isLocked);
+            require(withdrawRequests.length > 0);
+
+            // Maybe storage is better?
+            WithdrawRequest memory withdrawRequest = withdrawRequests[_withdrawId];
+
+            require(renToken.transferFrom(msg.sender, address(this), withdrawRequest.amount));
+
+            balanceOf[msg.sender] += withdrawRequest.amount;
+            balanceOf[withdrawRequest.user] -= withdrawRequest.amount;
+
+    
+            // withdraw funds
+            renToken.transfer(withdrawRequest.user, withdrawRequest.amount);
+
+            // removing the user in the queue
+            delete(withdrawRequests[_withdrawId]);
 
     }
 

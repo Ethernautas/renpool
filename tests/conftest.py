@@ -8,15 +8,15 @@ def setup(fn_isolation):
     Isolation setup fixture.
     This ensures that each test runs against the same base environment.
     """
-    deployer.main()
+
     pass
 
 
-"""@pytest.fixture(scope="module")
-def ren_token(accounts):
+@pytest.fixture(scope="module")
+def ren_token(accounts, RenToken):
 
     yield RenToken.deploy({'from': accounts[0]})
 @pytest.fixture(scope="module")
 def ren_pool(accounts, RenPool, ren_token):
 
-    yield RenPool.deploy(ren_token, {'from': accounts[0]})"""
+    yield RenPool.deploy(ren_token, {'from': accounts[0]})
