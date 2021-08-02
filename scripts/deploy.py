@@ -1,4 +1,4 @@
-from brownie import accounts, RenToken, RenPool, constants
+from brownie import accounts, RenToken, RenPool
 # ^ accounts is coming from Ganache while RenToken and RenPool from the contracts folder.
 
 DECIMALS = 18
@@ -18,7 +18,8 @@ def main():
   3. Deploy RenPool contract;
   """
   owner = accounts[0]
+  admin = accounts[1]
   renToken = RenToken.deploy({'from': owner})
   # distribute_tokens(renToken, owner)
-  renPool = RenPool.deploy(renToken, owner, POOL_TARGET, {'from': owner})
+  renPool = RenPool.deploy(renToken, owner, POOL_TARGET, {'from': admin})
   return renToken, renPool

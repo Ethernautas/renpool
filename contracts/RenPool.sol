@@ -1,7 +1,6 @@
 pragma solidity ^0.8.0;
 
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
-// import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.0.0/contracts/token/ERC20/IERC20.sol";
 
 contract RenPool {
     ERC20 public renToken;
@@ -15,10 +14,10 @@ contract RenPool {
     uint public target;
     uint8 public constant DECIMALS = 18;
 
-    event RenDeposited(address from, uint amount); // Why add the time?
-    event RenWithdraw(address from, uint amount);
-    event PoolLocked();
-    event PoolUnlocked();
+    event RenDeposit(address from, uint amount); // Why add the time?
+    event RenWithdrawal(address from, uint amount);
+    event PoolLock();
+    event PoolUnlock();
 
     constructor(address _renTokenAddr, address _owner, uint _target) {
         renToken = ERC20(_renTokenAddr);
@@ -43,7 +42,7 @@ contract RenPool {
 
     function _lockPool() private {
         isLocked = true;
-        emit PoolLocked();
+        emit PoolLock();
     }
 
     function deposit(uint _amount) external {
@@ -59,7 +58,7 @@ contract RenPool {
         balances[sender] += _amount; // TODO: do we need to use safeMath?
         totalPooled += _amount;
 
-        emit RenDeposited(sender, _amount);
+        emit RenDeposit(sender, _amount);
 
         if (totalPooled == target) {
             _lockPool(); // Locking the pool if target is met
@@ -70,14 +69,14 @@ contract RenPool {
         address sender = msg.sender;
         uint senderBalance = balances[sender];
 
-        require(senderBalance > 0 && senderBalance >=  _amount);
+        require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
         require(isLocked == false, "Pool is locked");
 
         renToken.transfer(sender, _amount);
         totalPooled -= _amount;
         balances[sender] -= _amount;
 
-        emit RenWithdraw(sender, _amount);
+        emit RenWithdrawal(sender, _amount);
     }
 
     function balanceOf(address _addr) external view returns(uint) {
