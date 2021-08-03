@@ -1,14 +1,10 @@
-DECIMALS = 18
-POOL_TARGET = 100_000 * 10 ** DECIMALS
-FAUCET_AMOUNT = 1000 * 10 ** DECIMALS
-INITIAL_SUPPLY = 1000_000_000 * 10 ** DECIMALS
-# ^ TODO: try to move these constants to a constants file so that we can import them
+import constants as C
 
 def test_ren_mint(owner, ren_token):
     """
     Test REN tokens are properly minted.
     """
-    assert ren_token.balanceOf(owner) == INITIAL_SUPPLY
+    assert ren_token.balanceOf(owner) == C.INITIAL_SUPPLY
 
 def test_ren_symbol(ren_token):
     """
@@ -22,7 +18,7 @@ def test_ren_pool_deploy(owner, admin, ren_pool):
     """
     assert ren_pool.owner() == owner
     assert ren_pool.admin() == admin
-    assert ren_pool.target() == POOL_TARGET
+    assert ren_pool.target() == C.POOL_TARGET
     assert ren_pool.isLocked() == False
     assert ren_pool.totalPooled() == 0
 
@@ -34,7 +30,7 @@ def test_ren_pool_deposit(ren_pool, ren_token, user):
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
     ren_token.getFromFaucet({'from': user})
-    assert ren_token.balanceOf(user) == FAUCET_AMOUNT
+    assert ren_token.balanceOf(user) == C.FAUCET_AMOUNT
     ren_token.approve(ren_pool, AMOUNT, {'from': user})
     ren_pool.deposit(AMOUNT, {'from': user})
     assert ren_token.balanceOf(ren_pool) == AMOUNT
@@ -49,7 +45,7 @@ def test_ren_pool_withdraw(ren_pool, ren_token, user):
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
     ren_token.getFromFaucet({'from': user})
-    assert ren_token.balanceOf(user) == FAUCET_AMOUNT
+    assert ren_token.balanceOf(user) == C.FAUCET_AMOUNT
     ren_token.approve(ren_pool, AMOUNT, {'from': user})
     ren_pool.deposit(AMOUNT, {'from': user})
     assert ren_token.balanceOf(ren_pool) == AMOUNT

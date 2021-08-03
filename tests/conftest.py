@@ -1,8 +1,5 @@
 import pytest
-
-DECIMALS = 18
-POOL_TARGET = 100_000 * 10 ** DECIMALS
-# ^ TODO: try to move these constants to a constants file so that we can import them
+import constants as C
 
 @pytest.fixture(autouse=True)
 def setup(fn_isolation):
@@ -45,4 +42,4 @@ def ren_pool(owner, admin, RenPool, ren_token):
     """
     Yield a `Contract` object for the RenPool contract.
     """
-    yield RenPool.deploy(ren_token, owner, POOL_TARGET, {'from': admin})
+    yield RenPool.deploy(ren_token, owner, C.POOL_TARGET, {'from': admin})
