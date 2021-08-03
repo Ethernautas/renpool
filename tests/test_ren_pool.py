@@ -59,3 +59,32 @@ def test_ren_pool_withdraw(ren_pool, ren_token, user):
     assert ren_pool.balanceOf(user) == 0
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
+    
+    
+def test_withdraw_fullfulment(owner, user, ren_pool, ren_token):
+    # Depositing 100k in the pool to lock it
+    DEPOSIT = 100000*10**18
+    assert ren_pool.totalPooled() == 0
+    
+    
+
+    ren_token.approve(ren_pool.address, DEPOSIT, {'from': owner})
+    ren_pool.deposit(DEPOSIT, {'from': owner})
+    
+    WITHDRAW_AMOUNT = 1000*10**18
+    ren_pool.withdraw(WITHDRAW_AMOUNT, {'from': owner}) # The pool is locked so this will create a withdraw request
+
+    assert ren_pool.totalPooled() == 100000*10**18
+    assert ren_pool.withdrawRequests(0) # seeing if there is a withdraw request
+    
+    # Fullfilling
+    ren_token.getFromFaucet({'from': user})
+    assert ren_token.balanceOf(user, {'from': user}) == 1000*10**18 # Account 1 has 1k REN
+    
+    # Account 1 fullfills the withdraw request
+    ren_token.approve(ren_pool.address, 1000*10**18 , {'from': user})
+    ren_pool.fullfillWithdrawRequest(0, {'from': user}) # Filfilling the request
+    
+    assert ren_token.balanceOf(user, {'from': user}) == 0 # Account has fullfiled the withdraw request
+    assert ren_pool.balanceOf(user, {'from': user}) == 1000*10**18
+    assert ren_pool.totalPooled() == 100000*10**18 # Pool still full

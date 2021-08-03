@@ -32,6 +32,7 @@ def user(accounts):
     Yield an `Account` object for the contract's user.
     """
     yield accounts[2]
+    
 
 @pytest.fixture(scope="module")
 def ren_token(owner, RenToken):
