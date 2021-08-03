@@ -6,7 +6,7 @@ import constants as C
 
 def distribute_tokens(renToken, owner):
   for i in range(10):
-    renToken.transfer(accounts[i], C.DECIMALS, {'from': owner})
+    renToken.transfer(accounts[i], C.FAUCET_AMOUNT, {'from': owner})
 
 def main():
   """
