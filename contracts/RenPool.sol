@@ -4,13 +4,14 @@ import "./RenToken.sol";
 
 
 contract RenPool {
-    RenToken public renToken;
+    ERC20 public renToken;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
     address public admin;
     mapping(address => uint) public balanceOf;
     uint public totalPooled;
     bool public isLocked;
-    uint public fee;
+    uint public ownerFee;
+    uint public adminFee;
     uint public target;
 
     struct WithdrawRequest{
@@ -34,7 +35,6 @@ contract RenPool {
         admin = msg.sender;
         isLocked = false;
         totalPooled = 0;
-        fee = 1;
     }
 
 
