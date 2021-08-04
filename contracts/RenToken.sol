@@ -20,7 +20,7 @@ contract RenToken is ERC20 {
         _mint(msg.sender, INITIAL_SUPPLY);
     }
 
-    function getFromFaucet() public returns (bool) {
+    function callFaucet() public returns (bool) {
         address beneficiary = msg.sender;
 
         require(this.balanceOf(owner) >= FAUCET_AMOUNT, 'The faucet is empty');

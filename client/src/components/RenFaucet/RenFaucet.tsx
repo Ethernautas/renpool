@@ -13,7 +13,7 @@ export const RenFaucet: FC<RenFaucetProps> = ({
 
   const handleClick = async () => {
     try {
-      const tx = await renToken.getFromFaucet({ gasLimit: 60000 })
+      const tx = await renToken.callFaucet({ gasLimit: 60000 })
       await tx.wait() // wait for mining
     } catch (e) {
       alert(`Could not get from faucet ${JSON.stringify(e, null, 2)}`)

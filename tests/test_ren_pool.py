@@ -29,7 +29,7 @@ def test_ren_pool_deposit(ren_pool, ren_token, user):
     AMOUNT = 100
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
-    ren_token.getFromFaucet({'from': user})
+    ren_token.callFaucet({'from': user})
     assert ren_token.balanceOf(user) == C.FAUCET_AMOUNT
     ren_token.approve(ren_pool, AMOUNT, {'from': user})
     ren_pool.deposit(AMOUNT, {'from': user})
@@ -44,7 +44,7 @@ def test_ren_pool_withdraw(ren_pool, ren_token, user):
     AMOUNT = 100
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
-    ren_token.getFromFaucet({'from': user})
+    ren_token.callFaucet({'from': user})
     assert ren_token.balanceOf(user) == C.FAUCET_AMOUNT
     ren_token.approve(ren_pool, AMOUNT, {'from': user})
     ren_pool.deposit(AMOUNT, {'from': user})

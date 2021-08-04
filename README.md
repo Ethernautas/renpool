@@ -51,7 +51,7 @@ Get some ren tokens from the faucet
 >> acc = accounts[1]
 >> renToken.balanceOf(acc)
 >> 0
->> renToken.getFromFaucet({'from': acc})
+>> renToken.callFaucet({'from': acc})
 >> renToken.balanceOf(acc)
 >> 1000000000000000000000
 ```
