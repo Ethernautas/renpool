@@ -1,15 +1,12 @@
 from brownie import accounts, RenToken, RenPool
 # ^ accounts is coming from Ganache while RenToken and RenPool from the contracts folder.
-
-DECIMALS = 18
-POOL_TARGET = 100_000 * 10 ** DECIMALS
-# ^ TODO: try to move these constants to a constants file so that we can import them
+import constants as C
 
 # TODO: use real renToken address in production and testnets ('0x408e41876cccdc0f92210600ef50372656052a38')
 
 def distribute_tokens(renToken, owner):
   for i in range(10):
-    renToken.transfer(accounts[i], DECIMALS, {'from': owner})
+    renToken.transfer(accounts[i], C.FAUCET_AMOUNT, {'from': owner})
 
 def main():
   """
@@ -21,5 +18,5 @@ def main():
   admin = accounts[1]
   renToken = RenToken.deploy({'from': owner})
   # distribute_tokens(renToken, owner)
-  renPool = RenPool.deploy(renToken, owner, POOL_TARGET, {'from': admin})
+  renPool = RenPool.deploy(renToken, owner, C.POOL_TARGET, {'from': admin})
   return renToken, renPool
