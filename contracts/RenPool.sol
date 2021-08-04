@@ -29,7 +29,7 @@ contract RenPool {
 
 
     constructor(address _renTokenAddr, address _owner, uint _target) {
-        renToken = RenToken(_renTokenAddr);
+        renToken = ERC20(_renTokenAddr);
         target = _target; // 100k ren for darknode
         owner = _owner; // 100k ren for
         admin = msg.sender;
