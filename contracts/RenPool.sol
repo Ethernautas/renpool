@@ -14,6 +14,13 @@ contract RenPool {
     uint public target;
     uint8 public constant DECIMALS = 18;
 
+    struct WithdrawRequest{
+        address user;
+        uint amount;
+    }
+    
+    WithdrawRequest[] public withdrawRequests;
+    
     event RenDeposit(address from, uint amount); // Why add the time?
     event RenWithdrawal(address from, uint amount);
     event PoolLock();
@@ -49,7 +56,7 @@ contract RenPool {
         address sender = msg.sender;
 
         require(_amount > 0, "Invalid ammount");
-        require(_amount + totalPooled < target, "Amount surpasses pool target");
+        require(_amount + totalPooled <= target, "Amount surpasses pool target");
         require(isLocked == false, "Pool is locked");
 
         renToken.transferFrom(sender, address(this), _amount);
@@ -70,16 +77,44 @@ contract RenPool {
         uint senderBalance = balances[sender];
 
         require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-        require(isLocked == false, "Pool is locked");
+        if(!isLocked){
+            totalPooled -= _amount;
+            balances[sender] -= _amount;
+            renToken.transfer(sender, _amount);
+            
+            emit RenWithdrawal(sender, _amount);
 
-        renToken.transfer(sender, _amount);
-        totalPooled -= _amount;
-        balances[sender] -= _amount;
+        }
+        else{
+            // Pool is locked, withdraw will be put in the queue
+            withdrawRequests.push(WithdrawRequest(msg.sender, _amount));           
+        }
 
-        emit RenWithdrawal(sender, _amount);
+
     }
 
     function balanceOf(address _addr) external view returns(uint) {
         return balances[_addr];
+    }
+
+    function fullfillWithdrawRequest(uint _withdrawId) external payable{
+        // If pool is locked, look if there is a withdraw queue
+        require(isLocked);
+        require(withdrawRequests.length > 0);
+
+        WithdrawRequest memory withdrawRequest = withdrawRequests[_withdrawId];
+
+        require(renToken.transferFrom(msg.sender, address(this), withdrawRequest.amount));
+
+        balances[msg.sender] += withdrawRequest.amount;
+        balances[withdrawRequest.user] -= withdrawRequest.amount;
+
+    
+        // withdraw funds
+        renToken.transfer(withdrawRequest.user, withdrawRequest.amount);
+
+        // removing the user in the queue
+        delete(withdrawRequests[_withdrawId]);
+
     }
 }
