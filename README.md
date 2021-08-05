@@ -19,7 +19,7 @@ Bringing community pools to the REN ecosystem
 3. Install deps
 
 ```bash
->> pip install -r requirements.txt
+>> python -m pip install -r requirements.txt
 ```
 
 4. Update requirements.txt
@@ -27,7 +27,7 @@ Bringing community pools to the REN ecosystem
 In case you add some extra deps, please update requirements.txt
 
 ```bash
->> pip freeze > requirements.txt
+>> python -m pip freeze > requirements.txt
 ```
 
 5. Create a new file called `.env` from `.env.sample`. Add your Metamask mnemonic and Infura project id.
