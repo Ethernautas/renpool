@@ -18,10 +18,10 @@ contract RenPool {
         address user;
         uint amount;
     }
+
+    mapping(address => WithdrawRequest) public withdrawRequests;
     
-    WithdrawRequest[] public withdrawRequests;
-    
-    event RenDeposit(address from, uint amount); // Why add the time?
+    event RenDeposit(address from, uint amount);
     event RenWithdrawal(address from, uint amount);
     event PoolLock();
     event PoolUnlock();
@@ -77,19 +77,22 @@ contract RenPool {
         uint senderBalance = balances[sender];
 
         require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-        if(!isLocked){
-            totalPooled -= _amount;
-            balances[sender] -= _amount;
-            renToken.transfer(sender, _amount);
+        require(isLocked == false);
+        totalPooled -= _amount;
+        balances[sender] -= _amount;
+        renToken.transfer(sender, _amount);
             
-            emit RenWithdrawal(sender, _amount);
+        emit RenWithdrawal(sender, _amount);
 
-        }
-        else{
-            // Pool is locked, withdraw will be put in the queue
-            withdrawRequests.push(WithdrawRequest(msg.sender, _amount));           
-        }
+    }
 
+    function withdrawRequest(uint _amount) external {
+        address sender = msg.sender;
+        uint senderBalance = balances[sender];
+
+        require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
+        require(isLocked == true, "The pool is not locked, please do a regular withdraw");
+        withdrawRequests[sender] = WithdrawRequest(msg.sender, _amount);
 
     }
 
@@ -97,15 +100,15 @@ contract RenPool {
         return balances[_addr];
     }
 
-    function fullfillWithdrawRequest(uint _withdrawId) external payable{
-        // If pool is locked, look if there is a withdraw queue
-        require(isLocked);
-        require(withdrawRequests.length > 0);
+    function fullfillWithdrawRequest(address _withdrawRequestAddress) external {
+        require(isLocked == true);
 
-        WithdrawRequest memory withdrawRequest = withdrawRequests[_withdrawId];
+        WithdrawRequest memory withdrawRequest = withdrawRequests[_withdrawRequestAddress];
 
         require(renToken.transferFrom(msg.sender, address(this), withdrawRequest.amount));
 
+
+        // Transfering the balance
         balances[msg.sender] += withdrawRequest.amount;
         balances[withdrawRequest.user] -= withdrawRequest.amount;
 
@@ -114,7 +117,7 @@ contract RenPool {
         renToken.transfer(withdrawRequest.user, withdrawRequest.amount);
 
         // removing the user in the queue
-        delete(withdrawRequests[_withdrawId]);
+        delete withdrawRequests[_withdrawRequestAddress];
 
     }
 }
