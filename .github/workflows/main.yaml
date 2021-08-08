@@ -30,11 +30,11 @@ jobs:
         WEB3_INFURA_PROJECT_ID: ${{ secrets.WEB3_INFURA_PROJECT_ID }}
       run: |
         touch .env
-        echo DEFAULT_NETWORK="$DEFAULT_NETWORK" >> .env
-        echo WALLET_MNEMONIC="$WALLET_MNEMONIC" >> .env
-        echo WALLET_PASSWORD="$WALLET_PASSWORD" >> .env
-        echo WALLET_PRIVATE_KEY="$WALLET_PRIVATE_KEY" >> .env
-        echo WEB3_INFURA_PROJECT_ID="$WEB3_INFURA_PROJECT_ID" >> .env
+        echo DEFAULT_NETWORK=$DEFAULT_NETWORK >> .env
+        echo WALLET_MNEMONIC=$WALLET_MNEMONIC >> .env
+        echo WALLET_PASSWORD=$WALLET_PASSWORD >> .env
+        echo WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY >> .env
+        echo WEB3_INFURA_PROJECT_ID=$WEB3_INFURA_PROJECT_ID >> .env
         cat .env
         pwd
 
