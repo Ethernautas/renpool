@@ -35,6 +35,7 @@ jobs:
         echo WALLET_PASSWORD="$WALLET_PASSWORD" >> .env
         echo WALLET_PRIVATE_KEY="$WALLET_PRIVATE_KEY" >> .env
         echo WEB3_INFURA_PROJECT_ID="$WEB3_INFURA_PROJECT_ID" >> .env
+        pwd
 
     - uses: actions/checkout@v1
 
