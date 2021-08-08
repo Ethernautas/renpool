@@ -9,7 +9,7 @@ name: main workflow
 
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # increasing available memory for node reduces issues with ganache crashing
   # https://nodejs.org/api/cli.html#cli_max_old_space_size_size_in_megabytes
@@ -35,6 +35,7 @@ jobs:
         echo WALLET_PASSWORD="$WALLET_PASSWORD" >> .env
         echo WALLET_PRIVATE_KEY="$WALLET_PRIVATE_KEY" >> .env
         echo WEB3_INFURA_PROJECT_ID="$WEB3_INFURA_PROJECT_ID" >> .env
+        cat .env
         pwd
 
     - uses: actions/checkout@v1
