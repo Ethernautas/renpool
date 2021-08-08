@@ -30,6 +30,9 @@ jobs:
     - name: Install Ganache
       run: npm install -g ganache-cli@6.9.1
 
+    - name: Install Solhint
+      run: npm install -g solhint
+
     - name: Setup Python 3.8
       uses: actions/setup-python@v1
       with:
@@ -40,3 +43,6 @@ jobs:
 
     - name: Run Tests
       run: brownie test
+
+    - name: Run Solhint
+      run: solhint 'contracts/**/*.sol'
