@@ -8,6 +8,17 @@ Bringing community pools to the REN ecosystem
 - [https://eth-brownie.readthedocs.io/en/stable/install.html](https://eth-brownie.readthedocs.io/en/stable/install.html)
 - [https://www.youtube.com/watch?v=nkvIFE2QVp0](https://www.youtube.com/watch?v=nkvIFE2QVp0)
 
+2. Install solhint
+
+```bash
+npm install -g solhint
+```
+
+Run solhint (solidity linter):
+```bash
+solhint 'contracts/**/*.sol'
+```
+
 2. Launch a python virtual env:
 
 ```bash
