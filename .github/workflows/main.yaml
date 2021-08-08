@@ -21,22 +21,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - shell: bash
-      env:
-        DEFAULT_NETWORK: ${{ secrets.DEFAULT_NETWORK }}
-        WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
-        WALLET_PASSWORD: ${{ secrets.WALLET_PASSWORD }}
-        WALLET_PRIVATE_KEY: ${{ secrets.WALLET_PRIVATE_KEY }}
-        WEB3_INFURA_PROJECT_ID: ${{ secrets.WEB3_INFURA_PROJECT_ID }}
-      run: |
-        touch .env
-        echo DEFAULT_NETWORK=$DEFAULT_NETWORK >> .env
-        echo WALLET_MNEMONIC=$WALLET_MNEMONIC >> .env
-        echo WALLET_PASSWORD=$WALLET_PASSWORD >> .env
-        echo WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY >> .env
-        echo WEB3_INFURA_PROJECT_ID=$WEB3_INFURA_PROJECT_ID >> .env
-        cat .env
-        pwd
+    # - shell: bash
+    #   env:
+    #     DEFAULT_NETWORK: ${{ secrets.DEFAULT_NETWORK }}
+    #     WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
+    #     WALLET_PASSWORD: ${{ secrets.WALLET_PASSWORD }}
+    #     WALLET_PRIVATE_KEY: ${{ secrets.WALLET_PRIVATE_KEY }}
+    #     WEB3_INFURA_PROJECT_ID: ${{ secrets.WEB3_INFURA_PROJECT_ID }}
+    #   run: |
+    #     touch .env
+    #     echo DEFAULT_NETWORK=$DEFAULT_NETWORK >> .env
+    #     echo WALLET_MNEMONIC=$WALLET_MNEMONIC >> .env
+    #     echo WALLET_PASSWORD=$WALLET_PASSWORD >> .env
+    #     echo WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY >> .env
+    #     echo WEB3_INFURA_PROJECT_ID=$WEB3_INFURA_PROJECT_ID >> .env
+    #     cat .env
+    #     pwd
 
     - uses: actions/checkout@v1
 
@@ -64,7 +64,23 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Run Tests
-      run: brownie test
+          env:
+        DEFAULT_NETWORK: ${{ secrets.DEFAULT_NETWORK }}
+        WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
+        WALLET_PASSWORD: ${{ secrets.WALLET_PASSWORD }}
+        WALLET_PRIVATE_KEY: ${{ secrets.WALLET_PRIVATE_KEY }}
+        WEB3_INFURA_PROJECT_ID: ${{ secrets.WEB3_INFURA_PROJECT_ID }}
+      run: |
+        touch .env
+        echo DEFAULT_NETWORK=$DEFAULT_NETWORK >> .env
+        echo WALLET_MNEMONIC=$WALLET_MNEMONIC >> .env
+        echo WALLET_PASSWORD=$WALLET_PASSWORD >> .env
+        echo WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY >> .env
+        echo WEB3_INFURA_PROJECT_ID=$WEB3_INFURA_PROJECT_ID >> .env
+        cat .env
+        pwd
+        brownie test
+      # run: brownie test
 
     - name: Run Solhint
       run: solhint 'contracts/**/*.sol'
