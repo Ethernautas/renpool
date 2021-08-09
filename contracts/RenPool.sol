@@ -1,6 +1,8 @@
-pragma solidity ^0.8.0;
+pragma solidity 0.5.16;
+// pragma solidity ^0.8.0;
 
-import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
+// import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
+import "./ren/RenToken/RenToken.sol";
 
 interface DarknodeRegistry {
     /**
@@ -15,7 +17,7 @@ interface DarknodeRegistry {
      * @param _publicKey The public key of the darknode. It is stored to allow
      *        other darknodes and traders to encrypt messages to the trader.
      */
-    function register(address _darknodeID, bytes calldata _publicKey) external {}
+    function register(address _darknodeID, bytes calldata _publicKey) external;
 }
 
 contract RenPool {
@@ -23,7 +25,8 @@ contract RenPool {
     address public darknodeRegistryAddr;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
     address public admin;
-    ERC20 public renToken; // TODO: Probably use RenToken from https://github.com/renproject/darknode-sol/blob/master/contracts/RenToken/RenToken.sol
+    // ERC20 public renToken; // TODO: Probably use RenToken from https://github.com/renproject/darknode-sol/blob/master/contracts/RenToken/RenToken.sol
+    RenToken public renToken;
     DarknodeRegistry public darknodeRegistry;
     mapping(address => uint) public balances;
     uint public target;
@@ -35,7 +38,7 @@ contract RenPool {
 
     event RenDeposited(address indexed _from, uint _amount);
     event RenWithdrawn(address indexed _from, uint _amount);
-    event PoolLockied();
+    event PoolLocked();
     event PoolUnlocked();
 
     constructor(
@@ -43,12 +46,13 @@ contract RenPool {
         address _darknodeRegistryAddr,
         address _owner,
         uint _target
-    ) {
+    ) public {
         renTokenAddr = _renTokenAddr;
         darknodeRegistryAddr = _darknodeRegistryAddr;
         owner = _owner;
         admin = msg.sender;
-        renToken = ERC20(_renTokenAddr);
+        // renToken = ERC20(_renTokenAddr);
+        renToken = RenToken(_renTokenAddr);
         darknodeRegistry = DarknodeRegistry(_darknodeRegistryAddr);
         target = _target; // TODO: we need a set method to be able to update this value
         isLocked = false;

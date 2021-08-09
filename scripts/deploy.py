@@ -15,12 +15,18 @@ def main():
   darknodeRegistryAddr = ZERO_ADDRESS
 
   if (config['networks']['default'] == 'development'):
-    renToken = RenToken.deploy({'from': owner}                                )
+    renToken = RenToken.deploy({'from': owner})
     renTokenAddr = renToken.address
-    #deploy ren contracts
   else:
+    renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
     darknodeRegistryAddr = os.environ['DARKNODE_REGISTRY_ADDRESS']
 
-  renPool = RenPool.deploy(renToken, owner, C.POOL_TARGET, {'from': admin})
+  renPool = RenPool.deploy(
+    renTokenAddr,
+    darknodeRegistryAddr,
+    owner,
+    C.POOL_TARGET,
+    {'from': admin}
+  )
 
   return renToken, renPool

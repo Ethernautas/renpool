@@ -4,7 +4,8 @@
   "rules": {
     "avoid-suicide": "error",
     "avoid-sha3": "warn",
-    "compiler-version": ["error", "^0.8.0"],
+    // "compiler-version": ["error", "^0.8.0"],
+    "compiler-version": ["error", "0.5.16"],
     "func-visibility": ["warn", {"ignoreConstructors": true}]
   }
 }
