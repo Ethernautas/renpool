@@ -1,8 +1,6 @@
-pragma solidity 0.5.16;
-// pragma solidity ^0.8.0;
+pragma solidity ^0.8.0;
 
-// import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
-import "./ren/RenToken/RenToken.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
 
 interface DarknodeRegistry {
     /**
@@ -25,8 +23,7 @@ contract RenPool {
     address public darknodeRegistryAddr;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
     address public admin;
-    // ERC20 public renToken; // TODO: Probably use RenToken from https://github.com/renproject/darknode-sol/blob/master/contracts/RenToken/RenToken.sol
-    RenToken public renToken;
+    ERC20 public renToken;
     DarknodeRegistry public darknodeRegistry;
     mapping(address => uint) public balances;
     uint public target;
@@ -51,8 +48,7 @@ contract RenPool {
         darknodeRegistryAddr = _darknodeRegistryAddr;
         owner = _owner;
         admin = msg.sender;
-        // renToken = ERC20(_renTokenAddr);
-        renToken = RenToken(_renTokenAddr);
+        renToken = ERC20(_renTokenAddr);
         darknodeRegistry = DarknodeRegistry(_darknodeRegistryAddr);
         target = _target; // TODO: we need a set method to be able to update this value
         isLocked = false;
