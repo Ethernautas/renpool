@@ -9,17 +9,18 @@ def main():
   """
   owner = accounts[0]
   admin = accounts[1]
+  # account = accounts.add(config['wallets']['from_key'])
 
   renTokenAddr = ZERO_ADDRESS
   darknodeRegistryAddr = ZERO_ADDRESS
 
-  if (config["networks"]["default"] == "development"):
-    renToken = RenToken.deploy({'from': owner})
+  if (config['networks']['default'] == 'development'):
+    renToken = RenToken.deploy({'from': owner}                                )
     renTokenAddr = renToken.address
     #deploy ren contracts
   else:
     darknodeRegistryAddr = os.environ['DARKNODE_REGISTRY_ADDRESS']
 
-  # account = accounts.add(config["wallets"]["from_key"])
   renPool = RenPool.deploy(renToken, owner, C.POOL_TARGET, {'from': admin})
+
   return renToken, renPool
