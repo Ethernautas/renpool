@@ -19,7 +19,7 @@ Run solhint (solidity linter):
 solhint 'contracts/**/*.sol'
 ```
 
-2. Launch a python virtual env:
+3. Launch a python virtual env:
 
 ```bash
 >> python -m venv venv # create a new env called venv
@@ -27,13 +27,13 @@ solhint 'contracts/**/*.sol'
 >> deactivate # deactivate it once you are done
 ```
 
-3. Install deps
+4. Install deps
 
 ```bash
 >> python -m pip install -r requirements.txt
 ```
 
-4. Update requirements.txt
+5. Update requirements.txt
 
 In case you add some extra deps, please update requirements.txt
 
@@ -41,21 +41,21 @@ In case you add some extra deps, please update requirements.txt
 >> python -m pip freeze > requirements.txt
 ```
 
-5. Create a new file called `.env` from `.env.sample`. Add your Metamask mnemonic and Infura project id.
+6. Create a new file called `.env` from `.env.sample`. Add your Metamask mnemonic and Infura project id.
 
-6. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask.
+7. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask.
 
 ```bash
 >> brownie console
 ```
 
-7. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
+8. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
 
 ```bash
 >> renToken, renPool = run('deploy')
 ```
 
-8. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
+9. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
 
 Get some ren tokens from the faucet
 ```bash
@@ -86,7 +86,7 @@ Withdraw some tokens
 >> 95
 ```
 
-9. Running tests (open a new terminal).
+10. Running tests (open a new terminal).
 
 ```bash
 >> brownie test
