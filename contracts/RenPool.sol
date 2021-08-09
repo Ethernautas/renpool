@@ -33,10 +33,10 @@ contract RenPool {
     uint public adminFee; // Percentage
     uint8 public constant DECIMALS = 18;
 
-    event RenDeposit(address indexed _from, uint _amount);
-    event RenWithdrawal(address indexed _from, uint _amount);
-    event PoolLock();
-    event PoolUnlock();
+    event RenDeposited(address indexed _from, uint _amount);
+    event RenWithdrawn(address indexed _from, uint _amount);
+    event PoolLockied();
+    event PoolUnlocked();
 
     constructor(
         address _renTokenAddr,
@@ -75,7 +75,7 @@ contract RenPool {
 
     function _lockPool() private {
         isLocked = true;
-        emit PoolLock();
+        emit PoolLocked();
     }
 
     function deposit(uint _amount) external {
@@ -91,7 +91,7 @@ contract RenPool {
         balances[sender] += _amount; // TODO: do we need to use safeMath?
         totalPooled += _amount;
 
-        emit RenDeposit(sender, _amount);
+        emit RenDeposited(sender, _amount);
 
         if (totalPooled == target) {
             _lockPool(); // Locking the pool if target is met
@@ -109,7 +109,7 @@ contract RenPool {
         totalPooled -= _amount;
         balances[sender] -= _amount;
 
-        emit RenWithdrawal(sender, _amount);
+        emit RenWithdrawn(sender, _amount);
     }
 
     function balanceOf(address _addr) external view returns(uint) {
