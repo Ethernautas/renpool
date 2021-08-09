@@ -14,10 +14,10 @@ contract RenPool {
     uint public target;
     uint8 public constant DECIMALS = 18;
 
-    event DepositRen(address from, uint amount);
-    event WithdrawRen(address from, uint amount);
-    event LockPool();
-    event UnlockPool();
+    event RenDeposited(address from, uint amount);
+    event RenWithdrawn(address from, uint amount);
+    event PoolLocked();
+    event PoolUnlocked();
 
     constructor(address _renTokenAddr, address _owner, uint _target) {
         renToken = ERC20(_renTokenAddr);
@@ -42,7 +42,7 @@ contract RenPool {
 
     function _lockPool() private {
         isLocked = true;
-        emit LockPool();
+        emit PoolLocked();
     }
 
     function deposit(uint _amount) external {
@@ -58,7 +58,7 @@ contract RenPool {
         balances[sender] += _amount; // TODO: do we need to use safeMath?
         totalPooled += _amount;
 
-        emit DepositRen(sender, _amount);
+        emit RenDeposited(sender, _amount);
 
         if (totalPooled == target) {
             _lockPool(); // Locking the pool if target is met
@@ -76,7 +76,7 @@ contract RenPool {
         totalPooled -= _amount;
         balances[sender] -= _amount;
 
-        emit WithdrawRen(sender, _amount);
+        emit RenWithdrawn(sender, _amount);
     }
 
     function balanceOf(address _addr) external view returns(uint) {
