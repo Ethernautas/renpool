@@ -14,6 +14,8 @@ contract RenPool {
     uint public target;
     uint8 public constant DECIMALS = 18;
 
+    mapping(address => uint) public withdrawRequests;
+
     event RenDeposited(address from, uint amount);
     event RenWithdrawn(address from, uint amount);
     event PoolLocked();
@@ -49,7 +51,7 @@ contract RenPool {
         address sender = msg.sender;
 
         require(_amount > 0, "Invalid ammount");
-        require(_amount + totalPooled < target, "Amount surpasses pool target");
+        require(_amount + totalPooled <= target, "Amount surpasses pool target");
         require(isLocked == false, "Pool is locked");
 
         renToken.transferFrom(sender, address(this), _amount);
@@ -70,13 +72,41 @@ contract RenPool {
         uint senderBalance = balances[sender];
 
         require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-        require(isLocked == false, "Pool is locked");
+        require(isLocked == false, "Pool is locked, please do a withdraw request");
 
-        renToken.transfer(sender, _amount);
         totalPooled -= _amount;
         balances[sender] -= _amount;
+        renToken.transfer(sender, _amount);
 
         emit RenWithdrawn(sender, _amount);
+    }
+
+    function requestWithdraw(uint _amount) external {
+        address sender = msg.sender;
+        uint senderBalance = balances[sender];
+
+        require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
+        require(isLocked == true, "The pool is not locked, please do a regular withdraw");
+
+        withdrawRequests[sender] = _amount;
+    }
+
+    function fullfillWithdrawRequest(address _withdrawRequestAddress) external {
+        uint withdrawRequestAmount = withdrawRequests[_withdrawRequestAddress];
+        address sender = msg.sender;
+
+        require(isLocked == true, "Pool is not locked");
+        require(renToken.transferFrom(sender, address(this), withdrawRequestAmount));
+
+        // Transfering the balance
+        balances[sender] += withdrawRequestAmount;
+        balances[_withdrawRequestAddress] -= withdrawRequestAmount;
+
+        // withdraw funds
+        renToken.transfer(_withdrawRequestAddress, withdrawRequestAmount);
+
+        // removing the user in the queue
+        delete withdrawRequests[_withdrawRequestAddress];
     }
 
     function balanceOf(address _addr) external view returns(uint) {
