@@ -1,32 +1,34 @@
 import os
+import copy
 from brownie import ZERO_ADDRESS, accounts, config, RenToken, RenPool
 import constants as C
 
 def main():
   """
-  1. Mint (ERC20) REN token;
-  2. Deploy RenPool contract;
+  Set your .env file accordingly before deploying the RenPool contract.
+  In case of the live nets, make sure your account is funded.
   """
-  owner = accounts[0]
-  admin = accounts[1]
-  # account = accounts.add(config['wallets']['from_key'])
-
+  owner = None
+  admin = None
   renTokenAddr = ZERO_ADDRESS
-  darknodeRegistryAddr = ZERO_ADDRESS
 
-  if (config['networks']['default'] == 'development'):
+  if (config['networks']['default'] != 'development'):
+    account = accounts.add(config['wallets']['from_key'])
+    owner = copy.copy(account)
+    admin = copy.copy(account)
+    renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
+  else:
+    owner = accounts[0]
+    admin = accounts[1]
     renToken = RenToken.deploy({'from': owner})
     renTokenAddr = renToken.address
-  else:
-    renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
-    darknodeRegistryAddr = os.environ['DARKNODE_REGISTRY_ADDRESS']
 
   renPool = RenPool.deploy(
     renTokenAddr,
-    darknodeRegistryAddr,
+    ZERO_ADDRESS,
     owner,
     C.POOL_TARGET,
     {'from': admin}
   )
 
-  return renToken, renPool
+  return renPool
