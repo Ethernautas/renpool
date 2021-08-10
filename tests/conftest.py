@@ -1,6 +1,13 @@
 import pytest
 import constants as C
 
+"""
+When pytest goes to run a test, it looks at the parameters in that test function’s
+signature, and then searches for fixtures that have the same names as those parameters.
+Once pytest finds them, it runs those fixtures, captures what they returned
+(if anything), and passes those objects into the test function as arguments.
+"""
+
 @pytest.fixture(autouse=True)
 def setup(fn_isolation):
     """

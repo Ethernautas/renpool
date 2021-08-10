@@ -15,11 +15,11 @@ contract RenPool {
     uint8 public constant DECIMALS = 18;
 
     mapping(address => uint) public withdrawRequests;
-    
-    event RenDeposit(address from, uint amount);
-    event RenWithdrawal(address from, uint amount);
-    event PoolLock();
-    event PoolUnlock();
+
+    event RenDeposited(address from, uint amount);
+    event RenWithdrawn(address from, uint amount);
+    event PoolLocked();
+    event PoolUnlocked();
 
     constructor(address _renTokenAddr, address _owner, uint _target) {
         renToken = ERC20(_renTokenAddr);
@@ -44,7 +44,7 @@ contract RenPool {
 
     function _lockPool() private {
         isLocked = true;
-        emit PoolLock();
+        emit PoolLocked();
     }
 
     function deposit(uint _amount) external {
@@ -60,7 +60,7 @@ contract RenPool {
         balances[sender] += _amount; // TODO: do we need to use safeMath?
         totalPooled += _amount;
 
-        emit RenDeposit(sender, _amount);
+        emit RenDeposited(sender, _amount);
 
         if (totalPooled == target) {
             _lockPool(); // Locking the pool if target is met
@@ -73,12 +73,12 @@ contract RenPool {
 
         require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
         require(isLocked == false, "Pool is locked, please do a withdraw request");
+
         totalPooled -= _amount;
         balances[sender] -= _amount;
         renToken.transfer(sender, _amount);
-            
-        emit RenWithdrawal(sender, _amount);
 
+        emit RenWithdrawn(sender, _amount);
     }
 
     function requestWithdraw(uint _amount) external {
@@ -87,33 +87,29 @@ contract RenPool {
 
         require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
         require(isLocked == true, "The pool is not locked, please do a regular withdraw");
+
         withdrawRequests[sender] = _amount;
-
-    }
-
-    function balanceOf(address _addr) external view returns(uint) {
-        return balances[_addr];
     }
 
     function fullfillWithdrawRequest(address _withdrawRequestAddress) external {
-        require(isLocked == true, "Pool is not locked");
-
         uint withdrawRequestAmount = withdrawRequests[_withdrawRequestAddress];
         address sender = msg.sender;
 
+        require(isLocked == true, "Pool is not locked");
         require(renToken.transferFrom(sender, address(this), withdrawRequestAmount));
-
 
         // Transfering the balance
         balances[sender] += withdrawRequestAmount;
         balances[_withdrawRequestAddress] -= withdrawRequestAmount;
 
-    
         // withdraw funds
         renToken.transfer(_withdrawRequestAddress, withdrawRequestAmount);
 
         // removing the user in the queue
         delete withdrawRequests[_withdrawRequestAddress];
+    }
 
+    function balanceOf(address _addr) external view returns(uint) {
+        return balances[_addr];
     }
 }
