@@ -27,7 +27,7 @@ contract RenPool {
     DarknodeRegistry public darknodeRegistry;
     mapping(address => uint) public balances;
     mapping(address => uint) public withdrawRequests;
-    uint public target;
+    uint public bond;
     uint public totalPooled;
     bool public isLocked;
     uint public ownerFee; // Percentage
@@ -43,7 +43,7 @@ contract RenPool {
         address _renTokenAddr,
         address _darknodeRegistryAddr,
         address _owner,
-        uint _target
+        uint _bond
     ) public {
         renTokenAddr = _renTokenAddr;
         darknodeRegistryAddr = _darknodeRegistryAddr;
@@ -51,7 +51,7 @@ contract RenPool {
         admin = msg.sender;
         renToken = ERC20(_renTokenAddr);
         darknodeRegistry = DarknodeRegistry(_darknodeRegistryAddr);
-        target = _target; // TODO: we need a set method to be able to update this value
+        bond = _bond;
         isLocked = false;
         totalPooled = 0;
         ownerFee = 5;
@@ -59,18 +59,12 @@ contract RenPool {
     }
 
     modifier onlyOwnerAdmin() {
-        require (
-            msg.sender == owner || msg.sender == admin,
-            "You must be the admin of the pool to execute this action."
-        );
+        require (msg.sender == owner || msg.sender == admin, "Caller is not owner nor admin");
         _;
     }
 
     modifier onlyOwner() {
-        require (
-            msg.sender == owner,
-            "You must be the owner to execute this action."
-        );
+        require (msg.sender == owner, "Caller is not owner");
         _;
     }
 
@@ -79,23 +73,26 @@ contract RenPool {
         emit PoolLocked();
     }
 
+    /**
+     * @notice User needs to give allowance before calling this method. See 'approve'
+     * method at https://ethereum.org/nl/developers/tutorials/erc20-annotated-code/
+     */
     function deposit(uint _amount) external {
         address sender = msg.sender;
 
         require(_amount > 0, "Invalid ammount");
-        require(_amount + totalPooled <= target, "Amount surpasses pool target");
+        require(_amount + totalPooled <= bond, "Amount surpasses pool bond");
         require(isLocked == false, "Pool is locked");
 
-        renToken.transferFrom(sender, address(this), _amount);
-        // ^ user needs to give allowance first for this transaction to pass.
-        // See: https://ethereum.org/nl/developers/tutorials/erc20-annotated-code/
         balances[sender] += _amount; // TODO: do we need to use safeMath?
         totalPooled += _amount;
 
+        renToken.transferFrom(sender, address(this), _amount);
+
         emit RenDeposited(sender, _amount);
 
-        if (totalPooled == target) {
-            _lockPool(); // Locking the pool if target is met
+        if (totalPooled == bond) {
+            _lockPool();
         }
     }
 
@@ -104,10 +101,11 @@ contract RenPool {
         uint senderBalance = balances[sender];
 
         require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-        require(isLocked == false, "Pool is locked, please do a withdraw request");
+        require(isLocked == false, "Pool is locked");
 
         totalPooled -= _amount;
         balances[sender] -= _amount;
+
         renToken.transfer(sender, _amount);
 
         emit RenWithdrawn(sender, _amount);
@@ -118,27 +116,27 @@ contract RenPool {
         uint senderBalance = balances[sender];
 
         require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-        require(isLocked == true, "The pool is not locked, please do a regular withdraw");
+        require(isLocked == true, "Pool is not locked");
 
         withdrawRequests[sender] = _amount;
     }
 
-    function fullfillWithdrawRequest(address _withdrawRequestAddress) external {
-        uint withdrawRequestAmount = withdrawRequests[_withdrawRequestAddress];
+    function fulfillWithdrawRequest(address _target) external {
         address sender = msg.sender;
+        uint amount = withdrawRequests[_target]; // this could not be defined and make sure amount > 0
 
         require(isLocked == true, "Pool is not locked");
-        require(renToken.transferFrom(sender, address(this), withdrawRequestAmount));
+        require(renToken.transferFrom(sender, address(this), amount));
 
-        // Transfering the balance
-        balances[sender] += withdrawRequestAmount;
-        balances[_withdrawRequestAddress] -= withdrawRequestAmount;
+        // Transfering balance
+        balances[sender] += amount;
+        balances[_target] -= amount;
 
         // withdraw funds
-        renToken.transfer(_withdrawRequestAddress, withdrawRequestAmount);
+        renToken.transfer(_target, amount);
 
         // removing the user in the queue
-        delete withdrawRequests[_withdrawRequestAddress];
+        delete withdrawRequests[_target];
     }
 
     function balanceOf(address _addr) external view returns(uint) {
@@ -146,7 +144,7 @@ contract RenPool {
     }
 
     function approveBondTransfer() external onlyOwnerAdmin returns(bool) {
-        renToken.approve(darknodeRegistryAddr, target);
+        renToken.approve(darknodeRegistryAddr, bond);
         // ^ msg.sender == address(this), right ? ie, the RenPool contract address is the sender and not the admin/owner who initiated this transaction?
         return true;
     }

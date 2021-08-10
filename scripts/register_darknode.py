@@ -1,12 +1,13 @@
 import os
-from brownie import Contract, accounts, config, RenToken, RenPool
+from brownie import accounts, config, RenToken, RenPool
 from brownie_tokens import MintableForkToken
 import constants as C
 
 def main():
   """
-  Deploy a RenPool contract to the mainnet-fork, lock the pool by ptoviding
-  liquidity and finally register a darknode instance.
+  Deploy a RenPool contract to a testnet (mainnet-fork or kovan),
+  lock the pool by ptoviding liquidity and finally register a
+  darknode instance.
   See: https://youtu.be/0JrDbvBClEA (brownie tutorial)
   See: https://renproject.github.io/contracts-ts/#/mainnet
   """
@@ -28,14 +29,15 @@ def main():
   )
 
   renToken = MintableForkToken(renTokenAddr)
-  darknodeRegistry = Contract(darknodeRegistryAddr)
+  console.log('REN TOKEN', dir(renToken))
+  # darknodeRegistry = Contract(darknodeRegistryAddr)
 
   renToken._mint_for_testing(user, C.POOL_TARGET)
   renToken.approve(renPool, C.POOL_TARGET, {'from': user})
   renPool.deposit(C.POOL_TARGET, {'from': user})
 
-  if (renPool.isLocked() != True):
-    raise ValueError('Pool is not locked')
+  # if (renPool.isLocked() != True):
+  #   raise ValueError('Pool is not locked')
 
-  renPool.approveBondTransfer({'from': admin})
-  renPool.registerDarknode('123', 'ABC')
+  # renPool.approveBondTransfer({'from': admin})
+  # renPool.registerDarknode('123', 'ABC', {'from': admin})

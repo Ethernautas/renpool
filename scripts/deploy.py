@@ -1,6 +1,7 @@
 import os
 import copy
 from brownie import ZERO_ADDRESS, accounts, config, RenToken, RenPool
+from brownie_tokens import MintableForkToken
 import constants as C
 
 def main():
@@ -11,12 +12,14 @@ def main():
   owner = None
   admin = None
   renTokenAddr = ZERO_ADDRESS
+  renToken = None
 
   if (config['networks']['default'] != 'development'):
     account = accounts.add(config['wallets']['from_key'])
     owner = copy.copy(account)
     admin = copy.copy(account)
     renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
+    renToken = MintableForkToken(renTokenAddr)
   else:
     owner = accounts[0]
     admin = accounts[1]
@@ -31,4 +34,4 @@ def main():
     {'from': admin}
   )
 
-  return renPool
+  return renToken, renPool
