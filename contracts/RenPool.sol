@@ -250,7 +250,6 @@ contract RenPool {
     {
         require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
-        require(renToken.allowance(address(this), darknodeRegistryAddr) >= bond, "Insufficient allowance");
 
         require(
             darknodeRegistry.register(_darknodeID, _publicKey), // register does not return bool. Is this still valid?
