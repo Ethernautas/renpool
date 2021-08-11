@@ -14,7 +14,7 @@ def main():
   network = config['networks']['default']
 
   if (network != 'mainnet-fork' and network != 'kovan'):
-    raise ValueError('Switch to mainnet-fork or kovan network')
+    raise ValueError('Unsupported network, switch to mainnet-fork or kovan')
 
   owner = accounts[0]
   admin = accounts[1]
@@ -40,6 +40,6 @@ def main():
     raise ValueError('Pool is not locked')
 
   renPool.approveBondTransfer({'from': admin})
-  renPool.registerDarknode(user, 'ABC', {'from': admin})
+  renPool.registerDarknode(user, 'some_public_key', {'from': admin})
 
   return renToken, renPool

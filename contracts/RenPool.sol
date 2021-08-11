@@ -100,7 +100,7 @@ contract RenPool {
         totalPooled += _amount;
 
         require(
-            renToken.transferFrom(sender, address(this), _amount),
+            renToken.transferFrom(sender, address(this), _amount) == true,
             "Deposit failed"
         );
 
@@ -129,7 +129,7 @@ contract RenPool {
         balances[sender] -= _amount;
 
         require(
-            renToken.transfer(sender, _amount),
+            renToken.transfer(sender, _amount) == true,
             "Withdraw failed"
         );
 
