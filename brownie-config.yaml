@@ -4,7 +4,7 @@ project_structure:
 
 # Set a custom mnemonic for the development network
 networks:
-  default: ${DEFAULT_NETWORK} # kovan, rinkeby, ...
+  default: ${DEFAULT_NETWORK} # development, kovan, rinkeby, mainnet, mainnet-fork, ...
   development:
     cmd_settings:
       mnemonic: ${WALLET_MNEMONIC}
