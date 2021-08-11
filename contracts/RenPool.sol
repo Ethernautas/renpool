@@ -3,18 +3,6 @@ pragma solidity ^0.8.0;
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
 
 interface DarknodeRegistry {
-    /**
-     * @notice Register a darknode and transfer the bond to this contract.
-     * Before registering, the bond transfer must be approved in the REN
-     * contract. The caller must provide a public encryption key for the
-     * darknode. The darknode will remain pending registration until the next
-     * epoch. Only after this period can the darknode be deregistered. The
-     * caller of this method will be stored as the owner of the darknode.
-     *
-     * @param _darknodeID The darknode ID that will be registered.
-     * @param _publicKey The public key of the darknode. It is stored to allow
-     *        other darknodes and traders to encrypt messages to the trader.
-     */
     function register(address _darknodeID, bytes calldata _publicKey) external;
 }
 
@@ -39,12 +27,17 @@ contract RenPool {
     event PoolLocked();
     event PoolUnlocked();
 
+    /**
+     * TODO
+     */
     constructor(
         address _renTokenAddr,
         address _darknodeRegistryAddr,
         address _owner,
         uint _bond
-    ) public {
+    )
+        public
+    {
         renTokenAddr = _renTokenAddr;
         darknodeRegistryAddr = _darknodeRegistryAddr;
         owner = _owner;
@@ -59,25 +52,44 @@ contract RenPool {
     }
 
     modifier onlyOwnerAdmin() {
-        require (msg.sender == owner || msg.sender == admin, "Caller is not owner nor admin");
+        require (
+            msg.sender == owner || msg.sender == admin,
+            "Caller is not owner nor admin"
+        );
         _;
     }
 
     modifier onlyOwner() {
-        require (msg.sender == owner, "Caller is not owner");
+        require (
+            msg.sender == owner,
+            "Caller is not owner"
+        );
         _;
     }
 
-    function _lockPool() private {
+    /**
+     * TODO
+     */
+    function _lockPool()
+        private
+    {
         isLocked = true;
         emit PoolLocked();
     }
 
     /**
-     * @notice User needs to give allowance before calling this method. See 'approve'
-     * method at https://ethereum.org/nl/developers/tutorials/erc20-annotated-code/
-     */
-    function deposit(uint _amount) external {
+    * @notice Deposit REN into the RenPool contract. Before depositing,
+    * the transfer must be approved in the REN contract. In case the
+    * predefined bond is reached, the pool is locked preventing any
+    * further deposits or withdrawals.
+    *
+    * @param _amount The amount of REN to be deposited into the pool.
+    */
+    function deposit(
+        uint _amount
+    )
+        external
+    {
         address sender = msg.sender;
 
         require(_amount > 0, "Invalid ammount");
@@ -87,7 +99,10 @@ contract RenPool {
         balances[sender] += _amount; // TODO: do we need to use safeMath?
         totalPooled += _amount;
 
-        renToken.transferFrom(sender, address(this), _amount);
+        require(
+            renToken.transferFrom(sender, address(this), _amount),
+            "Deposit failed"
+        );
 
         emit RenDeposited(sender, _amount);
 
@@ -96,7 +111,14 @@ contract RenPool {
         }
     }
 
-    function withdraw(uint _amount) external {
+    /**
+     * TODO
+     */
+    function withdraw(
+        uint _amount
+    )
+        external
+    {
         address sender = msg.sender;
         uint senderBalance = balances[sender];
 
@@ -106,12 +128,24 @@ contract RenPool {
         totalPooled -= _amount;
         balances[sender] -= _amount;
 
-        renToken.transfer(sender, _amount);
+        require(
+            renToken.transfer(sender, _amount),
+            "Withdraw failed"
+        );
 
         emit RenWithdrawn(sender, _amount);
     }
 
-    function requestWithdraw(uint _amount) external {
+    /**
+     * TODO
+     * @dev Users can have up to a single request active. In case of several
+     * calls to this method, only the last request will be preserved.
+     */
+    function requestWithdraw(
+        uint _amount
+    )
+        external
+    {
         address sender = msg.sender;
         uint senderBalance = balances[sender];
 
@@ -119,44 +153,110 @@ contract RenPool {
         require(isLocked == true, "Pool is not locked");
 
         withdrawRequests[sender] = _amount;
-    }
 
-    function fulfillWithdrawRequest(address _target) external {
-        address sender = msg.sender;
-        uint amount = withdrawRequests[_target]; // this could not be defined and make sure amount > 0
-
-        require(isLocked == true, "Pool is not locked");
-        require(renToken.transferFrom(sender, address(this), amount));
-
-        // Transfering balance
-        balances[sender] += amount;
-        balances[_target] -= amount;
-
-        // withdraw funds
-        renToken.transfer(_target, amount);
-
-        // removing the user in the queue
-        delete withdrawRequests[_target];
-    }
-
-    function balanceOf(address _addr) external view returns(uint) {
-        return balances[_addr];
-    }
-
-    function approveBondTransfer() external onlyOwnerAdmin returns(bool) {
-        renToken.approve(darknodeRegistryAddr, bond);
-        // ^ msg.sender == address(this), right ? ie, the RenPool contract address is the sender and not the admin/owner who initiated this transaction?
-        return true;
+        // TODO emit event
     }
 
     /**
-     * @notice approveBondTransfer needs to be called before registerDarknode
+     * TODO
      */
-    function registerDarknode(address _darknodeID, bytes calldata _publicKey) external onlyOwnerAdmin returns(bool) {
-        // See: https://docs.soliditylang.org/en/v0.6.2/contracts.html#receive-ether-function
-        // What if this function is called more then once?
-        darknodeRegistry.register(_darknodeID, _publicKey);
-        // ^ msg.sender == address(this), right ? ie, the RenPool contract address is the sender and not the admin/owner who initiated this transaction?
+    function fulfillWithdrawRequest(
+        address _target
+    )
+        external
+    {
+        address sender = msg.sender;
+        uint amount = withdrawRequests[_target];
+        // ^ This could not be defined plus make sure amount > 0
+
+        require(isLocked == true, "Pool is not locked");
+
+        balances[sender] += amount;
+        balances[_target] -= amount;
+        delete withdrawRequests[_target];
+
+        // Transfer funds from sender to _target
+        require(
+            renToken.transferFrom(sender, address(this), amount) == true,
+            "Deposit failed"
+        );
+        require(
+            renToken.transfer(_target, amount) == true,
+            "Refund failed"
+        );
+
+        // TODO emit event
+    }
+
+    /**
+     * @notice Returns the REN balance of the target address.
+     *
+     * @param _target The address ...
+     */
+    function balanceOf(
+        address _target
+    )
+        external
+        view
+        returns(uint)
+    {
+        return balances[_target];
+    }
+
+     /**
+      * @notice Transfer the bond to the REN contract before registering
+      * the darknode.
+      * @question msg.sender == address(this), right ? ie, the RenPool
+      * contract address will the sender and not the admin/owner who initiated this transaction?
+      */
+    function approveBondTransfer()
+        external
+        onlyOwnerAdmin
+        returns(bool)
+    {
+        require(totalPooled == bond, "Total pooled does not equal bond");
+        require(isLocked == true, "Pool is not locked");
+
+        require(
+            renToken.approve(darknodeRegistryAddr, bond) == true,
+            "Bond transfer failed"
+        );
+
+        return true;
+    }
+
+     /**
+      * @notice Register a darknode and transfer the bond to the REN contract.
+      * Before registering, the bond transfer must be approved in the REN
+      * contract. The caller must provide a public encryption key for the
+      * darknode. The darknode will remain pending registration until the next
+      * epoch. Only after this period can the darknode be deregistered. The
+      * caller of this method will be stored as the owner of the darknode.
+      * @question msg.sender == address(this), right ? ie, the RenPool
+      * contract address will the sender and not the admin/owner who initiated this transaction?
+      * @question What if this function is called more then once?
+      *
+      * @param _darknodeID The darknode ID that will be registered.
+      * @param _publicKey The public key of the darknode. It is stored to allow
+      * other darknodes and traders to encrypt messages to the trader.
+      */
+    function registerDarknode(
+        address _darknodeID,
+        bytes calldata _publicKey
+    )
+        external
+        onlyOwnerAdmin
+        returns(bool)
+    {
+        require(totalPooled == bond, "Total pooled does not equal bond");
+        require(isLocked == true, "Pool is not locked");
+        require(renToken.allowance(address(this), darknodeRegistryAddr) >= bond, "Insufficient allowance");
+
+        require(
+            darknodeRegistry.register(_darknodeID, _publicKey), // register does not return bool. Is this still valid?
+            "Darknode registration failed"
+        );
+
         return true;
     }
 }
