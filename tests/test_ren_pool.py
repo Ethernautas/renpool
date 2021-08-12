@@ -78,7 +78,7 @@ def test_withdraw_fullfilment(owner, user, ren_pool, ren_token):
     assert ren_pool.isLocked() == True
     assert ren_pool.totalPooled() == C.POOL_BOND
 
-    # The pool is locked so now we can call withdraw request
+    # The pool is locked so now we can call request withdraw
     ren_pool.requestWithdraw(WITHDRAW_AMOUNT, {'from': owner})
     assert ren_pool.withdrawRequests(owner) == WITHDRAW_AMOUNT
 
