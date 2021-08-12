@@ -30,7 +30,7 @@ def main():
     renTokenAddr,
     ZERO_ADDRESS,
     owner,
-    C.POOL_TARGET,
+    C.POOL_BOND,
     {'from': admin}
   )
 

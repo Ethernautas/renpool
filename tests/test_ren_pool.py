@@ -18,7 +18,7 @@ def test_ren_pool_deploy(owner, admin, ren_pool):
     """
     assert ren_pool.owner() == owner
     assert ren_pool.admin() == admin
-    assert ren_pool.target() == C.POOL_TARGET
+    assert ren_pool.bond() == C.POOL_BOND
     assert ren_pool.isLocked() == False
     assert ren_pool.totalPooled() == 0
 
@@ -61,13 +61,13 @@ def test_withdraw_fullfilment(owner, user, ren_pool, ren_token):
 
     assert ren_pool.totalPooled() == 0
     # Depositing 100k in the pool to lock it
-    ren_token.approve(ren_pool.address, C.POOL_TARGET, {'from': owner})
-    ren_pool.deposit(C.POOL_TARGET, {'from': owner})
+    ren_token.approve(ren_pool.address, C.POOL_BOND, {'from': owner})
+    ren_pool.deposit(C.POOL_BOND, {'from': owner})
     assert ren_pool.isLocked() == True
 
     ren_pool.requestWithdraw(WITHDRAW_AMOUNT, {'from': owner}) # The pool is locked so this will create a withdraw request
 
-    assert ren_pool.totalPooled() == C.POOL_TARGET
+    assert ren_pool.totalPooled() == C.POOL_BOND
     assert ren_pool.withdrawRequests(owner) == WITHDRAW_AMOUNT# seeing if there is a withdraw request
 
     # Fulfilling
@@ -79,4 +79,4 @@ def test_withdraw_fullfilment(owner, user, ren_pool, ren_token):
 
     assert ren_token.balanceOf(user, {'from': user}) == C.FAUCET_AMOUNT - WITHDRAW_AMOUNT # Account has fullfiled the withdraw request (so he has 1000 ren less)
     assert ren_pool.balanceOf(user, {'from': user}) == WITHDRAW_AMOUNT
-    assert ren_pool.totalPooled() == C.POOL_TARGET # Pool still full
+    assert ren_pool.totalPooled() == C.POOL_BOND # Pool still full

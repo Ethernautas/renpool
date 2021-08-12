@@ -26,15 +26,15 @@ def main():
     renTokenAddr,
     darknodeRegistryAddr,
     owner,
-    C.POOL_TARGET,
+    C.POOL_BOND,
     {'from': admin}
   )
 
   renToken = MintableForkToken(renTokenAddr)
-  renToken._mint_for_testing(user, C.POOL_TARGET)
+  renToken._mint_for_testing(user, C.POOL_BOND)
 
-  renToken.approve(renPool, C.POOL_TARGET, {'from': user})
-  renPool.deposit(C.POOL_TARGET, {'from': user})
+  renToken.approve(renPool, C.POOL_BOND, {'from': user})
+  renPool.deposit(C.POOL_BOND, {'from': user})
 
   if (renPool.isLocked() != True):
     raise ValueError('Pool is not locked')
