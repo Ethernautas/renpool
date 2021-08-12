@@ -87,7 +87,7 @@ def test_withdraw_fullfilment(owner, user, ren_pool, ren_token):
     ren_token.approve(ren_pool.address, WITHDRAW_AMOUNT , {'from': user})
     ren_pool.fulfillWithdrawRequest(owner, {'from': user})
 
-    # Account has fullfiled the withdraw request (so the user has WITHDRAW_AMOUNT ren less)
+    # Account has fullfiled the withdraw request so now the user has WITHDRAW_AMOUNT ren less in his balance
     assert ren_token.balanceOf(user, {'from': user}) == C.FAUCET_AMOUNT - WITHDRAW_AMOUNT
     assert ren_pool.balanceOf(user, {'from': user}) == WITHDRAW_AMOUNT
     assert ren_pool.totalPooled() == C.POOL_BOND # Pool still full
