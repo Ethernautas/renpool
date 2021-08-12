@@ -1,24 +1,26 @@
-# change the build directory to be within react's scope
+# Change the build directory to be within react's scope
 project_structure:
   build: client/src/artifacts
 
-# set a custom mnemonic for the development network
+# Set a custom mnemonic for the development network
 networks:
-  default: ${DEFAULT_NETWORK}
+  default: ${DEFAULT_NETWORK} # development, kovan, rinkeby, mainnet, mainnet-fork, ...
   development:
     cmd_settings:
       mnemonic: ${WALLET_MNEMONIC}
-  kovan:
-    cmd_settings:
-      mnemonic: ${WALLET_MNEMONIC}
-  rinkeby:
-    cmd_settings:
-      mnemonic: ${WALLET_MNEMONIC}
 
-# enable output of development artifacts to load with react
+wallets:
+  from_key: ${WALLET_PRIVATE_KEY}
+
+# Enable output of development artifacts to load with react
 dev_deployment_artifacts: true
+
+dotenv: .env
 
 dependencies:
   - OpenZeppelin/openzeppelin-contracts@4.0.0
 
-dotenv: .env
+compiler:
+  solc:
+    remappings:
+      # - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@2.5.1'

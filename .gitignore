@@ -11,4 +11,4 @@ venv
 .env.kovan
 .env.rinkeby
 .env.mainnet
-.env.mainnet-fork
+.env.mainnet_fork

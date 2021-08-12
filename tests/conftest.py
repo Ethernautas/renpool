@@ -1,3 +1,4 @@
+from brownie import ZERO_ADDRESS
 import pytest
 import constants as C
 
@@ -49,4 +50,4 @@ def ren_pool(owner, admin, RenPool, ren_token):
     """
     Yield a `Contract` object for the RenPool contract.
     """
-    yield RenPool.deploy(ren_token, owner, C.POOL_TARGET, {'from': admin})
+    yield RenPool.deploy(ren_token, ZERO_ADDRESS, owner, C.POOL_BOND, {'from': admin})

@@ -270,8 +270,8 @@ Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channe
 2. [https://github.com/renproject](https://github.com/renproject)
 3. [https://docs.renproject.io/developers/docs/deployed-contracts](https://docs.renproject.io/developers/docs/deployed-contracts)
 4. [https://ethereum.org/en/developers/docs/standards/tokens/erc-20/](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
-5. REN token [https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38](https://etherscan.io/token/0x408e41876cccdc0f92210600ef50372656052a38)
-6. REN token testnet addresses [https://renproject.github.io/contracts-ts/#/testnet](https://renproject.github.io/contracts-ts/#/testnet)
+5. Ren contract addresses on mainnet [https://renproject.github.io/contracts-ts/#/mainnet](https://renproject.github.io/contracts-ts/#/mainnet)
+6. Ren contract addresses on testnet [https://renproject.github.io/contracts-ts/#/testnet](https://renproject.github.io/contracts-ts/#/testnet)
 7. [https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974](https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974)
 
 # How it works from renpool.io

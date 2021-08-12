@@ -1,22 +1,37 @@
-from brownie import accounts, RenToken, RenPool
-# ^ accounts is coming from Ganache while RenToken and RenPool from the contracts folder.
+import os
+import copy
+from brownie import ZERO_ADDRESS, accounts, config, RenToken, RenPool
+from brownie_tokens import MintableForkToken
 import constants as C
-
-# TODO: use real renToken address in production and testnets ('0x408e41876cccdc0f92210600ef50372656052a38')
-
-def distribute_tokens(renToken, owner):
-  for i in range(10):
-    renToken.transfer(accounts[i], C.FAUCET_AMOUNT, {'from': owner})
 
 def main():
   """
-  1. Mint (ERC20) REN token;
-  2. Distribute REN tokens among accounts;
-  3. Deploy RenPool contract;
+  Set your .env file accordingly before deploying the RenPool contract.
+  In case of the live nets, make sure your account is funded.
   """
-  owner = accounts[0]
-  admin = accounts[1]
-  renToken = RenToken.deploy({'from': owner})
-  # distribute_tokens(renToken, owner)
-  renPool = RenPool.deploy(renToken, owner, C.POOL_TARGET, {'from': admin})
+  owner = None
+  admin = None
+  renTokenAddr = ZERO_ADDRESS
+  renToken = None
+
+  if (config['networks']['default'] != 'development'):
+    account = accounts.add(config['wallets']['from_key'])
+    owner = copy.copy(account)
+    admin = copy.copy(account)
+    renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
+    renToken = MintableForkToken(renTokenAddr)
+  else:
+    owner = accounts[0]
+    admin = accounts[1]
+    renToken = RenToken.deploy({'from': owner})
+    renTokenAddr = renToken.address
+
+  renPool = RenPool.deploy(
+    renTokenAddr,
+    ZERO_ADDRESS,
+    owner,
+    C.POOL_BOND,
+    {'from': admin}
+  )
+
   return renToken, renPool
