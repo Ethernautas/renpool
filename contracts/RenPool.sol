@@ -4,6 +4,8 @@ import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.so
 
 interface DarknodeRegistry {
     function register(address _darknodeID, bytes calldata _publicKey) external;
+    function deregister(address _darknodeID) external;
+    function refund(address _darknodeID) external;
 }
 
 contract RenPool {
@@ -73,7 +75,19 @@ contract RenPool {
         private
     {
         isLocked = true;
+
         emit PoolLocked();
+    }
+
+    function unlockPool()
+        external
+        onlyOwnerAdmin
+    {
+        require(renToken.balanceOf(address(this)) > 0, "Pool balance is zero");
+
+        isLocked = false;
+
+        emit PoolUnlocked();
     }
 
     /**
@@ -187,6 +201,9 @@ contract RenPool {
         // TODO emit event
     }
 
+    // TODO: cancelWithdrawRequest
+    // TODO: getWithdrawRequests
+
     /**
      * @notice Returns the REN balance of the target address.
      *
@@ -254,6 +271,47 @@ contract RenPool {
         require(isLocked == true, "Pool is not locked");
 
         darknodeRegistry.register(_darknodeID, _publicKey);
+
+        return true;
+    }
+
+    /**
+     * @notice Deregister a darknode. The darknode will not be deregistered
+     * until the end of the epoch. After another epoch, the bond can be
+     * refunded by calling the refund method.
+     *
+     * @param _darknodeID The darknode ID that will be deregistered. The caller
+     * of this method store.darknodeRegisteredAt(_darknodeID) must be
+     * the owner of this darknode.
+     */
+    function deregister(
+        address _darknodeID
+    )
+        external
+        onlyOwnerAdmin
+        returns(bool)
+    {
+        darknodeRegistry.deregister(_darknodeID);
+
+        return true;
+    }
+
+    /**
+     * @notice Refund the bond of a deregistered darknode. This will make the
+     * darknode available for registration again. Anyone can call this function
+     * but the bond will always be refunded to the darknode owner.
+     *
+     * @param _darknodeID The darknode ID that will be refunded. The caller
+     * of this method must be the owner of this darknode.
+    */
+    function refund(
+        address _darknodeID
+    )
+        external
+        onlyOwnerAdmin
+        returns(bool)
+    {
+        darknodeRegistry.refund(_darknodeID);
 
         return true;
     }

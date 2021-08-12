@@ -84,7 +84,7 @@ def test_withdraw_fullfilment(owner, user, ren_pool, ren_token):
 
     # User fulfills the withdraw request made by the owner
     ren_token.callFaucet({'from': user})
-    ren_token.approve(ren_pool.address, WITHDRAW_AMOUNT , {'from': user})
+    ren_token.approve(ren_pool, WITHDRAW_AMOUNT , {'from': user})
     ren_pool.fulfillWithdrawRequest(owner, {'from': user})
 
     # Account has fullfiled the withdraw request so now the user has WITHDRAW_AMOUNT ren less in his balance
