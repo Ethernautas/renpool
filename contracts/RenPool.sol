@@ -36,7 +36,6 @@ contract RenPool {
         address _owner,
         uint _bond
     )
-        public
     {
         renTokenAddr = _renTokenAddr;
         darknodeRegistryAddr = _darknodeRegistryAddr;
@@ -78,13 +77,13 @@ contract RenPool {
     }
 
     /**
-    * @notice Deposit REN into the RenPool contract. Before depositing,
-    * the transfer must be approved in the REN contract. In case the
-    * predefined bond is reached, the pool is locked preventing any
-    * further deposits or withdrawals.
-    *
-    * @param _amount The amount of REN to be deposited into the pool.
-    */
+     * @notice Deposit REN into the RenPool contract. Before depositing,
+     * the transfer must be approved in the REN contract. In case the
+     * predefined bond is reached, the pool is locked preventing any
+     * further deposits or withdrawals.
+     *
+     * @param _amount The amount of REN to be deposited into the pool.
+     */
     function deposit(
         uint _amount
     )
@@ -203,12 +202,13 @@ contract RenPool {
         return balances[_target];
     }
 
-     /**
-      * @notice Transfer the bond to the REN contract before registering
-      * the darknode.
-      * @question msg.sender == address(this), right ? ie, the RenPool
-      * contract address will the sender and not the admin/owner who initiated this transaction?
-      */
+    /**
+     * @notice Transfer the bond to the REN contract before registering
+     * the darknode.
+     *
+     * question: msg.sender == address(this), right ? ie, the RenPool
+     * contract address will the sender and not the admin/owner who initiated this transaction?
+     */
     function approveBondTransfer()
         external
         onlyOwnerAdmin
@@ -225,21 +225,23 @@ contract RenPool {
         return true;
     }
 
-     /**
-      * @notice Register a darknode and transfer the bond to the REN contract.
-      * Before registering, the bond transfer must be approved in the REN
-      * contract. The caller must provide a public encryption key for the
-      * darknode. The darknode will remain pending registration until the next
-      * epoch. Only after this period can the darknode be deregistered. The
-      * caller of this method will be stored as the owner of the darknode.
-      * @question msg.sender == address(this), right ? ie, the RenPool
-      * contract address will the sender and not the admin/owner who initiated this transaction?
-      * @question What if this function is called more then once?
-      *
-      * @param _darknodeID The darknode ID that will be registered.
-      * @param _publicKey The public key of the darknode. It is stored to allow
-      * other darknodes and traders to encrypt messages to the trader.
-      */
+    /**
+     * @notice Register a darknode and transfer the bond to the REN contract.
+     * Before registering, the bond transfer must be approved in the REN
+     * contract. The caller must provide a public encryption key for the
+     * darknode. The darknode will remain pending registration until the next
+     * epoch. Only after this period can the darknode be deregistered. The
+     * caller of this method will be stored as the owner of the darknode.
+     *
+     * question msg.sender == address(this), right ? ie, the RenPool
+     * contract address will the sender and not the admin/owner who initiated this transaction?
+     *
+     * question What if this function is called more then once?
+     *
+     * @param _darknodeID The darknode ID that will be registered.
+     * @param _publicKey The public key of the darknode. It is stored to allow
+     * other darknodes and traders to encrypt messages to the trader.
+     */
     function registerDarknode(
         address _darknodeID,
         bytes calldata _publicKey
@@ -251,10 +253,7 @@ contract RenPool {
         require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
-        require(
-            darknodeRegistry.register(_darknodeID, _publicKey), // register does not return bool. Is this still valid?
-            "Darknode registration failed"
-        );
+        darknodeRegistry.register(_darknodeID, _publicKey);
 
         return true;
     }
