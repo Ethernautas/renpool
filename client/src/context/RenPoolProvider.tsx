@@ -7,6 +7,8 @@ import { useContract } from '../hooks/useContract'
 
 interface CtxValue {
   renPool: Contract | undefined
+  owner: string | null
+  admin: string | null
   totalPooled: BigNumber
   isLocked: boolean
   accountPooled: BigNumber
@@ -23,6 +25,8 @@ interface CtxValue {
  */
 const defaultValue: CtxValue = {
   renPool: undefined,
+  owner: null,
+  admin: null,
   totalPooled: BigNumber.from(0),
   isLocked: false,
   accountPooled: BigNumber.from(0),
@@ -40,9 +44,33 @@ export const RenPoolProvider: FC = ({
 
   const renPool = useContract(CONTRACT_NAMES.RenPool)
 
+  const [owner, setOwner] = useState<string | null>(null)
+  const [admin, setAdmin] = useState<string | null>(null)
   const [totalPooled, setTotalPooled] = useState<BigNumber>(BigNumber.from(0))
   const [isLocked, setIsLocked] = useState<boolean>(false)
   const [accountPooled, setAccountPooled] = useState<BigNumber>(BigNumber.from(0))
+
+  const getOwner = async (): Promise<void> => {
+    if (renPool == null) return
+
+    try {
+      const _owner: string = await renPool.owner({ gasLimit: 60000 })
+      setOwner(_owner)
+    } catch (e) {
+      console.log(`Error querying owner ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  const getAdmin = async (): Promise<void> => {
+    if (renPool == null) return
+
+    try {
+      const _admin: string = await renPool.admin({ gasLimit: 60000 })
+      setAdmin(_admin)
+    } catch (e) {
+      console.log(`Error querying admin ${JSON.stringify(e, null, 2)}`)
+    }
+  }
 
   const getTotalPooled = async (): Promise<void> => {
     if (renPool == null) return
@@ -78,6 +106,8 @@ export const RenPoolProvider: FC = ({
   }
 
   useEffect(() => {
+    getOwner()
+    getAdmin()
     getTotalPooled()
     getIsLocked()
     getBalanceOf()
@@ -87,6 +117,8 @@ export const RenPoolProvider: FC = ({
     <RenPoolContext.Provider
       value={{
         renPool,
+        owner,
+        admin,
         totalPooled,
         isLocked,
         accountPooled,

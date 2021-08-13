@@ -5,9 +5,11 @@ import { linkTheme } from './theme'
 import { RenPoolContext } from './context/RenPoolProvider'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
-import { Stats } from './components/Stats'
+import { NavLink } from './components/NavLink'
 import { Deposit } from './components/Deposit'
 import { Withdraw } from './components/Withdraw'
+import { AdminPanel } from './components/AdminPanel'
+import { Stats } from './components/Stats'
 import { Addresses } from './components/Addresses'
 import { Instructions } from './components/Instructions'
 import { Footer } from './components/Footer'
@@ -17,18 +19,17 @@ const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 enum Views {
   DEPOSIT = 'DEPOSIT',
   WITHDRAW = 'WITHDRAW',
+  ADMIN = 'ADMIN',
 }
 
 export const App = (): JSX.Element => {
   const { chainId, account } = useActiveWeb3React()
-  const { isLocked } = useContext(RenPoolContext)
+  const { owner, admin, isLocked } = useContext(RenPoolContext)
   const [view, setView] = useState<Views>(Views.DEPOSIT)
 
   const isAccountsUnlocked = account != null
   const wrongChain = chainId != parseInt(CHAIN_ID, 10)
   const disabled = !isAccountsUnlocked || wrongChain || isLocked
-  const depositView = view === Views.DEPOSIT
-  const View = depositView ? Deposit : Withdraw
 
   return (
     <>
@@ -60,26 +61,58 @@ export const App = (): JSX.Element => {
         )}
 
         <Box p={2} />
+        <Flex justifyContent="center" alignItems="center">
+          <NavLink
+            label="Deposit"
+            disabled={view === Views.DEPOSIT}
+            onClick={() => { setView(Views.DEPOSIT) }}
+          />
+          <Box p={3}>|</Box>
+          <NavLink
+            label="Withdraw"
+            disabled={view === Views.WITHDRAW}
+            onClick={() => { setView(Views.WITHDRAW) }}
+          />
+          {account != null && [owner, admin].includes(account) && (
+            <>
+              <Box p={3}>|</Box>
+              <NavLink
+                label="Admin Panel"
+                disabled={view === Views.ADMIN}
+                onClick={() => { setView(Views.ADMIN) }}
+              />
+            </>
+          )}
+        </Flex>
 
-        <Box>
-          <Heading.h3 textAlign="center">{depositView ? 'Deposit' : 'Withdraw'} REN</Heading.h3>
-          <Box p={3}>
-            <View disabled={disabled} />
+        <Box p={2} />
+
+        {view === Views.DEPOSIT && (
+          <Box>
+            <Heading.h3 textAlign="center">Deposit REN</Heading.h3>
+            <Box p={3}>
+              <Deposit disabled={disabled} />
+            </Box>
           </Box>
-          <Box p={2} />
-          <Flex justifyContent="center" alignItems="center">
-            <Link
-              href=""
-              {...linkTheme}
-              onClick={(e: React.MouseEvent<HTMLElement>) => {
-                e.preventDefault()
-                setView(depositView ? Views.WITHDRAW : Views.DEPOSIT)
-              }}
-            >
-              Switch to {depositView ? 'Withdraw' : 'Deposit'}
-            </Link>
-          </Flex>
-        </Box>
+        )}
+
+        {view === Views.WITHDRAW && (
+          <Box>
+            <Heading.h3 textAlign="center">Withdraw REN</Heading.h3>
+            <Box p={3}>
+              <Withdraw disabled={disabled} />
+            </Box>
+          </Box>
+        )}
+
+        {view === Views.ADMIN && (
+          <Box>
+            <Heading.h3 textAlign="center">Admin Panel</Heading.h3>
+            <Box p={3}>
+              <AdminPanel />
+            </Box>
+          </Box>
+        )}
 
         <Box p={3} />
         <Box>
@@ -94,7 +127,7 @@ export const App = (): JSX.Element => {
         <Box p={2} />
         <Box>
           <Box px={3}>
-            <Heading.h4>Contract Addresses</Heading.h4>
+            <Heading.h4>Addresses</Heading.h4>
           </Box>
           <Box p={3} py={1}>
             <Addresses />
