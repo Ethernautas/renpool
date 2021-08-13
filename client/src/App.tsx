@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react'
-import { Flash, Flex, Box, Heading, Text, Link } from 'rimble-ui'
+import { Flash, Flex, Box, Heading, Text } from 'rimble-ui'
 import { NETWORKS } from './constants'
-import { linkTheme } from './theme'
 import { RenPoolContext } from './context/RenPoolProvider'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
