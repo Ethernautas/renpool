@@ -50,6 +50,8 @@ contract RenPool {
         totalPooled = 0;
         ownerFee = 5;
         adminFee = 5;
+
+        // TODO: register pool into RenPoolStore
     }
 
     modifier onlyOwnerAdmin() {

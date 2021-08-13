@@ -1,11 +1,18 @@
-import React, { FC, useContext, useState, useEffect, ChangeEvent, FormEvent } from 'react'
+import React, { FC, useContext, useState, ChangeEvent, FormEvent } from 'react'
 import { Box, Form, Input, Button } from 'rimble-ui'
+import { BOND } from '../../constants'
+import { RenTokenContext } from '../../context/RenTokenProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
 
 enum FieldNames {
   darknodeID = 'darknodeID',
   publicKey = 'publicKey',
+}
+
+enum Actions {
+  APPROVE = 'APPROVE',
+  REGISTER = 'REGISTER',
 }
 
 interface InputFields {
@@ -20,17 +27,23 @@ const defaultInputValues = {
 
 export const AdminPanel: FC = (): JSX.Element => {
   const { account } = useActiveWeb3React()
+  const { renToken, accountBalance } = useContext(RenTokenContext)
   const { renPool, isLocked, refetchIsLocked } = useContext(RenPoolContext)
 
   const [isApproved, setIsApproved] = useState(false)
   const [input, setInput] = useState<InputFields>(defaultInputValues)
   const [disabled, setDisabled] = useState(false)
 
-  const handleChange = async (e: ChangeEvent<HTMLInputElement>, fieldName: keyof typeof FieldNames): Promise<void> => {
+  // TODO: after node registration, query status from DarknodeRegistry
+
+  const handleChange = async (
+    e: ChangeEvent<HTMLInputElement>,
+    fieldName: FieldNames
+  ): Promise<void> => {
     setInput({ ...input, [fieldName]: e.target.value })
   }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: Actions): Promise<void> => {
     e.preventDefault()
     setDisabled(true)
 
@@ -40,6 +53,13 @@ export const AdminPanel: FC = (): JSX.Element => {
       alert(`Both ${FieldNames.darknodeID} and ${FieldNames.publicKey} are required`)
       setDisabled(false)
       return
+    }
+
+    if (action === Actions.APPROVE) {
+      const tx = await renToken.approve(darknodeRegistry.address, BOND)
+      await tx.wait() // wait for mining
+      const _isApproved = await checkForApproval(_input)
+      setIsApproved(_isApproved)
     }
 
     try {
