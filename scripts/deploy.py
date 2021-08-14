@@ -6,7 +6,7 @@ import constants as C
 def main():
   """
   Set your .env file accordingly before deploying the RenPool contract.
-  In case of the live networks, make sure your account is funded.
+  In case of live networks, make sure your account is funded.
   """
   network = config['networks']['default']
 
