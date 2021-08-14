@@ -317,4 +317,6 @@ contract RenPool {
 
         return true;
     }
+
+    // TODO: receive payable so that we can withdraw?
 }

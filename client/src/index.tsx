@@ -6,6 +6,7 @@ import { ThemeProvider } from 'styled-components'
 import { BaseStyles } from 'rimble-ui'
 import { theme } from './theme'
 import { Web3ProviderNetwork } from './context/Web3ProviderNetwork'
+import { DarknodeRegistryProvider } from './context/DarknodeRegistryProvider'
 import { RenTokenProvider } from './context/RenTokenProvider'
 import { RenPoolProvider } from './context/RenPoolProvider'
 import { Web3ReactManager } from './components/Web3ReactManager'
@@ -30,11 +31,13 @@ ReactDOM.render(
         <Web3ReactProvider getLibrary={getLibrary}>
           <Web3ProviderNetwork getLibrary={getLibrary}>
             <Web3ReactManager>
-              <RenTokenProvider>
-                <RenPoolProvider>
-                  <App />
-                </RenPoolProvider>
-              </RenTokenProvider>
+              <DarknodeRegistryProvider>
+                <RenTokenProvider>
+                  <RenPoolProvider>
+                    <App />
+                  </RenPoolProvider>
+                </RenTokenProvider>
+              </DarknodeRegistryProvider>
             </Web3ReactManager>
           </Web3ProviderNetwork>
         </Web3ReactProvider>

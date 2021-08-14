@@ -10,7 +10,7 @@ export const TENS = BigNumber.from(10).pow(DECIMALS)
 
 export const BOND = BigNumber.from(100_000)
   .mul(TENS)
-  .toString()
+  // .toString()
 
 export const MAX_UINT256 = BigNumber.from(2)
   .pow(256)
@@ -28,9 +28,10 @@ export const NETWORKS = {
 
 export const SUPPORTED_CHAIN_IDS = Object.keys(NETWORKS).map(key => parseInt(key, 10))
 
-export enum CONTRACT_NAMES {
+export enum ContractNames {
   RenToken = 'RenToken',
   RenPool = 'RenPool',
+  DarknodeRegistry = 'DarknodeRegistry',
 }
 
 export const FAUCETS = {

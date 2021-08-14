@@ -1,7 +1,7 @@
 import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
-import { CONTRACT_NAMES } from '../constants'
+import { ContractNames } from '../constants'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
 
@@ -42,7 +42,7 @@ export const RenPoolProvider: FC = ({
 }) => {
   const { account } = useActiveWeb3React()
 
-  const renPool = useContract(CONTRACT_NAMES.RenPool)
+  const renPool = useContract(ContractNames.RenPool)
 
   const [owner, setOwner] = useState<string | null>(null)
   const [admin, setAdmin] = useState<string | null>(null)

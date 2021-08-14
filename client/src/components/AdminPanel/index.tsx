@@ -1,6 +1,9 @@
-import React, { FC, useContext, useState, ChangeEvent, FormEvent } from 'react'
+import React, { FC, useContext, useState, useEffect, ChangeEvent, FormEvent } from 'react'
+import { BigNumber } from '@ethersproject/bignumber'
+import { formatBytes32String } from '@ethersproject/strings'
 import { Box, Form, Input, Button } from 'rimble-ui'
 import { BOND } from '../../constants'
+import { DarknodeRegistryContext } from '../../context/DarknodeRegistryProvider'
 import { RenTokenContext } from '../../context/RenTokenProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
@@ -27,13 +30,28 @@ const defaultInputValues = {
 
 export const AdminPanel: FC = (): JSX.Element => {
   const { account } = useActiveWeb3React()
-  const { renToken, accountBalance } = useContext(RenTokenContext)
+  const { darknodeRegistry } = useContext(DarknodeRegistryContext)
+  const { renToken } = useContext(RenTokenContext)
   const { renPool, isLocked, refetchIsLocked } = useContext(RenPoolContext)
 
   const [isApproved, setIsApproved] = useState(false)
   const [input, setInput] = useState<InputFields>(defaultInputValues)
   const [disabled, setDisabled] = useState(false)
 
+  useEffect(() => {
+    if (renToken != null && account != null) {
+      checkForApproval(BOND)
+        .then((_isApproved: boolean) => { setIsApproved(_isApproved) })
+        .catch((e: Error) => { alert(`Error checking for approval ${JSON.stringify(e, null, 2)}`) })
+    }
+  }, [renToken])
+
+  const checkForApproval = async (value: BigNumber): Promise<boolean> => {
+    if (renToken == null) return false
+    if (value.lt(BigNumber.from(1))) return false
+    const allowance: BigNumber = await renToken.allowance(renPool.address, darknodeRegistry.address)
+    return allowance.sub(value).gte(BigNumber.from(0))
+  }
   // TODO: after node registration, query status from DarknodeRegistry
 
   const handleChange = async (
@@ -47,31 +65,44 @@ export const AdminPanel: FC = (): JSX.Element => {
     e.preventDefault()
     setDisabled(true)
 
-    if (renPool == null) return
+    if (darknodeRegistry == null || renPool == null) return
 
-    if (Object.values(input).some(v => v.trim().lentgh === 0)) {
+    if (!isLocked) {
+      alert('Pool needs to be full for the darknode to be registered')
+      setDisabled(false)
+      return
+    }
+
+    if (Object.values(input).some(v => v.trim().length === 0)) {
       alert(`Both ${FieldNames.darknodeID} and ${FieldNames.publicKey} are required`)
       setDisabled(false)
       return
     }
 
     if (action === Actions.APPROVE) {
-      const tx = await renToken.approve(darknodeRegistry.address, BOND)
+      const tx = await renPool.approveBondTransfer({ gasLimit: 200000 })
       await tx.wait() // wait for mining
-      const _isApproved = await checkForApproval(_input)
+      const _isApproved = await checkForApproval(BOND)
       setIsApproved(_isApproved)
     }
 
     try {
-      const tx = await renPool.deposit(...Object.values(input), { gasLimit: 200000 })
+      console.log('VALUES', input[FieldNames.darknodeID], input[FieldNames.publicKey])
+      const tx = await renPool.registerDarknode(
+        input[FieldNames.darknodeID],
+        formatBytes32String(input[FieldNames.publicKey]),
+        { gasLimit: 20000000 },
+      )
       await tx.wait() // wait for mining
       setInput(defaultInputValues)
     } catch (e) {
-      alert(`Could not deposit, ${JSON.stringify(e, null, 2)}`)
+      alert(`Could not register, ${JSON.stringify(e, null, 2)}`)
     }
 
     setDisabled(false)
   }
+
+  const _disabled = !isLocked
 
   return (
     <Form
@@ -81,7 +112,7 @@ export const AdminPanel: FC = (): JSX.Element => {
         type="text"
         value={input[FieldNames.darknodeID]}
         placeholder={FieldNames.darknodeID}
-        disabled={disabled}
+        disabled={disabled || _disabled}
         width={1}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           handleChange(e, FieldNames.darknodeID)
@@ -92,7 +123,7 @@ export const AdminPanel: FC = (): JSX.Element => {
         type="text"
         value={input[FieldNames.publicKey]}
         placeholder={FieldNames.publicKey}
-        disabled={disabled}
+        disabled={disabled || _disabled}
         width={1}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           handleChange(e, FieldNames.publicKey)
@@ -102,10 +133,10 @@ export const AdminPanel: FC = (): JSX.Element => {
       <Button
         type="submit"
         variant={isApproved ? 'success' : ''}
-        disabled={disabled}
+        disabled={disabled || _disabled}
         width={1}
       >
-        {isApproved ? 'Register' : 'Approve registration'}
+        {isApproved ? 'Register darknode' : 'Approve registration'}
       </Button>
     </Form>
   )
