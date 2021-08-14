@@ -10,8 +10,8 @@ def main():
   """
   network = config['networks']['default']
 
-  if (network != 'development' and network != 'kovan'):
-    raise ValueError('Unsupported network, switch to development or kovan')
+  if (network != 'development' and network != 'kovan' and network != 'mainnet'):
+    raise ValueError('Unsupported network, switch to development, kovan or mainnet')
 
   owner = None
   admin = None
