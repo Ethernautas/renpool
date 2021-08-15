@@ -107,11 +107,10 @@ The app is deployed to [https://renpool.netlify.app/](https://renpool.netlify.ap
 
 ## Deploy smart contract
 
-1. Get a funded wallet
-2. Set .env file pointing to the desired network
+1. Get a funded wallet for the target network
+2. Set .env file pointing to the target network
 3. run brownie console
-4. accounts.add('PRIVATE_KEY')
-5. renToken, renPool = run('deploy')
+4. renToken, renPool = run('deploy')
 
 [https://www.quicknode.com/guides/vyper/how-to-write-an-ethereum-smart-contract-using-vyper](https://www.quicknode.com/guides/vyper/how-to-write-an-ethereum-smart-contract-using-vyper)
 

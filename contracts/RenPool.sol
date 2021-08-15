@@ -1,28 +1,28 @@
 pragma solidity ^0.8.0;
 
-import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
-
-interface DarknodeRegistry {
-    function register(address _darknodeID, bytes calldata _publicKey) external;
-    function deregister(address _darknodeID) external;
-    function refund(address _darknodeID) external;
-}
+import "../interfaces/IERC20.sol";
+import "../interfaces/IDarknodeRegistry.sol";
 
 contract RenPool {
+    uint8 public constant DECIMALS = 18;
+
     address public renTokenAddr;
     address public darknodeRegistryAddr;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
     address public admin;
-    ERC20 public renToken;
-    DarknodeRegistry public darknodeRegistry;
-    mapping(address => uint) public balances;
-    mapping(address => uint) public withdrawRequests;
+
     uint public bond;
     uint public totalPooled;
-    bool public isLocked;
     uint public ownerFee; // Percentage
     uint public adminFee; // Percentage
-    uint8 public constant DECIMALS = 18;
+
+    bool public isLocked;
+
+    mapping(address => uint) public balances;
+    mapping(address => uint) public withdrawRequests;
+
+    IERC20 public renToken;
+    IDarknodeRegistry public darknodeRegistry;
 
     event RenDeposited(address indexed _from, uint _amount);
     event RenWithdrawn(address indexed _from, uint _amount);
@@ -44,8 +44,8 @@ contract RenPool {
         darknodeRegistryAddr = _darknodeRegistryAddr;
         owner = _owner;
         admin = msg.sender;
-        renToken = ERC20(_renTokenAddr);
-        darknodeRegistry = DarknodeRegistry(_darknodeRegistryAddr);
+        renToken = IERC20(_renTokenAddr);
+        darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
         bond = _bond;
         isLocked = false;
         totalPooled = 0;

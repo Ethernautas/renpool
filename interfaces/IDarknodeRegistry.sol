@@ -1,6 +1,6 @@
-pragma solidity 0.5.16;
+pragma solidity ^0.8.0;
 
-interface DarknodeRegistry {
+interface IDarknodeRegistry {
     function register(address _darknodeID, bytes calldata _publicKey) external;
     function deregister(address _darknodeID) external;
     function refund(address _darknodeID) external;
