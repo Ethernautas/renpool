@@ -17,7 +17,6 @@ def main():
   admin = None
   renTokenAddr = ZERO_ADDRESS
   renToken = None
-  bond = C.POOL_BOND
 
   if (network == 'development'):
     owner = accounts[0]
@@ -31,7 +30,6 @@ def main():
     admin = copy.copy(account)
     renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
     renToken = Contract(renTokenAddr)
-    bond = C.TEST_POOL_BOND
 
   if (network == 'mainnet'):
     account = accounts.add(config['wallets']['from_key'])
@@ -44,7 +42,7 @@ def main():
     renTokenAddr,
     ZERO_ADDRESS,
     owner,
-    bond,
+    C.POOL_BOND,
     {'from': admin}
   )
 
