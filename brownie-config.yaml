@@ -17,8 +17,8 @@ dev_deployment_artifacts: true
 
 dotenv: .env
 
-# dependencies:
-#   - OpenZeppelin/openzeppelin-contracts@4.0.0
+dependencies:
+  - OpenZeppelin/openzeppelin-contracts@4.0.0
 #   - renproject/darknode-sol@1.0.1
 
 compiler:

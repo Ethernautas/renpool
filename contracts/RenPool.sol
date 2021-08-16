@@ -3,6 +3,20 @@ pragma solidity ^0.8.0;
 import "../interfaces/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 
+/*
+* Observation, ideally we should use:
+* import "renproject/darknode-sol@1.0.1/contract/interfaces/IRenToken.sol"
+* import "renproject/darknode-sol@1.0.1/contract/interfaces/IDarknodeRegistry.sol"
+*
+* However, since the interfaces are not exposed in the renproject repo, we
+* fallback to the two imports above.
+*
+* Other option could have been:
+* import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/interfaces/IERC20.sol";
+* import "../interfaces/IDarknodeRegistry.sol";
+* But we keep it as is for consistency.
+*/
+
 contract RenPool {
     uint8 public constant DECIMALS = 18;
 
