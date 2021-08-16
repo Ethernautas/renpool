@@ -1,7 +1,7 @@
 import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
-import { CONTRACT_NAMES } from '../constants'
+import { ContractNames } from '../constants'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
 
@@ -28,7 +28,7 @@ export const RenTokenProvider: FC = ({
 }) => {
   const { library, account } = useActiveWeb3React()
 
-  const renToken = useContract(CONTRACT_NAMES.RenToken)
+  const renToken = useContract(ContractNames.RenToken)
 
   const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0))
 

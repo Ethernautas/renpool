@@ -19,8 +19,10 @@ dotenv: .env
 
 dependencies:
   - OpenZeppelin/openzeppelin-contracts@4.0.0
+  - renproject/darknode-sol@1.0.1
 
 compiler:
   solc:
+    version: null # set version based on pragma
     remappings:
       # - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@2.5.1'

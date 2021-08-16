@@ -268,7 +268,7 @@ Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channe
 # Further read
 1. [https://renproject.io/](https://renproject.io/)
 2. [https://github.com/renproject](https://github.com/renproject)
-3. [https://docs.renproject.io/developers/docs/deployed-contracts](https://docs.renproject.io/developers/docs/deployed-contracts)
+3. [https://renproject.github.io/ren-client-docs/contracts/](https://renproject.github.io/ren-client-docs/contracts/)
 4. [https://ethereum.org/en/developers/docs/standards/tokens/erc-20/](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
 5. Ren contract addresses on mainnet [https://renproject.github.io/contracts-ts/#/mainnet](https://renproject.github.io/contracts-ts/#/mainnet)
 6. Ren contract addresses on testnet [https://renproject.github.io/contracts-ts/#/testnet](https://renproject.github.io/contracts-ts/#/testnet)
