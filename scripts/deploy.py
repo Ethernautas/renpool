@@ -16,6 +16,7 @@ def main():
   owner = None
   admin = None
   renTokenAddr = ZERO_ADDRESS
+  darknodeRegistryAddr = ZERO_ADDRESS
   renToken = None
 
   if (network == 'development'):
@@ -23,24 +24,17 @@ def main():
     admin = accounts[1]
     renToken = RenToken.deploy({'from': owner})
     renTokenAddr = renToken.address
-
-  if (network == 'kovan'):
+  else:
     account = accounts.add(config['wallets']['from_key'])
     owner = copy.copy(account)
     admin = copy.copy(account)
     renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
-    renToken = Contract(renTokenAddr)
-
-  if (network == 'mainnet'):
-    account = accounts.add(config['wallets']['from_key'])
-    owner = copy.copy(account)
-    admin = copy.copy(account)
-    renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
+    darknodeRegistryAddr = os.environ['DARKNODE_REGISTRY_ADDRESS']
     renToken = Contract(renTokenAddr)
 
   renPool = RenPool.deploy(
     renTokenAddr,
-    ZERO_ADDRESS,
+    darknodeRegistryAddr,
     owner,
     C.POOL_BOND,
     {'from': admin}
