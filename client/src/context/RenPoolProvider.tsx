@@ -2,8 +2,11 @@ import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ContractNames } from '../constants'
+import map from '../artifacts/deployments/map.json'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
+
+const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
 interface CtxValue {
   renPool: Contract | undefined
@@ -42,7 +45,18 @@ export const RenPoolProvider: FC = ({
 }) => {
   const { account } = useActiveWeb3React()
 
-  const renPool = useContract(ContractNames.RenPool)
+  let address
+  let artifact
+
+  try {
+    address = map[CHAIN_ID][ContractNames.RenPool][0]
+    artifact = require(`../artifacts/deployments/${CHAIN_ID}/${address}.json`)
+  } catch (e) {
+    alert(`Could not load contract ${ContractNames.RenPool}, ${JSON.stringify(e, null, 2)}`)
+    return null
+  }
+
+  const renPool = useContract(address, artifact.abi)
 
   const [owner, setOwner] = useState<string | null>(null)
   const [admin, setAdmin] = useState<string | null>(null)

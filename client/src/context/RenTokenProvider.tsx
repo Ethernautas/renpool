@@ -1,9 +1,11 @@
 import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
-import { ContractNames } from '../constants'
+import { InterfaceNames } from '../constants'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
+
+const REN_TOKEN_ADDRESS = process.env.REACT_APP_REN_TOKEN_ADDRESS
 
 interface CtxValue {
   renToken: Contract | undefined
@@ -28,7 +30,16 @@ export const RenTokenProvider: FC = ({
 }) => {
   const { library, account } = useActiveWeb3React()
 
-  const renToken = useContract(ContractNames.RenToken)
+  let abi
+
+  try {
+    abi = require(`../artifacts/interfaces/${InterfaceNames.IRenToken}.json`)
+  } catch (e) {
+    alert(`Could not load contract ${InterfaceNames.IRenToken}, ${JSON.stringify(e, null, 2)}`)
+    return null
+  }
+
+  const renToken = useContract(REN_TOKEN_ADDRESS, abi)
 
   const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0))
 

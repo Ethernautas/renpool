@@ -2,9 +2,11 @@
 import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
-import { ContractNames } from '../constants'
+import { InterfaceNames } from '../constants'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
+
+const DARKNODE_REGISTRY_ADDRESS = process.env.REACT_APP_DARKNODE_REGISTRY_ADDRESS
 
 interface CtxValue {
   darknodeRegistry: Contract | undefined
@@ -43,7 +45,16 @@ export const DarknodeRegistryProvider: FC = ({
 }) => {
   // const { account } = useActiveWeb3React()
 
-  const darknodeRegistry = useContract(ContractNames.DarknodeRegistry)
+  let abi
+
+  try {
+    abi = require(`../artifacts/interfaces/${InterfaceNames.IDarknodeRegistry}.json`)
+  } catch (e) {
+    alert(`Could not load contract ${InterfaceNames.IDarknodeRegistry}, ${JSON.stringify(e, null, 2)}`)
+    return null
+  }
+
+  const darknodeRegistry = useContract(DARKNODE_REGISTRY_ADDRESS, abi)
 
   // const [owner, setOwner] = useState<string | null>(null)
   // const [admin, setAdmin] = useState<string | null>(null)

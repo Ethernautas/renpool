@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 /**
- * @notice Source https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol
  * @dev Interface of the ERC20 standard as defined in the EIP.
+ * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol
  */
-interface IERC20 {
+interface IRenToken {
     /**
      * @dev Returns the amount of tokens in existence.
      */

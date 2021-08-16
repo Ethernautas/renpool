@@ -29,9 +29,12 @@ export const NETWORKS = {
 export const SUPPORTED_CHAIN_IDS = Object.keys(NETWORKS).map(key => parseInt(key, 10))
 
 export enum ContractNames {
-  RenToken = 'RenToken',
   RenPool = 'RenPool',
-  DarknodeRegistry = 'DarknodeRegistry',
+}
+
+export enum InterfaceNames {
+  IRenToken = 'IRenToken',
+  IDarknodeRegistry = 'IDarknodeRegistry',
 }
 
 export const FAUCETS = {

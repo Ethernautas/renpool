@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import "../interfaces/IERC20.sol";
+import "../interfaces/IRenToken.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 
 /*
@@ -35,7 +35,7 @@ contract RenPool {
     mapping(address => uint) public balances;
     mapping(address => uint) public withdrawRequests;
 
-    IERC20 public renToken;
+    IRenToken public renToken;
     IDarknodeRegistry public darknodeRegistry;
 
     event RenDeposited(address indexed _from, uint _amount);
@@ -58,7 +58,7 @@ contract RenPool {
         darknodeRegistryAddr = _darknodeRegistryAddr;
         owner = _owner;
         admin = msg.sender;
-        renToken = IERC20(_renTokenAddr);
+        renToken = IRenToken(_renTokenAddr);
         darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
         bond = _bond;
         isLocked = false;
