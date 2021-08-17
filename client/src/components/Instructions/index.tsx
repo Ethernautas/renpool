@@ -27,7 +27,7 @@ export const Instructions: FC<InstructionsProps> = ({
           &nbsp;and get some test ETH to pay for transactions.
       </Text.p>
       <Text.p>
-          3. Get {FAUCET_AMOUNT} REN tokens by pressing the button below.
+          3. Get {parseInt(formatUnits(FAUCET_AMOUNT, DECIMALS), 10)} REN tokens by pressing the button below.
           To verify that the tokens are in your wallet, switch to the <Text.span fontWeight="bold">Assets</Text.span> tab in your MetaMask and press the <Text.span fontWeight="bold">Add Tokens</Text.span> button.
           Paste the address of the RenToken contract above.
       </Text.p>
