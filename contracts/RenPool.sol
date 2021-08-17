@@ -1,20 +1,12 @@
 pragma solidity ^0.8.0;
 
-import "../interfaces/IRenToken.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 
 /*
-* Observation, ideally we should use:
-* import "renproject/darknode-sol@1.0.1/contract/interfaces/IRenToken.sol"
-* import "renproject/darknode-sol@1.0.1/contract/interfaces/IDarknodeRegistry.sol"
-*
-* However, since the interfaces are not exposed in the renproject repo, we
-* fallback to the two imports above.
-*
-* Other option could have been:
-* import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/interfaces/IERC20.sol";
-* import "../interfaces/IDarknodeRegistry.sol";
-* But we keep it as is for consistency.
+* Observation, ideally we should use 'renproject/darknode-sol@1.0.1'
+* to import both the RenToken and DarknodeRegistry interfaces.
+* unfortunately interfaces are not being exposed.
 */
 
 contract RenPool {
@@ -35,7 +27,7 @@ contract RenPool {
     mapping(address => uint) public balances;
     mapping(address => uint) public withdrawRequests;
 
-    IRenToken public renToken;
+    IERC20 public renToken;
     IDarknodeRegistry public darknodeRegistry;
 
     event RenDeposited(address indexed _from, uint _amount);
@@ -58,7 +50,7 @@ contract RenPool {
         darknodeRegistryAddr = _darknodeRegistryAddr;
         owner = _owner;
         admin = msg.sender;
-        renToken = IRenToken(_renTokenAddr);
+        renToken = IERC20(_renTokenAddr);
         darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
         bond = _bond;
         isLocked = false;

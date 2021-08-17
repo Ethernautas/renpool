@@ -33,7 +33,7 @@ export enum ContractNames {
 }
 
 export enum InterfaceNames {
-  IRenToken = 'IRenToken',
+  IERC20 = 'IERC20',
   IDarknodeRegistry = 'IDarknodeRegistry',
 }
 

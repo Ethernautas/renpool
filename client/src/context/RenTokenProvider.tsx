@@ -33,9 +33,9 @@ export const RenTokenProvider: FC = ({
   let abi
 
   try {
-    abi = require(`../artifacts/interfaces/${InterfaceNames.IRenToken}.json`)
+    abi = require(`../artifacts/contracts/dependecies/OpenZeppelin/openzeppelin-contracts@4.0.0/${InterfaceNames.IERC20}.json`)
   } catch (e) {
-    alert(`Could not load contract ${InterfaceNames.IRenToken}, ${JSON.stringify(e, null, 2)}`)
+    alert(`Could not load contract ${InterfaceNames.IERC20}, ${JSON.stringify(e, null, 2)}`)
     return null
   }
 
