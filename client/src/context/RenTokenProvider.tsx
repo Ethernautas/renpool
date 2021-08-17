@@ -1,10 +1,12 @@
 import React, { FC, useState, useEffect, createContext } from 'react'
-import { Contract } from '@ethersproject/contracts'
+import { Contract, ContractInterface } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
-import { InterfaceNames } from '../constants'
+import { ContractNames, InterfaceNames } from '../constants'
+import map from '../artifacts/deployments/map.json'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
 
+const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 const REN_TOKEN_ADDRESS = process.env.REACT_APP_REN_TOKEN_ADDRESS
 
 interface CtxValue {
@@ -30,16 +32,28 @@ export const RenTokenProvider: FC = ({
 }) => {
   const { library, account } = useActiveWeb3React()
 
-  let abi
+  let address: string
+  let artifact: { abi: ContractInterface }
 
-  try {
-    abi = require(`../artifacts/contracts/dependecies/OpenZeppelin/openzeppelin-contracts@4.0.0/${InterfaceNames.IERC20}.json`)
-  } catch (e) {
-    alert(`Could not load contract ${InterfaceNames.IERC20}, ${JSON.stringify(e, null, 2)}`)
-    return null
+  if (CHAIN_ID === '1337') {
+    try {
+      address = map[CHAIN_ID][ContractNames.RenToken][0]
+      artifact = require(`../artifacts/deployments/${CHAIN_ID}/${address}.json`)
+    } catch (e) {
+      alert(`Could not load contract ${ContractNames.RenPool}, ${JSON.stringify(e, null, 2)}`)
+      return null
+    }
+  } else {
+    try {
+      address = REN_TOKEN_ADDRESS
+      artifact = require(`../artifacts/contracts/dependencies/OpenZeppelin/openzeppelin-contracts@4.0.0/${InterfaceNames.IERC20}.json`)
+    } catch (e) {
+      alert(`Could not load contract ${InterfaceNames.IERC20}, ${JSON.stringify(e, null, 2)}`)
+      return null
+    }
   }
 
-  const renToken = useContract(REN_TOKEN_ADDRESS, abi)
+  const renToken = useContract(address, artifact.abi)
 
   const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0))
 

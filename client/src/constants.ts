@@ -28,6 +28,10 @@ export const SUPPORTED_CHAIN_IDS = Object.keys(NETWORKS).map(key => parseInt(key
 
 export enum ContractNames {
   RenPool = 'RenPool',
+  RenToken = 'RenToken',
+  // ^ Implementation of the Ren Token used when network === '1337'.
+  // In live networks we use the IERC20 interface below.
+  // See /context/RenTokenProvider.tsx
 }
 
 export enum InterfaceNames {

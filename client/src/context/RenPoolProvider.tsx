@@ -1,5 +1,5 @@
 import React, { FC, useState, useEffect, createContext } from 'react'
-import { Contract } from '@ethersproject/contracts'
+import { Contract, ContractInterface } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ContractNames } from '../constants'
 import map from '../artifacts/deployments/map.json'
@@ -46,7 +46,7 @@ export const RenPoolProvider: FC = ({
   const { account } = useActiveWeb3React()
 
   let address
-  let artifact
+  let artifact: { abi: ContractInterface }
 
   try {
     address = map[CHAIN_ID][ContractNames.RenPool][0]
@@ -109,7 +109,7 @@ export const RenPoolProvider: FC = ({
   }
 
   const getBalanceOf = async (): Promise<void> => {
-    if (renPool == null) return
+    if (renPool == null || account == null) return
 
     try {
       const _pooled: BigNumber = await renPool.balanceOf(account, { gasLimit: 60000 })

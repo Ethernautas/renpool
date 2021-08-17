@@ -8,7 +8,7 @@ export const Footer = (): JSX.Element => (
     p={3}
     style={{ height: '100%' }}
   >
-    <a target="blank" href="https://github.com/Ethernautas/renpool">
+    <a target="_blank" rel="noreferrer" href="https://github.com/Ethernautas/renpool">
       <Image src="./github.png" alt="github logo" />
     </a>
   </Flex>

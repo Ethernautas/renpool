@@ -32,7 +32,7 @@ export const AdminPanel: FC = (): JSX.Element => {
   const { account } = useActiveWeb3React()
   const { darknodeRegistry } = useContext(DarknodeRegistryContext)
   const { renToken } = useContext(RenTokenContext)
-  const { renPool, isLocked, refetchIsLocked } = useContext(RenPoolContext)
+  const { renPool, isLocked } = useContext(RenPoolContext)
 
   const [isApproved, setIsApproved] = useState(false)
   const [input, setInput] = useState<InputFields>(defaultInputValues)
