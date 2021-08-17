@@ -8,9 +8,7 @@ export const DECIMALS = 18
 
 export const TENS = BigNumber.from(10).pow(DECIMALS)
 
-export const BOND = BigNumber.from(100_000)
-  .mul(TENS)
-  // .toString()
+export const BOND = BigNumber.from(100_000).mul(TENS)
 
 export const MAX_UINT256 = BigNumber.from(2)
   .pow(256)
@@ -29,9 +27,16 @@ export const NETWORKS = {
 export const SUPPORTED_CHAIN_IDS = Object.keys(NETWORKS).map(key => parseInt(key, 10))
 
 export enum ContractNames {
-  RenToken = 'RenToken',
   RenPool = 'RenPool',
-  DarknodeRegistry = 'DarknodeRegistry',
+  RenToken = 'RenToken',
+  // ^ Implementation of the Ren Token used when network === '1337'.
+  // In live networks we use the IERC20 interface below.
+  // See /context/RenTokenProvider.tsx
+}
+
+export enum InterfaceNames {
+  IERC20 = 'IERC20',
+  IDarknodeRegistry = 'IDarknodeRegistry',
 }
 
 export const FAUCETS = {
@@ -43,7 +48,7 @@ export const FAUCETS = {
   1337: 'https://faucet.rinkeby.io',
 }
 
-export const FAUCET_AMOUNT = 1000
+export const FAUCET_AMOUNT = BigNumber.from(1000).mul(TENS)
 
 export const ETHERSCAN = {
   1: 'https://etherscan.io/address/',

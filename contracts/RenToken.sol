@@ -2,7 +2,12 @@ pragma solidity ^0.8.0;
 
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/ERC20.sol";
 
-// Source: https://github.com/renproject/darknode-sol/blob/3ec7d69e7778396c6661d35e02ecf91f50e90762/contracts/RenToken/RenToken.sol
+/*
+* This is a naive implementation of the REN token contract for testing purposes only.
+* In production we should rely on the ERC20 interface or better the REN token interface itself.
+* Source: https://github.com/renproject/darknode-sol/blob/3ec7d69e7778396c6661d35e02ecf91f50e90762/contracts/RenToken/RenToken.sol
+*/
+
 contract RenToken is ERC20 {
     string private constant NAME = "Republic Token";
     string private constant SYMBOL = "REN";
@@ -18,6 +23,9 @@ contract RenToken is ERC20 {
         _mint(msg.sender, INITIAL_SUPPLY);
     }
 
+    /**
+     * @notice Simple faucet implementation for testing purposes only.
+     */
     function callFaucet() public returns (bool) {
         address beneficiary = msg.sender;
 
