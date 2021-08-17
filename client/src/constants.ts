@@ -58,3 +58,15 @@ export const ETHERSCAN = {
   42: 'https://kovan.etherscan.io/address/',
   1337: 'https://etherscan.io/address/',
 }
+
+// Smart contract addresses for live networks only
+export const CONTRACT_ADDRESSES = {
+  1: {
+    REN_TOKEN: '0x408e41876cCCDC0F92210600ef50372656052a38',
+    DARKNODE_REGISTRY: '0x2D7b6C95aFeFFa50C068D50f89C5C0014e054f0A',
+  },
+  42: {
+    REN_TOKEN: '0x2CD647668494c1B15743AB283A0f980d90a87394',
+    DARKNODE_REGISTRY: '0x9954C9F839b31E82bc9CA98F234313112D269712',
+  },
+}

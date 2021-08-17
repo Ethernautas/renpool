@@ -1,4 +1,3 @@
-import os
 from brownie import accounts, config, RenPool
 from brownie_tokens import MintableForkToken
 import constants as C
@@ -20,8 +19,8 @@ def main():
   admin = accounts[1]
   user = accounts[2]
 
-  renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
-  darknodeRegistryAddr = os.environ['DARKNODE_REGISTRY_ADDRESS']
+  renTokenAddr = C.CONTRACT_ADDRESSES[network].REN_TOKEN
+  darknodeRegistryAddr = C.CONTRACT_ADDRESSES[network].DARKNODE_REGISTRY
 
   renPool = RenPool.deploy(
     renTokenAddr,
