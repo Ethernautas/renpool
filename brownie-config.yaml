@@ -19,7 +19,7 @@ dotenv: .env
 
 dependencies:
   - OpenZeppelin/openzeppelin-contracts@4.0.0
-#   - renproject/darknode-sol@1.0.1
+  # - renproject/darknode-sol@1.0.1
 
 compiler:
   solc:

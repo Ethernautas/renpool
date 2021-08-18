@@ -1,4 +1,9 @@
+from brownie import network, accounts
+from brownie.test import given, strategy
 import constants as C
+
+# Required due to this bug https://github.com/eth-brownie/brownie/issues/918
+network.connect('development')
 
 def test_ren_mint(owner, ren_token):
     """
@@ -22,72 +27,81 @@ def test_ren_pool_deploy(owner, admin, ren_pool):
     assert ren_pool.isLocked() == False
     assert ren_pool.totalPooled() == 0
 
-def test_ren_pool_deposit(ren_pool, ren_token, user):
+@given(
+    user=strategy('address'),
+    amount=strategy('uint256', min_value = 1, max_value = C.POOL_BOND)
+)
+def test_ren_pool_deposit(owner, ren_pool, ren_token, user, amount):
     """
     Test deposit.
     """
-    AMOUNT = 100
-
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
 
-    ren_token.callFaucet({'from': user})
-    assert ren_token.balanceOf(user) == C.FAUCET_AMOUNT
+    ren_token.transfer(user, amount, {'from': owner})
+    assert ren_token.balanceOf(user) >= amount
 
-    ren_token.approve(ren_pool, AMOUNT, {'from': user})
-    ren_pool.deposit(AMOUNT, {'from': user})
-    assert ren_token.balanceOf(ren_pool) == AMOUNT
-    assert ren_pool.balanceOf(user) == AMOUNT
-    assert ren_pool.totalPooled() == AMOUNT
+    ren_token.approve(ren_pool, amount, {'from': user})
+    ren_pool.deposit(amount, {'from': user})
+    assert ren_token.balanceOf(ren_pool) == amount
+    assert ren_pool.balanceOf(user) == amount
+    assert ren_pool.totalPooled() == amount
 
-def test_ren_pool_withdraw(ren_pool, ren_token, user):
+@given(
+    user=strategy('address', exclude = accounts[0]), # owner
+    amount=strategy('uint256', min_value = 1, max_value = C.POOL_BOND)
+)
+def test_ren_pool_withdraw(owner, ren_pool, ren_token, user, amount):
     """
     Test withdraw.
     """
-    AMOUNT = 100
-
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
 
-    ren_token.callFaucet({'from': user})
-    assert ren_token.balanceOf(user) == C.FAUCET_AMOUNT
+    init_balance = ren_token.balanceOf(user)
+    ren_token.transfer(user, amount, {'from': owner})
+    assert ren_token.balanceOf(user) == init_balance + amount
 
-    ren_token.approve(ren_pool, AMOUNT, {'from': user})
-    ren_pool.deposit(AMOUNT, {'from': user})
-    assert ren_token.balanceOf(ren_pool) == AMOUNT
-    assert ren_pool.balanceOf(user) == AMOUNT
-    assert ren_pool.totalPooled() == AMOUNT
+    ren_token.approve(ren_pool, amount, {'from': user})
+    ren_pool.deposit(amount, {'from': user})
+    assert ren_token.balanceOf(ren_pool) == amount
+    assert ren_pool.balanceOf(user) == amount
+    assert ren_pool.totalPooled() == amount
 
-    ren_pool.withdraw(AMOUNT, {'from': user})
+    ren_pool.withdraw(amount, {'from': user})
     assert ren_pool.balanceOf(user) == 0
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
+    assert ren_token.balanceOf(user) == init_balance + amount
 
-def test_withdraw_fullfilment(owner, user, ren_pool, ren_token):
+@given(
+    user=strategy('address', exclude = accounts[0]), # owner
+    amount=strategy('uint256', min_value = 1, max_value = C.POOL_BOND)
+)
+def test_withdraw_fullfilment(owner, ren_pool, ren_token, user, amount):
     """
     Test withdraw fulfillment.
     """
-    WITHDRAW_AMOUNT = 1000
-
     assert ren_pool.totalPooled() == 0
+    assert ren_pool.isLocked() == False
 
-    # Depositing bond into the pool to lock it
-    ren_token.approve(ren_pool.address, C.POOL_BOND, {'from': owner})
+    # Lock the pool
+    ren_token.approve(ren_pool, C.POOL_BOND, {'from': owner})
     ren_pool.deposit(C.POOL_BOND, {'from': owner})
-
     assert ren_pool.isLocked() == True
     assert ren_pool.totalPooled() == C.POOL_BOND
 
-    # The pool is locked so now we can call request withdraw
-    ren_pool.requestWithdraw(WITHDRAW_AMOUNT, {'from': owner})
-    assert ren_pool.withdrawRequests(owner) == WITHDRAW_AMOUNT
+    # The pool is locked, now we can request withdraw
+    ren_pool.requestWithdraw(amount, {'from': owner})
+    assert ren_pool.withdrawRequests(owner) == amount
 
     # User fulfills the withdraw request made by the owner
-    ren_token.callFaucet({'from': user})
-    ren_token.approve(ren_pool, WITHDRAW_AMOUNT , {'from': user})
+    init_balance = ren_token.balanceOf(user)
+    ren_token.transfer(user, amount, {'from': owner})
+    ren_token.approve(ren_pool, amount , {'from': user})
     ren_pool.fulfillWithdrawRequest(owner, {'from': user})
 
-    # Account has fullfiled the withdraw request so now the user has WITHDRAW_AMOUNT ren less in his balance
-    assert ren_token.balanceOf(user, {'from': user}) == C.FAUCET_AMOUNT - WITHDRAW_AMOUNT
-    assert ren_pool.balanceOf(user, {'from': user}) == WITHDRAW_AMOUNT
-    assert ren_pool.totalPooled() == C.POOL_BOND # Pool still full
+    assert ren_token.balanceOf(user) == init_balance
+    assert ren_pool.balanceOf(user) == amount
+    assert ren_pool.isLocked() == True
+    assert ren_pool.totalPooled() == C.POOL_BOND

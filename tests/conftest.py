@@ -18,9 +18,7 @@ Once pytest finds them, it runs those fixtures, captures what they returned
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtures
 """
 
-network = config['networks']['default']
-
-if (network != 'development'):
+if (config['networks']['default'] != 'development'):
   raise ValueError('Unsupported network, switch to development')
 
 @pytest.fixture(autouse=True)
@@ -44,13 +42,6 @@ def admin():
     Yield an `Account` object for the contract's admin.
     """
     yield accounts[1]
-
-@pytest.fixture(scope="module")
-def user():
-    """
-    Yield an `Account` object for the contract's user.
-    """
-    yield accounts[2]
 
 @pytest.fixture(scope="module")
 def ren_token(owner):
