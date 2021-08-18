@@ -1,13 +1,12 @@
 import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract, ContractInterface } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
-import { ContractNames, InterfaceNames } from '../constants'
+import { ContractNames, InterfaceNames, CONTRACT_ADDRESSES } from '../constants'
 import map from '../artifacts/deployments/map.json'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
-const REN_TOKEN_ADDRESS = process.env.REACT_APP_REN_TOKEN_ADDRESS
 
 interface CtxValue {
   renToken: Contract | undefined
@@ -45,7 +44,7 @@ export const RenTokenProvider: FC = ({
     }
   } else {
     try {
-      address = REN_TOKEN_ADDRESS
+      address = CONTRACT_ADDRESSES[CHAIN_ID].REN_TOKEN
       artifact = require(`../artifacts/contracts/dependencies/OpenZeppelin/openzeppelin-contracts@4.0.0/${InterfaceNames.IERC20}.json`)
     } catch (e) {
       alert(`Could not load contract ${InterfaceNames.IERC20}, ${JSON.stringify(e, null, 2)}`)

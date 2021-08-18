@@ -1,4 +1,3 @@
-import os
 import copy
 from brownie import ZERO_ADDRESS, accounts, config, Contract, RenToken, RenPool
 import constants as C
@@ -28,8 +27,8 @@ def main():
     account = accounts.add(config['wallets']['from_key'])
     owner = copy.copy(account)
     admin = copy.copy(account)
-    renTokenAddr = os.environ['REN_TOKEN_ADDRESS']
-    darknodeRegistryAddr = os.environ['DARKNODE_REGISTRY_ADDRESS']
+    renTokenAddr = C.CONTRACT_ADDRESSES[network].REN_TOKEN
+    darknodeRegistryAddr = C.CONTRACT_ADDRESSES[network].DARKNODE_REGISTRY
     renToken = Contract(renTokenAddr)
 
   renPool = RenPool.deploy(
