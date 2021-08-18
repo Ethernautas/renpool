@@ -1,9 +1,6 @@
-from brownie import network, accounts
+from brownie import accounts
 from brownie.test import given, strategy
 import constants as C
-
-# Required due to this bug https://github.com/eth-brownie/brownie/issues/918
-network.connect('development')
 
 def test_ren_mint(owner, ren_token):
     """

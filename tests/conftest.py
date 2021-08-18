@@ -1,4 +1,4 @@
-from brownie import ZERO_ADDRESS, accounts, config, RenToken, RenPool
+from brownie import ZERO_ADDRESS, network, accounts, config, RenToken, RenPool
 import pytest
 import constants as C
 
@@ -20,6 +20,9 @@ See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtur
 
 if (config['networks']['default'] != 'development'):
   raise ValueError('Unsupported network, switch to development')
+
+# Required due to this bug https://github.com/eth-brownie/brownie/issues/918
+network.connect('development')
 
 @pytest.fixture(autouse=True)
 def setup(fn_isolation):
