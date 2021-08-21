@@ -10,10 +10,11 @@ def main():
   See: https://youtu.be/0JrDbvBClEA (brownie tutorial)
   See: https://renproject.github.io/contracts-ts/#/mainnet
   """
-  network = config['networks']['default']
 
-  if network != 'mainnet-fork':
-    raise ValueError('Unsupported network, switch to mainnet-fork')
+  network = C.NETWORKS['MAINNET_FORK']
+
+  if config['networks']['default'] != network:
+    raise ValueError(f'Unsupported network, switch to {network}')
 
   owner = accounts[0]
   admin = accounts[1]

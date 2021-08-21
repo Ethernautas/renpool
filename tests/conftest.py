@@ -1,4 +1,5 @@
-from brownie import ZERO_ADDRESS, network, accounts, config, RenToken, RenPool
+from brownie import network, accounts, config, RenPool
+from brownie_tokens import MintableForkToken
 import pytest
 import constants as C
 
@@ -18,13 +19,16 @@ Once pytest finds them, it runs those fixtures, captures what they returned
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtures
 """
 
-if config['networks']['default'] != 'development':
-  raise ValueError('Unsupported network, switch to development')
+net = C.NETWORKS['MAINNET_FORK']
+renTokenAddr = C.CONTRACT_ADDRESSES[net]['REN_TOKEN']
+darknodeRegistryAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY']
+
+if config['networks']['default'] != net:
+  raise ValueError(f'Unsupported network, switch to {net}')
 
 # Required due to this bug https://github.com/eth-brownie/brownie/issues/918
-network.connect('development')
+network.connect(net)
 
-# TODO: set tests to run on mainnet-fork
 @pytest.fixture(autouse=True)
 def setup(fn_isolation):
     """
@@ -52,11 +56,19 @@ def ren_token(owner):
     """
     Yield a `Contract` object for the RenToken contract.
     """
-    yield RenToken.deploy({'from': owner})
+    renToken = MintableForkToken(renTokenAddr)
+    renToken._mint_for_testing(owner, 2 * C.POOL_BOND)
+    yield renToken
 
 @pytest.fixture(scope="module")
-def ren_pool(owner, admin, ren_token):
+def ren_pool(owner, admin):
     """
     Yield a `Contract` object for the RenPool contract.
     """
-    yield RenPool.deploy(ren_token, ZERO_ADDRESS, owner, C.POOL_BOND, {'from': admin})
+    yield RenPool.deploy(
+        renTokenAddr,
+        darknodeRegistryAddr,
+        owner,
+        C.POOL_BOND,
+        {'from': admin},
+    )
