@@ -2,6 +2,7 @@ from brownie import network, accounts, config, RenPool
 from brownie_tokens import MintableForkToken
 import pytest
 import constants as C
+import utils
 
 """
 A fixture is a function that is applied to one or more test functions, and is called
@@ -22,6 +23,7 @@ See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtur
 net = C.NETWORKS['MAINNET_FORK']
 renTokenAddr = C.CONTRACT_ADDRESSES[net]['REN_TOKEN']
 darknodeRegistryAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY']
+darknodeRegistryStoreAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY_STORE']
 
 if config['networks']['default'] != net:
   raise ValueError(f'Unsupported network, switch to {net}')
@@ -59,6 +61,13 @@ def ren_token(owner):
     renToken = MintableForkToken(renTokenAddr)
     renToken._mint_for_testing(owner, 2 * C.POOL_BOND)
     yield renToken
+
+@pytest.fixture(scope="module")
+def darknode_registry_store():
+    """
+    Yield a `Contract` object for the DarknodeRegistryStore contract.
+    """
+    yield utils.load_contract(darknodeRegistryStoreAddr)
 
 @pytest.fixture(scope="module")
 def ren_pool(owner, admin):
