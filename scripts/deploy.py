@@ -9,7 +9,7 @@ def main():
   """
   network = config['networks']['default']
 
-  if (network != 'development' and network != 'kovan' and network != 'mainnet'):
+  if network != 'development' and network != 'kovan' and network != 'mainnet':
     raise ValueError('Unsupported network, switch to development, kovan or mainnet')
 
   owner = None
@@ -18,7 +18,7 @@ def main():
   darknodeRegistryAddr = ZERO_ADDRESS
   renToken = None
 
-  if (network == 'development'):
+  if network == 'development':
     owner = accounts[0]
     admin = accounts[1]
     renToken = RenToken.deploy({'from': owner})

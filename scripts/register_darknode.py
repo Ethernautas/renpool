@@ -12,7 +12,7 @@ def main():
   """
   network = config['networks']['default']
 
-  if (network != 'mainnet-fork'):
+  if network != 'mainnet-fork':
     raise ValueError('Unsupported network, switch to mainnet-fork')
 
   owner = accounts[0]
@@ -36,7 +36,7 @@ def main():
   renToken.approve(renPool, C.POOL_BOND, {'from': user})
   renPool.deposit(C.POOL_BOND, {'from': user})
 
-  if (renPool.isLocked() != True):
+  if renPool.isLocked() != True:
     raise ValueError('Pool is not locked')
 
   renPool.approveBondTransfer({'from': admin})

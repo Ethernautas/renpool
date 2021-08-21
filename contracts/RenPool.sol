@@ -9,6 +9,8 @@ import "../interfaces/IDarknodeRegistry.sol";
 * unfortunately interfaces are not being exposed.
 */
 
+// TODO: prevent users from depositing decimal REN amounts.
+// Possible set values to be 5k, 10k, ... some pre-define amounts
 contract RenPool {
     uint8 public constant DECIMALS = 18;
 

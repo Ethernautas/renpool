@@ -18,12 +18,13 @@ Once pytest finds them, it runs those fixtures, captures what they returned
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtures
 """
 
-if (config['networks']['default'] != 'development'):
+if config['networks']['default'] != 'development':
   raise ValueError('Unsupported network, switch to development')
 
 # Required due to this bug https://github.com/eth-brownie/brownie/issues/918
 network.connect('development')
 
+# TODO: set tests to run on mainnet-fork
 @pytest.fixture(autouse=True)
 def setup(fn_isolation):
     """
