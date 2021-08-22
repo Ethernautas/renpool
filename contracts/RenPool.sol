@@ -64,6 +64,14 @@ contract RenPool {
         // TODO: register pool into RenPoolStore
     }
 
+    modifier onlyAdmin() {
+        require (
+            msg.sender == admin,
+            "Caller is not admin"
+        );
+        _;
+    }
+
     modifier onlyOwnerAdmin() {
         require (
             msg.sender == owner || msg.sender == admin,
