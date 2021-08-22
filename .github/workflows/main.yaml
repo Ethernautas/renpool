@@ -15,7 +15,7 @@ env:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v1
 
@@ -52,7 +52,7 @@ jobs:
         echo WEB3_INFURA_PROJECT_ID=$WEB3_INFURA_PROJECT_ID >> .env
 
     - name: Run Tests
-      run: brownie test
+      run: brownie test ./tests
 
     - name: Run Solhint
       run: solhint 'contracts/**/*.sol'
