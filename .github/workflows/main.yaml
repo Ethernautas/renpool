@@ -3,7 +3,8 @@ on: [push, pull_request]
 name: main workflow
 
 env:
-  DEFAULT_NETWORK: ${{ secrets.DEFAULT_NETWORK }}
+  # DEFAULT_NETWORK: ${{ secrets.DEFAULT_NETWORK }}
+  DEFAULT_NETWORK: mainnet-fork
   WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
   WALLET_PASSWORD: ${{ secrets.WALLET_PASSWORD }}
   WALLET_PRIVATE_KEY: ${{ secrets.WALLET_PRIVATE_KEY }}
