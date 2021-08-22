@@ -35,6 +35,7 @@ contract RenPool {
     event RenDeposited(address indexed _from, uint _amount);
     event RenWithdrawn(address indexed _from, uint _amount);
     event EthDeposited(address indexed _from, uint _amount);
+    event EthWithdrawn(address indexed _from, uint _amount);
     event PoolLocked();
     event PoolUnlocked();
 
@@ -327,9 +328,19 @@ contract RenPool {
         return true;
     }
 
-    // TODO: withdraw ETH method onlyAdmin
-
-    receive() external payable {
+    receive()
+        external
+        payable
+    {
         emit EthDeposited(msg.sender, msg.value);
+    }
+
+    function withdrawGas()
+        external
+        onlyAdmin
+    {
+        uint balance = address(this).balance;
+        payable(admin).transfer(balance);
+        emit EthWithdrawn(admin, balance);
     }
 }
