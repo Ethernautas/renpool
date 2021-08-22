@@ -1,6 +1,7 @@
 import copy
-from brownie import ZERO_ADDRESS, accounts, config, Contract, RenToken, RenPool
+from brownie import ZERO_ADDRESS, accounts, config, RenToken, RenPool
 import constants as C
+import utils
 
 def main():
   """
@@ -9,16 +10,13 @@ def main():
   """
   network = config['networks']['default']
 
-  if network != 'development' and network != 'kovan' and network != 'mainnet':
-    raise ValueError('Unsupported network, switch to development, kovan or mainnet')
-
   owner = None
   admin = None
   renTokenAddr = ZERO_ADDRESS
   darknodeRegistryAddr = ZERO_ADDRESS
   renToken = None
 
-  if network == 'development':
+  if network == C.NETWORKS['DEVELOPMENT']:
     owner = accounts[0]
     admin = accounts[1]
     renToken = RenToken.deploy({'from': owner})
@@ -29,7 +27,7 @@ def main():
     admin = copy.copy(account)
     renTokenAddr = C.CONTRACT_ADDRESSES[network].REN_TOKEN
     darknodeRegistryAddr = C.CONTRACT_ADDRESSES[network].DARKNODE_REGISTRY
-    renToken = Contract(renTokenAddr)
+    renToken = utils.load_contract(renTokenAddr)
 
   renPool = RenPool.deploy(
     renTokenAddr,
