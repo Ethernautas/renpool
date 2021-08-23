@@ -102,3 +102,27 @@ def test_withdraw_fullfilment(owner, ren_pool, ren_token, user, amount):
     assert ren_pool.balanceOf(user) == amount
     assert ren_pool.isLocked() == True
     assert ren_pool.totalPooled() == C.POOL_BOND
+    
+@given(
+    user=strategy('address'),
+    amount=strategy('uint256', min_value = 1, max_value = C.POOL_BOND)
+)
+def test_cancel_withdraw_request(owner, ren_pool, ren_token, user, amount):
+    """
+    Test Withdraw Cancellation
+    """
+    assert ren_pool.totalPooled() == 0
+    assert ren_pool.isLocked() == False
+    
+    ren_token.approve(ren_pool, C.POOL_BOND, {'from': owner})
+    ren_pool.deposit(C.POOL_BOND, {'from': owner})
+    assert ren_pool.isLocked() == True
+    assert ren_pool.totalPooled() == C.POOL_BOND
+    
+    # Requesting withdraw
+    ren_pool.requestWithdraw(amount, {'from': owner})
+    assert ren_pool.withdrawRequests(owner) == amount
+    
+    # Cancelling the request
+    ren_pool.cancelWithdrawRequest({'from': owner})
+    assert ren_pool.withdrawRequests(owner) == 0
