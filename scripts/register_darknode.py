@@ -17,7 +17,7 @@ def main():
     raise ValueError(f'Unsupported network, switch to {network}')
 
   owner = accounts[0]
-  admin = accounts[1]
+  nodeOperator = accounts[1]
   user = accounts[2]
 
   renTokenAddr = C.CONTRACT_ADDRESSES[network].REN_TOKEN
@@ -28,7 +28,7 @@ def main():
     darknodeRegistryAddr,
     owner,
     C.POOL_BOND,
-    {'from': admin}
+    {'from': nodeOperator}
   )
 
   renToken = MintableForkToken(renTokenAddr)
@@ -40,7 +40,7 @@ def main():
   if renPool.isLocked() != True:
     raise ValueError('Pool is not locked')
 
-  renPool.approveBondTransfer({'from': admin})
-  renPool.registerDarknode(user, 'some_public_key', {'from': admin})
+  renPool.approveBondTransfer({'from': nodeOperator})
+  renPool.registerDarknode(user, 'some_public_key', {'from': nodeOperator})
 
   return renToken, renPool

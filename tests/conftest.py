@@ -47,9 +47,9 @@ def owner():
     yield accounts[0]
 
 @pytest.fixture(scope="module")
-def admin():
+def node_operator():
     """
-    Yield an `Account` object for the contract's admin.
+    Yield an `Account` object for the contract's node operator.
     """
     yield accounts[1]
 
@@ -70,7 +70,7 @@ def darknode_registry_store():
     yield utils.load_contract(darknodeRegistryStoreAddr)
 
 @pytest.fixture(scope="module")
-def ren_pool(owner, admin):
+def ren_pool(owner, node_operator):
     """
     Yield a `Contract` object for the RenPool contract.
     """
@@ -79,5 +79,5 @@ def ren_pool(owner, admin):
         darknodeRegistryAddr,
         owner,
         C.POOL_BOND,
-        {'from': admin},
+        {'from': node_operator},
     )

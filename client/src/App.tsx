@@ -23,7 +23,7 @@ enum Views {
 
 export const App = (): JSX.Element => {
   const { chainId, account } = useActiveWeb3React()
-  const { owner, admin, isLocked } = useContext(RenPoolContext)
+  const { owner, nodeOperator, isLocked } = useContext(RenPoolContext)
   const [view, setView] = useState<Views>(Views.DEPOSIT)
 
   const isAccountsUnlocked = account != null
@@ -72,7 +72,7 @@ export const App = (): JSX.Element => {
             disabled={view === Views.WITHDRAW}
             onClick={() => { setView(Views.WITHDRAW) }}
           />
-          {account != null && [owner, admin].includes(account) && (
+          {account != null && [owner, nodeOperator].includes(account) && (
             <>
               <Box p={3}>|</Box>
               <NavLink
