@@ -11,7 +11,7 @@ const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 interface CtxValue {
   renPool: Contract | undefined
   owner: string | null
-  admin: string | null
+  nodeOperator: string | null
   totalPooled: BigNumber
   isLocked: boolean
   accountPooled: BigNumber
@@ -29,7 +29,7 @@ interface CtxValue {
 const defaultValue: CtxValue = {
   renPool: undefined,
   owner: null,
-  admin: null,
+  nodeOperator: null,
   totalPooled: BigNumber.from(0),
   isLocked: false,
   accountPooled: BigNumber.from(0),
@@ -59,7 +59,7 @@ export const RenPoolProvider: FC = ({
   const renPool = useContract(address, artifact.abi)
 
   const [owner, setOwner] = useState<string | null>(null)
-  const [admin, setAdmin] = useState<string | null>(null)
+  const [nodeOperator, setNodeOperator] = useState<string | null>(null)
   const [totalPooled, setTotalPooled] = useState<BigNumber>(BigNumber.from(0))
   const [isLocked, setIsLocked] = useState<boolean>(false)
   const [accountPooled, setAccountPooled] = useState<BigNumber>(BigNumber.from(0))
@@ -75,14 +75,14 @@ export const RenPoolProvider: FC = ({
     }
   }
 
-  const getAdmin = async (): Promise<void> => {
+  const getNodeOperator = async (): Promise<void> => {
     if (renPool == null) return
 
     try {
-      const _admin: string = await renPool.admin({ gasLimit: 60000 })
-      setAdmin(_admin)
+      const _nodeOperator: string = await renPool.nodeOperator({ gasLimit: 60000 })
+      setNodeOperator(_nodeOperator)
     } catch (e) {
-      console.log(`Error querying admin ${JSON.stringify(e, null, 2)}`)
+      console.log(`Error querying nodeOperator ${JSON.stringify(e, null, 2)}`)
     }
   }
 
@@ -121,7 +121,7 @@ export const RenPoolProvider: FC = ({
 
   useEffect(() => {
     getOwner()
-    getAdmin()
+    getNodeOperator()
     getTotalPooled()
     getIsLocked()
     getBalanceOf()
@@ -132,7 +132,7 @@ export const RenPoolProvider: FC = ({
       value={{
         renPool,
         owner,
-        admin,
+        nodeOperator,
         totalPooled,
         isLocked,
         accountPooled,

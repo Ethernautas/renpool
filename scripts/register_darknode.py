@@ -10,13 +10,14 @@ def main():
   See: https://youtu.be/0JrDbvBClEA (brownie tutorial)
   See: https://renproject.github.io/contracts-ts/#/mainnet
   """
-  network = config['networks']['default']
 
-  if (network != 'mainnet-fork'):
-    raise ValueError('Unsupported network, switch to mainnet-fork')
+  network = C.NETWORKS['MAINNET_FORK']
+
+  if config['networks']['default'] != network:
+    raise ValueError(f'Unsupported network, switch to {network}')
 
   owner = accounts[0]
-  admin = accounts[1]
+  nodeOperator = accounts[1]
   user = accounts[2]
 
   renTokenAddr = C.CONTRACT_ADDRESSES[network].REN_TOKEN
@@ -27,7 +28,7 @@ def main():
     darknodeRegistryAddr,
     owner,
     C.POOL_BOND,
-    {'from': admin}
+    {'from': nodeOperator}
   )
 
   renToken = MintableForkToken(renTokenAddr)
@@ -36,10 +37,10 @@ def main():
   renToken.approve(renPool, C.POOL_BOND, {'from': user})
   renPool.deposit(C.POOL_BOND, {'from': user})
 
-  if (renPool.isLocked() != True):
+  if renPool.isLocked() != True:
     raise ValueError('Pool is not locked')
 
-  renPool.approveBondTransfer({'from': admin})
-  renPool.registerDarknode(user, 'some_public_key', {'from': admin})
+  renPool.approveBondTransfer({'from': nodeOperator})
+  renPool.registerDarknode(user, 'some_public_key', {'from': nodeOperator})
 
   return renToken, renPool

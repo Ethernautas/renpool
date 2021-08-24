@@ -1,6 +1,8 @@
-from brownie import ZERO_ADDRESS, network, accounts, config, RenToken, RenPool
+from brownie import network, accounts, config, RenPool
+from brownie_tokens import MintableForkToken
 import pytest
 import constants as C
+import utils
 
 """
 A fixture is a function that is applied to one or more test functions, and is called
@@ -18,11 +20,16 @@ Once pytest finds them, it runs those fixtures, captures what they returned
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtures
 """
 
-if (config['networks']['default'] != 'development'):
-  raise ValueError('Unsupported network, switch to development')
+net = C.NETWORKS['MAINNET_FORK']
+renTokenAddr = C.CONTRACT_ADDRESSES[net]['REN_TOKEN']
+darknodeRegistryAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY']
+darknodeRegistryStoreAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY_STORE']
+
+if config['networks']['default'] != net:
+  raise ValueError(f'Unsupported network, switch to {net}')
 
 # Required due to this bug https://github.com/eth-brownie/brownie/issues/918
-network.connect('development')
+network.connect(net)
 
 @pytest.fixture(autouse=True)
 def setup(fn_isolation):
@@ -40,9 +47,9 @@ def owner():
     yield accounts[0]
 
 @pytest.fixture(scope="module")
-def admin():
+def node_operator():
     """
-    Yield an `Account` object for the contract's admin.
+    Yield an `Account` object for the contract's node operator.
     """
     yield accounts[1]
 
@@ -51,11 +58,26 @@ def ren_token(owner):
     """
     Yield a `Contract` object for the RenToken contract.
     """
-    yield RenToken.deploy({'from': owner})
+    renToken = MintableForkToken(renTokenAddr)
+    renToken._mint_for_testing(owner, 2 * C.POOL_BOND)
+    yield renToken
 
 @pytest.fixture(scope="module")
-def ren_pool(owner, admin, ren_token):
+def darknode_registry_store():
+    """
+    Yield a `Contract` object for the DarknodeRegistryStore contract.
+    """
+    yield utils.load_contract(darknodeRegistryStoreAddr)
+
+@pytest.fixture(scope="module")
+def ren_pool(owner, node_operator):
     """
     Yield a `Contract` object for the RenPool contract.
     """
-    yield RenPool.deploy(ren_token, ZERO_ADDRESS, owner, C.POOL_BOND, {'from': admin})
+    yield RenPool.deploy(
+        renTokenAddr,
+        darknodeRegistryAddr,
+        owner,
+        C.POOL_BOND,
+        {'from': node_operator},
+    )
