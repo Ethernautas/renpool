@@ -9,20 +9,19 @@ import "../interfaces/IDarknodeRegistry.sol";
 * unfortunately interfaces are not being exposed.
 */
 
-// TODO: prevent users from depositing decimal REN amounts.
-// Possible set values to be 5k, 10k, ... some pre-define amounts
+
 contract RenPool {
     uint8 public constant DECIMALS = 18;
 
     address public renTokenAddr;
     address public darknodeRegistryAddr;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
-    address public admin;
+    address public nodeOperator;
 
     uint public bond;
     uint public totalPooled;
     uint public ownerFee; // Percentage
-    uint public adminFee; // Percentage
+    uint public nodeOperatorFee; // Percentage
 
     bool public isLocked;
 
@@ -52,30 +51,30 @@ contract RenPool {
         renTokenAddr = _renTokenAddr;
         darknodeRegistryAddr = _darknodeRegistryAddr;
         owner = _owner;
-        admin = msg.sender;
+        nodeOperator = msg.sender;
         renToken = IERC20(_renTokenAddr);
         darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
         bond = _bond;
         isLocked = false;
         totalPooled = 0;
         ownerFee = 5;
-        adminFee = 5;
+        nodeOperatorFee = 5;
 
         // TODO: register pool into RenPoolStore
     }
 
-    modifier onlyAdmin() {
+    modifier onlyNodeOperator() {
         require (
-            msg.sender == admin,
-            "Caller is not admin"
+            msg.sender == nodeOperator,
+            "Caller is not nodeOperator"
         );
         _;
     }
 
-    modifier onlyOwnerAdmin() {
+    modifier onlyOwnerNodeOperator() {
         require (
-            msg.sender == owner || msg.sender == admin,
-            "Caller is not owner nor admin"
+            msg.sender == owner || msg.sender == nodeOperator,
+            "Caller is not owner/nodeOperator"
         );
         _;
     }
@@ -101,7 +100,7 @@ contract RenPool {
 
     function unlockPool()
         external
-        onlyOwnerAdmin
+        onlyOwnerNodeOperator
     {
         require(renToken.balanceOf(address(this)) > 0, "Pool balance is zero");
 
@@ -125,7 +124,7 @@ contract RenPool {
     {
         address sender = msg.sender;
 
-        require(_amount > 0, "Invalid ammount");
+        require(_amount > 0, "Invalid amount");
         require(_amount + totalPooled <= bond, "Amount surpasses pool bond");
         require(isLocked == false, "Pool is locked");
 
@@ -240,15 +239,14 @@ contract RenPool {
     }
 
     /**
-     * @notice Transfer the bond to the REN contract before registering
-     * the darknode.
+     * @notice Transfer bond to the REN contract before registering the darknode.
      *
      * question: msg.sender == address(this), right ? ie, the RenPool
-     * contract address will the sender and not the admin/owner who initiated this transaction?
+     * contract address will the sender and not the nodeOperator/owner who initiated this transaction?
      */
     function approveBondTransfer()
         external
-        onlyOwnerAdmin
+        onlyOwnerNodeOperator
         returns(bool)
     {
         require(totalPooled == bond, "Total pooled does not equal bond");
@@ -271,7 +269,7 @@ contract RenPool {
      * caller of this method will be stored as the owner of the darknode.
      *
      * question msg.sender == address(this), right ? ie, the RenPool
-     * contract address will the sender and not the admin/owner who initiated this transaction?
+     * contract address will the sender and not the nodeOperator/owner who initiated this transaction?
      *
      * question What if this function is called more then once?
      *
@@ -284,7 +282,7 @@ contract RenPool {
         bytes calldata _publicKey
     )
         external
-        onlyOwnerAdmin
+        onlyOwnerNodeOperator
         returns(bool)
     {
         require(totalPooled == bond, "Total pooled does not equal bond");
@@ -308,7 +306,7 @@ contract RenPool {
         address _darknodeID
     )
         external
-        onlyOwnerAdmin
+        onlyOwnerNodeOperator
         returns(bool)
     {
         darknodeRegistry.deregister(_darknodeID);
@@ -328,7 +326,7 @@ contract RenPool {
         address _darknodeID
     )
         external
-        onlyOwnerAdmin
+        onlyOwnerNodeOperator
         returns(bool)
     {
         darknodeRegistry.refund(_darknodeID);
@@ -345,10 +343,12 @@ contract RenPool {
 
     function withdrawGas()
         external
-        onlyAdmin
+        onlyNodeOperator
     {
         uint balance = address(this).balance;
-        payable(admin).transfer(balance);
-        emit EthWithdrawn(admin, balance);
+
+        payable(nodeOperator).transfer(balance);
+
+        emit EthWithdrawn(nodeOperator, balance);
     }
 }

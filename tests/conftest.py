@@ -21,7 +21,6 @@ See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtur
 """
 
 net = C.NETWORKS['MAINNET_FORK']
-print('NET', net)
 renTokenAddr = C.CONTRACT_ADDRESSES[net]['REN_TOKEN']
 darknodeRegistryAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY']
 darknodeRegistryStoreAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY_STORE']
