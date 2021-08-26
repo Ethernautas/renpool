@@ -1,14 +1,11 @@
 pragma solidity ^0.8.0;
 
+/*
+* Observation, ideally we should import both RenToken and DarknodeRegistry interfaces
+* from 'renproject/darknode-sol@1.0.1'. Unfortunately, said interfaces are not being exposed.
+*/
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
-
-/*
-* Observation, ideally we should use 'renproject/darknode-sol@1.0.1'
-* to import both the RenToken and DarknodeRegistry interfaces.
-* unfortunately interfaces are not being exposed.
-*/
-
 
 contract RenPool {
     uint8 public constant DECIMALS = 18;
@@ -17,6 +14,8 @@ contract RenPool {
     address public darknodeRegistryAddr;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
     address public nodeOperator;
+
+    // TODO: store darknodeID and publicKey on registration
 
     uint public bond;
     uint public totalPooled;
@@ -94,7 +93,6 @@ contract RenPool {
         private
     {
         isLocked = true;
-
         emit PoolLocked();
     }
 
@@ -103,9 +101,7 @@ contract RenPool {
         onlyOwnerNodeOperator
     {
         require(renToken.balanceOf(address(this)) > 0, "Pool balance is zero");
-
         isLocked = false;
-
         emit PoolUnlocked();
     }
 
@@ -117,9 +113,7 @@ contract RenPool {
      *
      * @param _amount The amount of REN to be deposited into the pool.
      */
-    function deposit(
-        uint _amount
-    )
+    function deposit(uint _amount)
         external
     {
         address sender = msg.sender;
@@ -146,9 +140,7 @@ contract RenPool {
     /**
      * TODO
      */
-    function withdraw(
-        uint _amount
-    )
+    function withdraw(uint _amount)
         external
     {
         address sender = msg.sender;
@@ -173,9 +165,7 @@ contract RenPool {
      * @dev Users can have up to a single request active. In case of several
      * calls to this method, only the last request will be preserved.
      */
-    function requestWithdraw(
-        uint _amount
-    )
+    function requestWithdraw(uint _amount)
         external
     {
         address sender = msg.sender;
@@ -192,9 +182,7 @@ contract RenPool {
     /**
      * TODO
      */
-    function fulfillWithdrawRequest(
-        address _target
-    )
+    function fulfillWithdrawRequest(address _target)
         external
     {
         address sender = msg.sender;
@@ -228,9 +216,7 @@ contract RenPool {
      *
      * @param _target The address ...
      */
-    function balanceOf(
-        address _target
-    )
+    function balanceOf(address _target)
         external
         view
         returns(uint)
@@ -277,10 +263,7 @@ contract RenPool {
      * @param _publicKey The public key of the darknode. It is stored to allow
      * other darknodes and traders to encrypt messages to the trader.
      */
-    function registerDarknode(
-        address _darknodeID,
-        bytes calldata _publicKey
-    )
+    function registerDarknode(address _darknodeID, bytes calldata _publicKey)
         external
         onlyOwnerNodeOperator
         returns(bool)
@@ -288,6 +271,7 @@ contract RenPool {
         require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
+        // TODO: store darknodeID and publicKey
         darknodeRegistry.register(_darknodeID, _publicKey);
 
         return true;
@@ -302,15 +286,12 @@ contract RenPool {
      * of this method store.darknodeRegisteredAt(_darknodeID) must be
      * the owner of this darknode.
      */
-    function deregister(
-        address _darknodeID
-    )
+    function deregister(address _darknodeID)
         external
         onlyOwnerNodeOperator
         returns(bool)
     {
         darknodeRegistry.deregister(_darknodeID);
-
         return true;
     }
 
@@ -322,15 +303,12 @@ contract RenPool {
      * @param _darknodeID The darknode ID that will be refunded. The caller
      * of this method must be the owner of this darknode.
     */
-    function refund(
-        address _darknodeID
-    )
+    function refund(address _darknodeID)
         external
         onlyOwnerNodeOperator
         returns(bool)
     {
         darknodeRegistry.refund(_darknodeID);
-
         return true;
     }
 
@@ -346,9 +324,7 @@ contract RenPool {
         onlyNodeOperator
     {
         uint balance = address(this).balance;
-
         payable(nodeOperator).transfer(balance);
-
         emit EthWithdrawn(nodeOperator, balance);
     }
 }

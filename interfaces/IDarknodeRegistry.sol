@@ -35,4 +35,17 @@ interface IDarknodeRegistry {
      * of this method must be the owner of this darknode.
      */
     function refund(address _darknodeID) external;
+
+    /**
+     * @notice Returns whether a darknode is scheduled to become registered
+     * at next epoch.
+     *
+     * @param _darknodeID The ID of the darknode to return
+     */
+    function isPendingRegistration(address _darknodeID) external view returns (bool);
+
+    /**
+     * @notice Returns if a darknode is in the registered state.
+     */
+    function isRegistered(address _darknodeID) external view returns (bool);
 }
