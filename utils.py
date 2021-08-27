@@ -1,7 +1,9 @@
-from brownie import Contract
+from brownie import ZERO_ADDRESS, Contract
 import base58
 
 def load_contract(addr):
+  if addr == ZERO_ADDRESS:
+    return None
   try:
     c = Contract(addr)
   except ValueError:

@@ -1,3 +1,4 @@
+from brownie import chain
 import constants as C
 from utils import base58_to_hex
 
@@ -12,6 +13,8 @@ def test_darknode_registration_happy_path(owner, node_operator, ren_pool, ren_to
     """
     Test node registration happy path.
     """
+    chain.snapshot()
+
     assert ren_pool.totalPooled() == 0
     assert ren_pool.isLocked() == False
 
@@ -31,6 +34,13 @@ def test_darknode_registration_happy_path(owner, node_operator, ren_pool, ren_to
     assert ren_token.balanceOf(darknodeRegistryStoreAddr) == init_balance + C.POOL_BOND
     assert ren_token.balanceOf(ren_pool) == 0
     assert darknode_registry.isPendingRegistration(NODE_ID_HEX) == True
+    assert darknode_registry.isRegistered(NODE_ID_HEX) == False
+
+    # Skip to the next epoch (1 month) for the registration to settle
+    chain.mine(timedelta=60*60*24*31)
+    darknode_registry.epoch({'from': ren_pool})
+
+    assert darknode_registry.isPendingRegistration(NODE_ID_HEX) == False
     assert darknode_registry.isRegistered(NODE_ID_HEX) == True
 
 # TODO: test remaining paths

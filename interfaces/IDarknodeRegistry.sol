@@ -48,4 +48,11 @@ interface IDarknodeRegistry {
      * @notice Returns if a darknode is in the registered state.
      */
     function isRegistered(address _darknodeID) external view returns (bool);
+
+    /**
+     * @notice Progress the epoch if it is possible to do so. This captures
+     * the current timestamp and current blockhash and overrides the current
+     * epoch.
+     */
+    function epoch() external;
 }
