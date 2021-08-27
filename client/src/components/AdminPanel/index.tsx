@@ -20,14 +20,9 @@ enum Actions {
   REGISTER = 'REGISTER',
 }
 
-enum FieldNames {
-  darknodeID = 'darknodeID',
-  publicKey = 'publicKey',
-}
-
 interface DarknodeParams {
-  [FieldNames.darknodeID]: string
-  [FieldNames.publicKey]: string
+  darknodeID: string
+  publicKey: string
 }
 
 export const AdminPanel: FC = (): JSX.Element => {
