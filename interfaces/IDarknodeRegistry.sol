@@ -16,6 +16,13 @@ interface IDarknodeRegistry {
     function register(address _darknodeID, bytes calldata _publicKey) external;
 
     /**
+     * @notice Retrieves the address of the account that registered a darknode.
+     *
+     * @param _darknodeID The ID of the darknode to retrieve the owner for.
+     */
+    function getDarknodeOwner(address _darknodeID) external view returns (address payable);
+
+    /**
      * @notice Deregister a darknode. The darknode will not be deregistered
      * until the end of the epoch. After another epoch, the bond can be
      * refunded by calling the refund method.
