@@ -172,7 +172,12 @@ contract RenPool {
     }
 
     /**
-     * TODO
+     * @notice Requesting a withdraw in case the pool is locked. The amount
+     * that needs to be withdrawn will be replaced by another user using the 
+     * fulfillWithdrawRequest method.
+     *
+     * @param _amount The amount of REN to be withdrawn.
+     *
      * @dev Users can have up to a single request active. In case of several
      * calls to this method, only the last request will be preserved.
      */
@@ -193,7 +198,10 @@ contract RenPool {
     }
 
     /**
-     * TODO
+     * @notice User wanting to fullill the withdraw request will pay the amount
+    amount the user wanting to withdraw his money . 
+     *
+     * @param _amount The amount of REN to be withdrawn.
      */
     function fulfillWithdrawRequest(
         address _target
