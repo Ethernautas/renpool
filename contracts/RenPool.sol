@@ -144,7 +144,10 @@ contract RenPool {
     }
 
     /**
-     * TODO
+     * @notice Withdraw Ren to the user's wallet from the Ren Pool smart contract. 
+     * Cannot be called if the pool is locked. 
+     *
+     * @param _amount The amount of REN to be withdrawn.
      */
     function withdraw(
         uint _amount
