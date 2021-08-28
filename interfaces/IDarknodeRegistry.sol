@@ -20,7 +20,7 @@ interface IDarknodeRegistry {
      *
      * @param _darknodeID The ID of the darknode to retrieve the owner for.
      */
-    function getDarknodeOwner(address _darknodeID) external view returns (address payable);
+    function getDarknodeOperator(address _darknodeID) external view returns (address payable);
 
     /**
      * @notice Deregister a darknode. The darknode will not be deregistered
@@ -52,9 +52,20 @@ interface IDarknodeRegistry {
     function isPendingRegistration(address _darknodeID) external view returns (bool);
 
     /**
+     * @notice Returns if a darknode is in the pending deregistered state. In
+     * this state a darknode is still considered registered.
+     */
+    function isPendingDeregistration(address _darknodeID) external view returns (bool);
+
+    /**
      * @notice Returns if a darknode is in the registered state.
      */
     function isRegistered(address _darknodeID) external view returns (bool);
+
+    /**
+     * @notice Returns if a darknode is in the deregistered state.
+     */
+    function isDeregistered(address _darknodeID) external view returns (bool);
 
     /**
      * @notice Progress the epoch if it is possible to do so. This captures

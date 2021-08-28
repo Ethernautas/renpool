@@ -26,7 +26,7 @@ def test_darknode_registration_happy_path(owner, node_operator, ren_pool, ren_to
     ren_pool.approveBondTransfer({'from': node_operator})
     ren_pool.registerDarknode(C.NODE_ID_HEX, C.PUBLIC_KEY, {'from': node_operator})
 
-    # Funds are stored on the DarknodeRegistryStore contract instead of the DarknodeRegistry
+    # Funds are stored in the DarknodeRegistryStore contract instead of the DarknodeRegistry
     assert ren_token.balanceOf(darknodeRegistryStoreAddr) == init_balance + C.POOL_BOND
     assert ren_token.balanceOf(ren_pool) == 0
     assert darknode_registry.isPendingRegistration(C.NODE_ID_HEX) == True
