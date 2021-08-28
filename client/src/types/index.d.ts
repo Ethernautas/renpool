@@ -5,7 +5,7 @@ declare global {
   }
   namespace NodeJS {
     interface ProcessEnv {
-      REACT_APP_CHAIN_ID: (/*'1' | '3' | '4' | '5' |*/ '42' | '1337')
+      REACT_APP_CHAIN_ID: ('1' | '42' | '1337')
       REACT_APP_INFURA_PROJECT_ID: string
     }
   }

@@ -16,6 +16,13 @@ interface IDarknodeRegistry {
     function register(address _darknodeID, bytes calldata _publicKey) external;
 
     /**
+     * @notice Retrieves the address of the account that registered a darknode.
+     *
+     * @param _darknodeID The ID of the darknode to retrieve the owner for.
+     */
+    function getDarknodeOperator(address _darknodeID) external view returns (address payable);
+
+    /**
      * @notice Deregister a darknode. The darknode will not be deregistered
      * until the end of the epoch. After another epoch, the bond can be
      * refunded by calling the refund method.
@@ -35,4 +42,35 @@ interface IDarknodeRegistry {
      * of this method must be the owner of this darknode.
      */
     function refund(address _darknodeID) external;
+
+    /**
+     * @notice Returns whether a darknode is scheduled to become registered
+     * at next epoch.
+     *
+     * @param _darknodeID The ID of the darknode to return
+     */
+    function isPendingRegistration(address _darknodeID) external view returns (bool);
+
+    /**
+     * @notice Returns if a darknode is in the pending deregistered state. In
+     * this state a darknode is still considered registered.
+     */
+    function isPendingDeregistration(address _darknodeID) external view returns (bool);
+
+    /**
+     * @notice Returns if a darknode is in the registered state.
+     */
+    function isRegistered(address _darknodeID) external view returns (bool);
+
+    /**
+     * @notice Returns if a darknode is in the deregistered state.
+     */
+    function isDeregistered(address _darknodeID) external view returns (bool);
+
+    /**
+     * @notice Progress the epoch if it is possible to do so. This captures
+     * the current timestamp and current blockhash and overrides the current
+     * epoch.
+     */
+    function epoch() external;
 }

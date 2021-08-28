@@ -15,7 +15,7 @@ contract RenToken is ERC20 {
     uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(DECIMALS);
 
     address public owner;
-    uint256 public constant FAUCET_AMOUNT = 1000 * 10**uint256(DECIMALS);
+    uint256 public constant FAUCET_AMOUNT = 100000 * 10**uint256(DECIMALS);
     // ^ Added so that we can have a faucet
 
     constructor() ERC20 (NAME, SYMBOL) {

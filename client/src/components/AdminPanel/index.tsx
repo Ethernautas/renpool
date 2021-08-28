@@ -1,31 +1,28 @@
 import React, { FC, useContext, useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatBytes32String } from '@ethersproject/strings'
-import { Box, Form, Input, Button } from 'rimble-ui'
+import { Box, Form, Button } from 'rimble-ui'
 import { BOND } from '../../constants'
+import { darknodeIDBase58ToHex } from '../../utils/base58ToHex'
 import { DarknodeRegistryContext } from '../../context/DarknodeRegistryProvider'
 import { RenTokenContext } from '../../context/RenTokenProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
 
-enum FieldNames {
-  darknodeID = 'darknodeID',
-  publicKey = 'publicKey',
-}
+const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
+
+const DARKNODE_NETWORK = CHAIN_ID === '1' ? 'mainnet' : 'testnet'
+const DARKNODE_BASE_URL = `https://${DARKNODE_NETWORK}.renproject.io/darknode/`
+const DARKNODE_URL_PLACEHOLDER = `https://${DARKNODE_NETWORK}.renproject.io/darknode/<YOUR-DARKNODE-ID>?action=register&public_key=<YOUR-PUBLIC-KEY>&name=<YOUR-DARKNODE-NAME>`
 
 enum Actions {
   APPROVE = 'APPROVE',
   REGISTER = 'REGISTER',
 }
 
-interface InputFields {
-  [FieldNames.darknodeID]: string
-  [FieldNames.publicKey]: string
-}
-
-const defaultInputValues = {
-  [FieldNames.darknodeID]: '',
-  [FieldNames.publicKey]: '',
+interface DarknodeParams {
+  darknodeID: string
+  publicKey: string
 }
 
 export const AdminPanel: FC = (): JSX.Element => {
@@ -35,7 +32,7 @@ export const AdminPanel: FC = (): JSX.Element => {
   const { renPool, isLocked } = useContext(RenPoolContext)
 
   const [isApproved, setIsApproved] = useState(false)
-  const [input, setInput] = useState<InputFields>(defaultInputValues)
+  const [input, setInput] = useState<string>('')
   const [disabled, setDisabled] = useState(false)
 
   useEffect(() => {
@@ -47,25 +44,58 @@ export const AdminPanel: FC = (): JSX.Element => {
   }, [renToken])
 
   const checkForApproval = async (value: BigNumber): Promise<boolean> => {
-    if (renToken == null) return false
+    if (renToken == null || darknodeRegistry == null) return false
     if (value.lt(BigNumber.from(1))) return false
     const allowance: BigNumber = await renToken.allowance(renPool.address, darknodeRegistry.address)
     return allowance.sub(value).gte(BigNumber.from(0))
   }
+
   // TODO: after node registration, query status from DarknodeRegistry
 
-  const handleChange = async (
-    e: ChangeEvent<HTMLInputElement>,
-    fieldName: FieldNames
-  ): Promise<void> => {
-    setInput({ ...input, [fieldName]: e.target.value })
+  const validUrl = (url: string): boolean => {
+    console.log('URL', url)
+    if (url.trim().length === 0) {
+      console.log('length = 0')
+      return false
+    }
+    if (!url.startsWith(DARKNODE_BASE_URL)) {
+      console.log('START', DARKNODE_BASE_URL)
+      return false
+    }
+    if (!url.includes('action=register&public_key=0x')) {
+      console.log('PUBLIC_KEY')
+      return false
+    }
+    if (!url.includes('&name=')) {
+      console.log('NAME')
+      return false
+    }
+    return true
+  }
+
+  const getDarknodeParams = (url: string): DarknodeParams => {
+    const darknodeID = url.slice(DARKNODE_BASE_URL.length).split('?')[0] // base58
+
+    const p1 = 'public_key='
+    const p2 = '&name='
+    const index1 = url.indexOf(p1)
+    const index2 = url.indexOf(p2)
+    const publicKey = url.slice(index1 + p1.length, index2)
+    console.log('DARKNODE_ID', darknodeID, 'PUBLIC_KEY', publicKey)
+
+    return { darknodeID, publicKey }
+  }
+
+  const handleChange = async (e: ChangeEvent<HTMLTextAreaElement>): Promise<void> => {
+    setInput(e.target.value || '')
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>, action: Actions): Promise<void> => {
     e.preventDefault()
     setDisabled(true)
 
-    if (darknodeRegistry == null || renPool == null) return
+    // if (darknodeRegistry == null || renPool == null) return
+    if (renPool == null) return
 
     if (!isLocked) {
       alert('Pool needs to be full for the darknode to be registered')
@@ -73,8 +103,8 @@ export const AdminPanel: FC = (): JSX.Element => {
       return
     }
 
-    if (Object.values(input).some(v => v.trim().length === 0)) {
-      alert(`Both ${FieldNames.darknodeID} and ${FieldNames.publicKey} are required`)
+    if (!validUrl(input)) {
+      alert('Invalid url')
       setDisabled(false)
       return
     }
@@ -87,14 +117,10 @@ export const AdminPanel: FC = (): JSX.Element => {
     }
 
     try {
-      console.log('VALUES', input[FieldNames.darknodeID], input[FieldNames.publicKey])
-      const tx = await renPool.registerDarknode(
-        input[FieldNames.darknodeID],
-        formatBytes32String(input[FieldNames.publicKey]),
-        { gasLimit: 20000000 },
-      )
+      const { darknodeID, publicKey } = getDarknodeParams(input)
+      const tx = await renPool.registerDarknode(darknodeIDBase58ToHex(darknodeID), formatBytes32String(publicKey), { gasLimit: 20000000 })
       await tx.wait() // wait for mining
-      setInput(defaultInputValues)
+      setInput('')
     } catch (e) {
       alert(`Could not register, ${JSON.stringify(e, null, 2)}`)
     }
@@ -106,28 +132,17 @@ export const AdminPanel: FC = (): JSX.Element => {
 
   return (
     <Form
-      onSubmit={handleSubmit}
+      onSubmit={(e: FormEvent<HTMLFormElement>) => {
+        handleSubmit(e, isApproved ? Actions.REGISTER : Actions.APPROVE)
+      }}
     >
-      <Input
-        type="text"
-        value={input[FieldNames.darknodeID]}
-        placeholder={FieldNames.darknodeID}
+      <textarea
+        value={input}
+        placeholder={DARKNODE_URL_PLACEHOLDER}
         disabled={disabled || _disabled}
-        width={1}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-          handleChange(e, FieldNames.darknodeID)
-        }}
-      />
-      <Box p={2} />
-      <Input
-        type="text"
-        value={input[FieldNames.publicKey]}
-        placeholder={FieldNames.publicKey}
-        disabled={disabled || _disabled}
-        width={1}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-          handleChange(e, FieldNames.publicKey)
-        }}
+        rows={13}
+        style={{ width: '100%' }}
+        onChange={handleChange}
       />
       <Box p={2} />
       <Button

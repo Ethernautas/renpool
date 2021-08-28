@@ -63,6 +63,13 @@ def ren_token(owner):
     yield renToken
 
 @pytest.fixture(scope="module")
+def darknode_registry():
+    """
+    Yield a `Contract` object for the DarknodeRegistrycontract.
+    """
+    yield utils.load_contract(darknodeRegistryAddr)
+
+@pytest.fixture(scope="module")
 def darknode_registry_store():
     """
     Yield a `Contract` object for the DarknodeRegistryStore contract.
