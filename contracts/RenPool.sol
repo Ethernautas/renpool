@@ -17,9 +17,12 @@ contract RenPool {
     address public darknodeRegistryAddr;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
     address public nodeOperator;
+    address private publicKey;
+    address private darknodeID;
 
     uint public bond;
     uint public totalPooled;
+    uint public withdrawRequestAmount;
     uint public ownerFee; // Percentage
     uint public nodeOperatorFee; // Percentage
 
@@ -186,6 +189,13 @@ contract RenPool {
 
         withdrawRequests[sender] = _amount;
 
+        withdrawRequestAmount+= _amount;
+
+        if(withdrawRequestAmount/totalPooled > 0.5){
+            deregister();
+            // TODO emit event
+        }
+
         // TODO emit event
     }
 
@@ -288,7 +298,10 @@ contract RenPool {
         require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
-        darknodeRegistry.register(_darknodeID, _publicKey);
+        publicKey = _publicKey;
+        darknodeID = _darknodeID;
+
+        darknodeRegistry.register(darknodeID, publicKey);
 
         return true;
     }
@@ -302,14 +315,12 @@ contract RenPool {
      * of this method store.darknodeRegisteredAt(_darknodeID) must be
      * the owner of this darknode.
      */
-    function deregister(
-        address _darknodeID
-    )
+    function deregister()
         external
         onlyOwnerNodeOperator
         returns(bool)
     {
-        darknodeRegistry.deregister(_darknodeID);
+        darknodeRegistry.deregister(darknodeID);
 
         return true;
     }
@@ -322,14 +333,12 @@ contract RenPool {
      * @param _darknodeID The darknode ID that will be refunded. The caller
      * of this method must be the owner of this darknode.
     */
-    function refund(
-        address _darknodeID
-    )
+    function refund()
         external
         onlyOwnerNodeOperator
         returns(bool)
     {
-        darknodeRegistry.refund(_darknodeID);
+        darknodeRegistry.refund(darknodeID);
 
         return true;
     }
