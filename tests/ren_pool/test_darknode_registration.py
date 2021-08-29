@@ -11,6 +11,8 @@ def test_darknode_registration_happy_path(owner, node_operator, ren_pool, ren_to
     """
     chain.snapshot()
 
+    init_balance = ren_token.balanceOf(darknodeRegistryStoreAddr)
+
     assert ren_pool.totalPooled() == 0
     assert ren_pool.isLocked() == False
 
@@ -19,8 +21,6 @@ def test_darknode_registration_happy_path(owner, node_operator, ren_pool, ren_to
     ren_pool.deposit(C.POOL_BOND, {'from': owner})
     assert ren_pool.isLocked() == True
     assert ren_pool.totalPooled() == C.POOL_BOND
-
-    init_balance = ren_token.balanceOf(darknodeRegistryStoreAddr)
 
     # Register darknode
     ren_pool.approveBondTransfer({'from': node_operator})

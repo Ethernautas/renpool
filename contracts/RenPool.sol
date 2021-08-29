@@ -16,6 +16,7 @@ contract RenPool {
     address public nodeOperator;
 
     // TODO: store darknodeID and publicKey on registration
+    // ^ What happens if we register and deregister and register back again?
 
     uint public bond;
     uint public totalPooled;
@@ -305,7 +306,6 @@ contract RenPool {
     */
     function refund(address _darknodeID)
         external
-        onlyOwnerNodeOperator
         returns(bool)
     {
         darknodeRegistry.refund(_darknodeID);
