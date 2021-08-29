@@ -227,9 +227,6 @@ contract RenPool {
 
     /**
      * @notice Transfer bond to the REN contract before registering the darknode.
-     *
-     * question: msg.sender == address(this), right ? ie, the RenPool
-     * contract address will the sender and not the nodeOperator/owner who initiated this transaction?
      */
     function approveBondTransfer()
         external
@@ -254,9 +251,6 @@ contract RenPool {
      * darknode. The darknode will remain pending registration until the next
      * epoch. Only after this period can the darknode be deregistered. The
      * caller of this method will be stored as the owner of the darknode.
-     *
-     * question msg.sender == address(this), right ? ie, the RenPool
-     * contract address will the sender and not the nodeOperator/owner who initiated this transaction?
      *
      * question What if this function is called more then once?
      *
