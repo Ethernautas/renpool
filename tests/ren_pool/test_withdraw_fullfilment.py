@@ -10,10 +10,15 @@ def test_withdraw_fullfilment_happy_path(owner, ren_pool, ren_token, user, amoun
     """
     Test withdraw fulfillment happy path.
     """
+    user_init_balance = ren_token.balanceOf(user)
     assert ren_pool.totalPooled() == 0
     assert ren_pool.isLocked() == False
 
-    # Lock the pool
+    # Get user some REN tokens
+    ren_token.transfer(user, amount, {'from': owner})
+    assert ren_token.balanceOf(user) == user_init_balance + amount
+
+    # Lock pool
     ren_token.approve(ren_pool, C.POOL_BOND, {'from': owner})
     ren_pool.deposit(C.POOL_BOND, {'from': owner})
     assert ren_pool.isLocked() == True
@@ -24,12 +29,9 @@ def test_withdraw_fullfilment_happy_path(owner, ren_pool, ren_token, user, amoun
     assert ren_pool.withdrawRequests(owner) == amount
 
     # User fulfills the withdraw request made by the owner
-    init_balance = ren_token.balanceOf(user)
-    ren_token.transfer(user, amount, {'from': owner})
     ren_token.approve(ren_pool, amount , {'from': user})
     ren_pool.fulfillWithdrawRequest(owner, {'from': user})
-
-    assert ren_token.balanceOf(user) == init_balance
+    assert ren_token.balanceOf(user) == user_init_balance
     assert ren_pool.balanceOf(user) == amount
     assert ren_pool.isLocked() == True
     assert ren_pool.totalPooled() == C.POOL_BOND

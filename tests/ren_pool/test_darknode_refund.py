@@ -10,7 +10,8 @@ def test_darknode_refund_happy_path(owner, node_operator, ren_pool, ren_token, d
     """
     chain.snapshot()
 
-    init_balance = ren_token.balanceOf(darknodeRegistryStoreAddr)
+    owner_init_balance = ren_token.balanceOf(owner)
+    registry_store_init_balance = ren_token.balanceOf(darknodeRegistryStoreAddr)
 
     # Lock the pool
     ren_token.approve(ren_pool, C.POOL_BOND, {'from': owner})
@@ -30,13 +31,19 @@ def test_darknode_refund_happy_path(owner, node_operator, ren_pool, ren_token, d
     # Skip to the next epoch  for the deregistration to settle
     chain.mine(timedelta = C.ONE_MONTH)
     darknode_registry.epoch({'from': ren_pool})
-
     assert darknode_registry.isDeregistered(C.NODE_ID_HEX) == True
 
     # Skip one extra epoch for the refund to be callable
     chain.mine(timedelta = C.ONE_MONTH)
     darknode_registry.epoch({'from': ren_pool})
     ren_pool.refund(C.NODE_ID_HEX, {'from': node_operator})
-
-    assert ren_token.balanceOf(darknodeRegistryStoreAddr) == init_balance
+    assert ren_token.balanceOf(darknodeRegistryStoreAddr) == registry_store_init_balance
     assert ren_token.balanceOf(ren_pool) == C.POOL_BOND
+
+    # Unlock pool to release funds
+    ren_pool.unlockPool({'from': node_operator})
+    assert ren_pool.isLocked() == False
+
+    # Refund staker(s)
+    ren_pool.withdraw(C.POOL_BOND, {'from': owner})
+    assert ren_token.balanceOf(owner) == owner_init_balance

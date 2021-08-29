@@ -12,9 +12,11 @@ def test_ren_pool_deposit_happy_path(owner, ren_pool, ren_token, user, amount):
     assert ren_pool.totalPooled() == 0
     assert ren_token.balanceOf(ren_pool) == 0
 
+    # Get user some REN tokens
     ren_token.transfer(user, amount, {'from': owner})
     assert ren_token.balanceOf(user) >= amount
 
+    # Deposit tokens into the pool
     ren_token.approve(ren_pool, amount, {'from': user})
     ren_pool.deposit(amount, {'from': user})
     assert ren_token.balanceOf(ren_pool) == amount

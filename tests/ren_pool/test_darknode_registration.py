@@ -11,7 +11,7 @@ def test_darknode_registration_happy_path(owner, node_operator, ren_pool, ren_to
     """
     chain.snapshot()
 
-    init_balance = ren_token.balanceOf(darknodeRegistryStoreAddr)
+    registry_store_init_balance = ren_token.balanceOf(darknodeRegistryStoreAddr)
 
     assert ren_pool.totalPooled() == 0
     assert ren_pool.isLocked() == False
@@ -27,7 +27,7 @@ def test_darknode_registration_happy_path(owner, node_operator, ren_pool, ren_to
     ren_pool.registerDarknode(C.NODE_ID_HEX, C.PUBLIC_KEY, {'from': node_operator})
 
     # Funds are stored in the DarknodeRegistryStore contract instead of the DarknodeRegistry
-    assert ren_token.balanceOf(darknodeRegistryStoreAddr) == init_balance + C.POOL_BOND
+    assert ren_token.balanceOf(darknodeRegistryStoreAddr) == registry_store_init_balance + C.POOL_BOND
     assert ren_token.balanceOf(ren_pool) == 0
     assert darknode_registry.isPendingRegistration(C.NODE_ID_HEX) == True
     assert darknode_registry.isRegistered(C.NODE_ID_HEX) == False
@@ -35,7 +35,6 @@ def test_darknode_registration_happy_path(owner, node_operator, ren_pool, ren_to
     # Skip to the next epoch (1 month) for the registration to settle
     chain.mine(timedelta = C.ONE_MONTH)
     darknode_registry.epoch({'from': ren_pool})
-
     assert darknode_registry.isPendingRegistration(C.NODE_ID_HEX) == False
     assert darknode_registry.isRegistered(C.NODE_ID_HEX) == True
 

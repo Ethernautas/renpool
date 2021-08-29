@@ -21,16 +21,13 @@ def test_darknode_deregistration_happy_path(owner, node_operator, ren_pool, ren_
     # Skip to the next epoch (1 month) for the registration to settle
     chain.mine(timedelta = C.ONE_MONTH)
     darknode_registry.epoch({'from': ren_pool})
-
     assert darknode_registry.isRegistered(C.NODE_ID_HEX) == True
 
     # Deregister darknode
     ren_pool.deregister(C.NODE_ID_HEX, {'from': node_operator})
-
     assert darknode_registry.isPendingDeregistration(C.NODE_ID_HEX) == True
 
     # Skip to the next epoch (1 month) for the deregistration to settle
     chain.mine(timedelta = C.ONE_MONTH)
     darknode_registry.epoch({'from': ren_pool})
-
     assert darknode_registry.isDeregistered(C.NODE_ID_HEX) == True
