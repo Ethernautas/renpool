@@ -4,7 +4,7 @@ def test_ren_mint(owner, ren_token):
     """
     Test REN tokens are properly minted.
     """
-    assert ren_token.balanceOf(owner) == 2 * C.POOL_BOND
+    assert ren_token.balanceOf(owner) == C.POOL_BOND
 
 def test_ren_symbol(ren_token):
     """

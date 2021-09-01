@@ -189,6 +189,7 @@ contract RenPool {
         address sender = msg.sender;
         uint amount = withdrawRequests[_target];
         // ^ This could not be defined plus make sure amount > 0
+        // TODO: make sure user cannot fullfil his own request
 
         require(isLocked == true, "Pool is not locked");
 
