@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
 */
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
+// TODO: do we need to use safeMath?
 
 contract RenPool {
     uint8 public constant DECIMALS = 18;
@@ -119,11 +120,11 @@ contract RenPool {
     {
         address sender = msg.sender;
 
-        require(_amount > 0, "Invalid amount");
-        require(_amount + totalPooled <= bond, "Amount surpasses pool bond");
         require(isLocked == false, "Pool is locked");
+        require(_amount > 0, "Invalid amount");
+        require(_amount + totalPooled <= bond, "Amount surpasses bond");
 
-        balances[sender] += _amount; // TODO: do we need to use safeMath?
+        balances[sender] += _amount;
         totalPooled += _amount;
 
         require(
