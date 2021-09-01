@@ -1,4 +1,4 @@
-from brownie import network, accounts, config, RenPool
+from brownie import ZERO_ADDRESS, network, accounts, config, RenPool
 from brownie_tokens import MintableForkToken
 import pytest
 import constants as C
@@ -31,52 +31,69 @@ if config['networks']['default'] != net:
 # Required due to this bug https://github.com/eth-brownie/brownie/issues/918
 network.connect(net)
 
-@pytest.fixture(autouse=True)
-def setup(fn_isolation):
+"""
+A common pattern is to include one or more module-scoped setup fixtures that define
+the initial test conditions, and then use fn_isolation to revert to this base state
+at the start of each test.
+
+See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#isolation-fixtures
+"""
+@pytest.fixture(scope="module", autouse=True)
+def shared_setup(module_isolation):
     """
-    Isolation setup fixture.
-    This ensures that each test runs against the same base environment.
+    Resetting the local environment.
     """
     pass
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module', autouse=True)
+def ren_token():
+    """
+    Yield a `Contract` object for the RenToken contract.
+    """
+    yield MintableForkToken(renTokenAddr)
+
+@pytest.fixture(scope='module', autouse=True)
+def distribute_tokens(ren_token):
+    for i in range(0, 10):
+        user = accounts[i]
+
+        # Reset user balance to C.POOL_BOND
+        ren_token._mint_for_testing(user, C.POOL_BOND)
+
+        # Verify balance matches C.POOL_BOND
+        if ren_token.balanceOf(user) != C.POOL_BOND:
+            raise ValueError(f'Wrong initial balance for account {i}, balance {ren_token.balanceOf(user)}')
+
+
+@pytest.fixture(scope='module')
 def owner():
     """
     Yield an `Account` object for the contract's owner.
     """
     yield accounts[0]
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def node_operator():
     """
     Yield an `Account` object for the contract's node operator.
     """
     yield accounts[1]
 
-@pytest.fixture(scope="module")
-def ren_token(owner):
-    """
-    Yield a `Contract` object for the RenToken contract.
-    """
-    renToken = MintableForkToken(renTokenAddr)
-    renToken._mint_for_testing(owner, 2 * C.POOL_BOND)
-    yield renToken
-
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def darknode_registry():
     """
     Yield a `Contract` object for the DarknodeRegistrycontract.
     """
     yield utils.load_contract(darknodeRegistryAddr)
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def darknode_registry_store():
     """
     Yield a `Contract` object for the DarknodeRegistryStore contract.
     """
     yield utils.load_contract(darknodeRegistryStoreAddr)
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def ren_pool(owner, node_operator):
     """
     Yield a `Contract` object for the RenPool contract.
@@ -88,3 +105,12 @@ def ren_pool(owner, node_operator):
         C.POOL_BOND,
         {'from': node_operator},
     )
+
+@pytest.fixture(autouse=True)
+def setup(fn_isolation):
+    """
+    Isolation setup fixture.
+    This ensures that each test runs against the same base environment.
+    """
+    pass
+

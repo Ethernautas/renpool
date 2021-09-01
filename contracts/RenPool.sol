@@ -16,6 +16,7 @@ contract RenPool {
     address public nodeOperator;
 
     // TODO: store darknodeID and publicKey on registration
+    // ^ What happens if we register and deregister and register back again?
 
     uint public bond;
     uint public totalPooled;
@@ -188,6 +189,7 @@ contract RenPool {
         address sender = msg.sender;
         uint amount = withdrawRequests[_target];
         // ^ This could not be defined plus make sure amount > 0
+        // TODO: make sure user cannot fullfil his own request
 
         require(isLocked == true, "Pool is not locked");
 
@@ -226,9 +228,6 @@ contract RenPool {
 
     /**
      * @notice Transfer bond to the REN contract before registering the darknode.
-     *
-     * question: msg.sender == address(this), right ? ie, the RenPool
-     * contract address will the sender and not the nodeOperator/owner who initiated this transaction?
      */
     function approveBondTransfer()
         external
@@ -253,9 +252,6 @@ contract RenPool {
      * darknode. The darknode will remain pending registration until the next
      * epoch. Only after this period can the darknode be deregistered. The
      * caller of this method will be stored as the owner of the darknode.
-     *
-     * question msg.sender == address(this), right ? ie, the RenPool
-     * contract address will the sender and not the nodeOperator/owner who initiated this transaction?
      *
      * question What if this function is called more then once?
      *
@@ -305,7 +301,6 @@ contract RenPool {
     */
     function refund(address _darknodeID)
         external
-        onlyOwnerNodeOperator
         returns(bool)
     {
         darknodeRegistry.refund(_darknodeID);
