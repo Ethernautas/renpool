@@ -232,9 +232,10 @@ contract RenPool {
      */
     function approveBondTransfer()
         external
-        onlyOwnerNodeOperator
-        returns(bool)
+        onlyNodeOperator
     {
+        // Do we need to be this restrictive?
+        // maybe even renToken.balanceOf(address(this)) == bond
         require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
@@ -242,8 +243,6 @@ contract RenPool {
             renToken.approve(darknodeRegistryAddr, bond) == true,
             "Bond transfer failed"
         );
-
-        return true;
     }
 
     /**
@@ -262,16 +261,13 @@ contract RenPool {
      */
     function registerDarknode(address _darknodeID, bytes calldata _publicKey)
         external
-        onlyOwnerNodeOperator
-        returns(bool)
+        onlyNodeOperator
     {
         require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
         // TODO: store darknodeID and publicKey
         darknodeRegistry.register(_darknodeID, _publicKey);
-
-        return true;
     }
 
     /**

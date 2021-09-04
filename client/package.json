@@ -66,5 +66,15 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "jest": {
+    "testMatch": [
+      "**/?(*.)(spec|test).ts?(x)"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/Tests/Setup.js",
+      "<rootDir>/Tests/Mocks/*"
+    ]
   }
 }
