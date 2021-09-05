@@ -30,6 +30,8 @@ export const App = (): JSX.Element => {
   const wrongChain = chainId != parseInt(CHAIN_ID, 10)
   const disabled = !isAccountsUnlocked || wrongChain || isLocked
 
+  // TODO: display darknodeUrl once registered
+
   return (
     <>
       <Header />

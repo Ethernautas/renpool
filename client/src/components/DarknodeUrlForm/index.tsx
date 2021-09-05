@@ -1,6 +1,6 @@
 import React, { FC, useState, ChangeEvent, FormEvent } from 'react'
 import { Box, Form, Button } from 'rimble-ui'
-import { validDarknodeUrl, getDarknodeUrlParams } from '../../utils/darknodeUrl'
+import { validDarknodeUrl, getDarknodeUrlParams, DarknodeParams } from '../../utils/darknodeUrl'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
@@ -11,19 +11,19 @@ const DARKNODE_URL_PLACEHOLDER = `https://${DARKNODE_NETWORK}.renproject.io/dark
 export interface DarknodeUrlFormProps {
   btnLabel: string
   disabled: boolean
-  onBeforeHook: () => void
-  onClientCancelHook: () => void
-  onClientErrorHook: (err?: string) => void
-  onSuccessHook: ({ darknodeID, publicKey }: { darknodeID: string, publicKey: string }) => void
+  onBefore?: () => void
+  onClientCancel?: () => void
+  onClientError?: (err?: string) => void
+  onSuccess?: ({ darknodeID, publicKey }: DarknodeParams) => void
 }
 
 export const DarknoneUrlForm: FC<DarknodeUrlFormProps> = ({
   btnLabel,
   disabled,
-  onBeforeHook,
-  onClientCancelHook,
-  onClientErrorHook,
-  onSuccessHook,
+  onBefore = () => null,
+  onClientCancel = () => null,
+  onClientError = () => null,
+  onSuccess = () => null,
 }): JSX.Element => {
   const [darknodeUrl, setDarknodeUrl] = useState<string>('')
 
@@ -34,11 +34,11 @@ export const DarknoneUrlForm: FC<DarknodeUrlFormProps> = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
 
-    // Run before hook logic if provided and return on error
+    // Run 'before' logic if provided and return on error
     try {
-      onBeforeHook()
-    } catch (exc) {
-      onClientCancelHook()
+      onBefore()
+    } catch (e) {
+      onClientCancel()
       return // return silently
     }
 
@@ -48,7 +48,7 @@ export const DarknoneUrlForm: FC<DarknodeUrlFormProps> = ({
     // In case of errors, display on UI and return handler to parent component
     if (!isValid) {
       alert(`Invalid url. Reason: ${err}`)
-      onClientErrorHook(err)
+      onClientError(err)
       return
     }
 
@@ -56,7 +56,7 @@ export const DarknoneUrlForm: FC<DarknodeUrlFormProps> = ({
     const { darknodeID, publicKey } = getDarknodeUrlParams(darknodeUrl, DARKNODE_BASE_URL)
 
     // Pass event up to parent component
-    onSuccessHook({ darknodeID, publicKey })
+    onSuccess({ darknodeID, publicKey })
   }
 
   return (

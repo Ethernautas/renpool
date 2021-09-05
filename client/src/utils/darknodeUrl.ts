@@ -6,7 +6,7 @@ enum ErrorMessages {
   NAME = 'NAME',
 }
 
-interface DarknodeParams {
+export interface DarknodeParams {
   darknodeID: string
   publicKey: string
 }

@@ -14,12 +14,16 @@ export interface FormApi {
   handleSuccess: (cb?: () => void) => void,
 }
 
-export const useForm = (): FormApi => {
+export const useForm = (showError = false): FormApi => {
   const { disabled, disableBtn, enableBtn } = useDisabled()
   const { errorMsg, successMsg, setErrorMessage, setSuccessMessage, clearMessages } = useMessage()
 
   const fireCb = (cb?: () => void) => {
     if (cb != null && typeof cb === 'function') { cb() }
+  }
+
+  const handleError = (err?: string) => {
+    if (showError) { alert(err) }
   }
 
   const handleBefore = (cb?: () => void) => {
@@ -34,12 +38,12 @@ export const useForm = (): FormApi => {
   }
 
   const handleClientError = (err?: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
-    // console.log(err)
+    handleError(err)
     enableBtn()
   }
 
   const handleServerError = (err?: string) => {
-    // console.log(err)
+    handleError(err)
     setErrorMessage(err)
     enableBtn()
   }
