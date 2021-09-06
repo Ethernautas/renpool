@@ -13,7 +13,7 @@ export const BOND = BigNumber.from(100_000).mul(TENS)
 export const MAX_UINT256 = BigNumber.from(2)
   .pow(256)
   .sub(1)
-  .toString()
+  // .toString()
 
 export const NETWORKS = {
   1: 'Mainnet',

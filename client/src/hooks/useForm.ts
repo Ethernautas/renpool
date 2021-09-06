@@ -14,23 +14,18 @@ export interface FormApi {
   handleSuccess: (cb?: () => void) => void,
 }
 
+// TODO: rethink error messages
 export const useForm = (showError = false): FormApi => {
   const { disabled, disableBtn, enableBtn } = useDisabled()
   const { errorMsg, successMsg, setErrorMessage, setSuccessMessage, clearMessages } = useMessage()
-
-  const fireCb = (cb?: () => void) => {
-    if (cb != null && typeof cb === 'function') { cb() }
-  }
 
   const handleError = (err?: string) => {
     if (showError) { alert(err) }
   }
 
-  const handleBefore = (cb?: () => void) => {
+  const handleBefore = () => {
     disableBtn()
     clearMessages()
-    // Allow other components to extend handleBefore default functionality
-    fireCb(cb)
   }
 
   const handleClientCancel = () => {
@@ -48,11 +43,9 @@ export const useForm = (showError = false): FormApi => {
     enableBtn()
   }
 
-  const handleSuccess = (cb?: () => void) => {
+  const handleSuccess = () => {
     enableBtn()
     clearMessages()
-    // Allow other components to extend handleSuccess default functionality
-    fireCb(cb)
   }
 
   return {

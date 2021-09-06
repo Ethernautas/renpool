@@ -1,6 +1,5 @@
 import React, { FC, useState, ChangeEvent, FormEvent } from 'react'
 import { Box, Form, Button } from 'rimble-ui'
-import { validDarknodeUrl, getDarknodeUrlParams, DarknodeParams } from '../../utils/darknodeUrl'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
@@ -8,7 +7,15 @@ const DARKNODE_NETWORK = CHAIN_ID === '1' ? 'mainnet' : 'testnet'
 const DARKNODE_BASE_URL = `https://${DARKNODE_NETWORK}.renproject.io/darknode/`
 const DARKNODE_URL_PLACEHOLDER = `https://${DARKNODE_NETWORK}.renproject.io/darknode/<YOUR-DARKNODE-ID>?action=register&public_key=<YOUR-PUBLIC-KEY>&name=<YOUR-DARKNODE-NAME>`
 
-export interface DarknodeUrlFormProps {
+enum ErrorMessages {
+  EMPTY_STRING = 'EMPTY_STRING',
+  START_WITH = 'START_WITH',
+  ACTION = 'ACTION',
+  PUBLIC_KEY = 'PUBLIC_KEY',
+  NAME = 'NAME',
+}
+
+export interface Props {
   btnLabel: string
   disabled: boolean
   onBefore?: () => void
@@ -17,7 +24,12 @@ export interface DarknodeUrlFormProps {
   onSuccess?: ({ darknodeID, publicKey }: DarknodeParams) => void
 }
 
-export const DarknoneUrlForm: FC<DarknodeUrlFormProps> = ({
+export interface DarknodeParams {
+  darknodeID: string
+  publicKey: string
+}
+
+export const DarknoneUrlForm: FC<Props> = ({
   btnLabel,
   disabled,
   onBefore = () => null,
@@ -26,6 +38,37 @@ export const DarknoneUrlForm: FC<DarknodeUrlFormProps> = ({
   onSuccess = () => null,
 }): JSX.Element => {
   const [darknodeUrl, setDarknodeUrl] = useState<string>('')
+
+  const validateDarknodeUrl = (url: string): { isValid: boolean, err: string | null } => {
+    if (url.trim().length === 0) {
+      return { isValid: false, err: ErrorMessages.EMPTY_STRING }
+    }
+    if (!url.startsWith(DARKNODE_BASE_URL)) {
+      return { isValid: false, err: ErrorMessages.START_WITH }
+    }
+    if (!url.includes('action=register')) {
+      return { isValid: false, err: ErrorMessages.ACTION }
+    }
+    if (!url.includes('&public_key=0x')) {
+      return { isValid: false, err: ErrorMessages.PUBLIC_KEY }
+    }
+    if (!url.includes('&name=')) {
+      return { isValid: false, err: ErrorMessages.NAME }
+    }
+    return { isValid: true, err: null }
+  }
+
+  const getDarknodeUrlParams = (url: string): DarknodeParams => {
+    const darknodeID = url.slice(DARKNODE_BASE_URL.length).split('?')[0] // base58
+
+    const p1 = 'public_key='
+    const p2 = '&name='
+    const index1 = url.indexOf(p1)
+    const index2 = url.indexOf(p2)
+    const publicKey = url.slice(index1 + p1.length, index2)
+
+    return { darknodeID, publicKey }
+  }
 
   const handleChange = async (e: ChangeEvent<HTMLTextAreaElement>): Promise<void> => {
     setDarknodeUrl(e.target.value || '')
@@ -43,17 +86,16 @@ export const DarknoneUrlForm: FC<DarknodeUrlFormProps> = ({
     }
 
     // Validate input
-    const { isValid, err } = validDarknodeUrl(darknodeUrl, DARKNODE_BASE_URL)
+    const { isValid, err } = validateDarknodeUrl(darknodeUrl)
 
     // In case of errors, display on UI and return handler to parent component
     if (!isValid) {
-      alert(`Invalid url. Reason: ${err}`)
-      onClientError(err)
+      onClientError(`Invalid url. Reason: ${err}`)
       return
     }
 
     // Get darknode params
-    const { darknodeID, publicKey } = getDarknodeUrlParams(darknodeUrl, DARKNODE_BASE_URL)
+    const { darknodeID, publicKey } = getDarknodeUrlParams(darknodeUrl)
 
     // Pass event up to parent component
     onSuccess({ darknodeID, publicKey })

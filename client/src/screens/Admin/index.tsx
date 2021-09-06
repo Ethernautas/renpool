@@ -1,16 +1,15 @@
 import React, { FC, useContext } from 'react'
 import { formatBytes32String } from '@ethersproject/strings'
-import { Box, Flash, Button, Text } from 'rimble-ui'
+import { Box, Flash, Text } from 'rimble-ui'
 import { BOND } from '../../constants'
 import { darknodeIDBase58ToHex } from '../../utils/base58ToHex'
-import { DarknodeParams } from '../../utils/darknodeUrl'
 import { DarknodeRegistryContext } from '../../context/DarknodeRegistryProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useRenAllowance } from '../../hooks/useRenAllowance'
 import { useForm } from '../../hooks/useForm'
-import { DarknoneUrlForm } from '../DarknodeUrlForm'
+import { DarknoneUrlForm, DarknodeParams } from '../../components/DarknodeUrlForm'
 
-export const AdminPanel: FC = (): JSX.Element => {
+export const AdminScreen: FC = (): JSX.Element => {
   const { darknodeRegistry } = useContext(DarknodeRegistryContext)
   const { renPool, isLocked } = useContext(RenPoolContext)
 
@@ -35,6 +34,11 @@ export const AdminPanel: FC = (): JSX.Element => {
   }
 
   const handleRegister = async ({ darknodeID, publicKey }: DarknodeParams): Promise<void> => {
+    if (!isAllowed) {
+      handleClientError('Please, approve transaction first.',)
+      return
+    }
+
     try {
       const tx = await renPool.registerDarknode(darknodeIDBase58ToHex(darknodeID), formatBytes32String(publicKey), { gasLimit: 20000000 })
       await tx.wait() // wait for mining
@@ -58,26 +62,20 @@ export const AdminPanel: FC = (): JSX.Element => {
   }
 
   return (
-    <>
-      <Button
-        disabled={disabled || isAllowed}
-        onApprove={handleApprove}
-        width={1}
-      >
-        Approve registration
-      </Button>
-      <Box p={2} />
-      <DarknoneUrlForm
-        btnLabel="Register darknode"
-        disabled={disabled || !isAllowed}
-        onBefore={handleBefore}
-        onClientCancel={handleClientCancel}
-        onClientError={handleClientError}
-        onSuccess={async (darknodeParams: DarknodeParams) => {
+    <DarknoneUrlForm
+      btnLabel={!isAllowed ? 'Approve Registration' : 'Register darknode'}
+      disabled={disabled}
+      onBefore={handleBefore} // set 'disabled' to 'true'
+      onClientCancel={handleClientCancel}
+      onClientError={handleClientError}
+      onSuccess={async (darknodeParams: DarknodeParams) => {
+        if (!isAllowed) {
+          await handleApprove()
+        } else {
           await handleRegister(darknodeParams)
-          handleSuccess()
-        }}
-      />
-    </>
+        }
+        handleSuccess() // cleanup (set 'disabled' to 'false')
+      }}
+    />
   )
 }

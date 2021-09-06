@@ -5,9 +5,9 @@ import { RenPoolContext } from './context/RenPoolProvider'
 import { useActiveWeb3React } from './hooks/useActiveWeb3React'
 import { Header } from './components/Header'
 import { NavLink } from './components/NavLink'
-import { Deposit } from './components/Deposit'
-import { Withdraw } from './components/Withdraw'
-import { AdminPanel } from './components/AdminPanel'
+import { Deposit } from './screens/Deposit'
+import { WithdrawScreen } from './screens/Withdraw'
+import { AdminScreen } from './screens/Admin'
 import { Stats } from './components/Stats'
 import { Addresses } from './components/Addresses'
 import { Instructions } from './components/Instructions'
@@ -101,7 +101,7 @@ export const App = (): JSX.Element => {
           <Box>
             <Heading.h3 textAlign="center">Withdraw REN</Heading.h3>
             <Box p={3}>
-              <Withdraw disabled={disabled} />
+              <WithdrawScreen disabled={disabled} />
             </Box>
           </Box>
         )}
@@ -110,7 +110,7 @@ export const App = (): JSX.Element => {
           <Box>
             <Heading.h3 textAlign="center">Admin Panel</Heading.h3>
             <Box p={3}>
-              <AdminPanel />
+              <AdminScreen />
             </Box>
           </Box>
         )}
