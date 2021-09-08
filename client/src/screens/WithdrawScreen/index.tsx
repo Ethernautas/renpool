@@ -1,8 +1,9 @@
 import React, { FC, useContext } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Text } from 'rimble-ui'
-import { useForm } from '../../hooks/useForm'
 import { RenPoolContext } from '../../context/RenPoolProvider'
+import { useForm } from '../../hooks/useForm'
+import { ScreenLayout } from '../../layouts/ScreenLayout'
 import { AmountForm } from '../../components/AmountForm'
 
 export const WithdrawScreen: FC = (): JSX.Element => {
@@ -38,17 +39,20 @@ export const WithdrawScreen: FC = (): JSX.Element => {
   }
 
   return (
-    <AmountForm
-      btnLabel="Withdraw"
-      disabled={disabled}
-      available={accountPooled}
-      onBefore={handleBefore} // set 'disabled' to 'true'
-      onClientCancel={handleClientCancel}
-      onClientError={handleClientError}
-      onSuccess={async (amount: BigNumber) => {
-        await handleWithdraw(amount)
-        handleSuccess() // cleanup (set 'disabled' to 'false')
-      }}
-    />
+    <ScreenLayout title="Withdraw REN">
+      <AmountForm
+        btnLabel="Withdraw"
+        btnVariant="danger"
+        disabled={disabled}
+        upperBound={accountPooled}
+        onBefore={handleBefore} // set 'disabled' to 'true'
+        onClientCancel={handleClientCancel}
+        onClientError={handleClientError}
+        onSuccess={async (amount: BigNumber) => {
+          await handleWithdraw(amount)
+          handleSuccess() // cleanup (set 'disabled' to 'false')
+        }}
+      />
+    </ScreenLayout>
   )
 }

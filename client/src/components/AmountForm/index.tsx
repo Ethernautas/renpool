@@ -5,10 +5,17 @@ import { Box, Form, Input, Button } from 'rimble-ui'
 import { DECIMALS } from '../../constants'
 import { str2BN } from '../../utils/str2BN'
 
+enum ButtonVariants {
+  default = 'default',
+  success = 'success',
+  danger = 'danger',
+}
+
 export interface Props {
   btnLabel: string
+  btnVariant?: keyof typeof ButtonVariants
   disabled: boolean
-  available: BigNumber
+  upperBound: BigNumber
   onBefore?: () => void
   onClientCancel?: () => void
   onClientError?: (err?: string) => void
@@ -17,8 +24,9 @@ export interface Props {
 
 export const AmountForm: FC<Props> = ({
   btnLabel = 'Submit',
+  btnVariant = ButtonVariants.default,
   disabled,
-  available,
+  upperBound,
   onBefore = () => null,
   onClientCancel = () => null,
   onClientError = () => null,
@@ -53,8 +61,8 @@ export const AmountForm: FC<Props> = ({
       return
     }
 
-    if (_amount.gt(available)) {
-      onClientError(`Insufficient balance (${parseInt(formatUnits(available.toString(), DECIMALS), 10)} REN).`)
+    if (_amount.gt(upperBound)) {
+      onClientError(`Insufficient balance (${parseInt(formatUnits(upperBound.toString(), DECIMALS), 10)} REN).`)
       return
     }
 
@@ -74,7 +82,7 @@ export const AmountForm: FC<Props> = ({
       <Box p={2} />
       <Button
         type="submit"
-        variant="danger"
+        variant={btnVariant}
         disabled={disabled}
         width={1}
       >

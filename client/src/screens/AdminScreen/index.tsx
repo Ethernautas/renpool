@@ -7,6 +7,7 @@ import { DarknodeRegistryContext } from '../../context/DarknodeRegistryProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useRenAllowance } from '../../hooks/useRenAllowance'
 import { useForm } from '../../hooks/useForm'
+import { ScreenLayout } from '../../layouts/ScreenLayout'
 import { DarknoneUrlForm, DarknodeParams } from '../../components/DarknodeUrlForm'
 
 export const AdminScreen: FC = (): JSX.Element => {
@@ -47,35 +48,34 @@ export const AdminScreen: FC = (): JSX.Element => {
     }
   }
 
-  if (darknodeRegistry == null || renPool == null) {
+  // if (darknodeRegistry == null || renPool == null) {
+  if (renPool == null) {
     return <Text>Loading...</Text>
   }
 
-  if (!isLocked) {
-    return (
-      <Box p={3}>
-        <Flash my={3} variant="warning">
-          Pool needs to be locked before registration
-        </Flash>
-      </Box>
-    )
-  }
-
   return (
-    <DarknoneUrlForm
-      btnLabel={!isAllowed ? 'Approve Registration' : 'Register darknode'}
-      disabled={disabled}
-      onBefore={handleBefore} // set 'disabled' to 'true'
-      onClientCancel={handleClientCancel}
-      onClientError={handleClientError}
-      onSuccess={async (darknodeParams: DarknodeParams) => {
-        if (!isAllowed) {
-          await handleApprove()
-        } else {
-          await handleRegister(darknodeParams)
-        }
-        handleSuccess() // cleanup (set 'disabled' to 'false')
-      }}
-    />
+    <ScreenLayout title="Admin Panel">
+      {!isLocked ? (
+        <Flash my={3} variant="warning">
+            Pool needs to be locked before registration
+        </Flash>
+      ) : (
+        <DarknoneUrlForm
+          btnLabel={!isAllowed ? 'Approve Registration' : 'Register darknode'}
+          disabled={disabled}
+          onBefore={handleBefore} // set 'disabled' to 'true', clean error messages, ...
+          onClientCancel={handleClientCancel}
+          onClientError={handleClientError}
+          onSuccess={async (darknodeParams: DarknodeParams) => {
+            if (!isAllowed) {
+              await handleApprove()
+            } else {
+              await handleRegister(darknodeParams)
+            }
+            handleSuccess() // cleanup (set 'disabled' to 'false')
+          }}
+        />
+      )}
+    </ScreenLayout>
   )
 }

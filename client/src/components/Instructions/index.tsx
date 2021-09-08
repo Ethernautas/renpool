@@ -8,11 +8,11 @@ import { RenFaucet } from '../RenFaucet'
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 const REN_FAUCET_LINK = 'https://forum.renproject.io/t/is-there-any-ren-faucet-on-kovan/904/3'
 
-export interface InstructionsProps {
+export interface Props {
   disabled?: boolean
 }
 
-export const Instructions: FC<InstructionsProps> = ({
+export const Instructions: FC<Props> = ({
   disabled = false,
 }): JSX.Element => {
   const networkName = NETWORKS[CHAIN_ID]

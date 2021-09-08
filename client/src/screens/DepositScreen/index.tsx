@@ -7,6 +7,7 @@ import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
 import { useForm } from '../../hooks/useForm'
 import { useRenAllowance } from '../../hooks/useRenAllowance'
+import { ScreenLayout } from '../../layouts/ScreenLayout'
 import { AmountForm } from '../../components/AmountForm'
 
 export const DepositScreen: FC = (): JSX.Element => {
@@ -63,21 +64,24 @@ export const DepositScreen: FC = (): JSX.Element => {
   }
 
   return (
-    <AmountForm
-      btnLabel={!isAllowed ? 'Approve' : 'Deposit'}
-      disabled={disabled}
-      available={accountBalance}
-      onBefore={handleBefore} // set 'disabled' to 'true', clean any messages, etc
-      onClientCancel={handleClientCancel}
-      onClientError={handleClientError}
-      onSuccess={async (amount: BigNumber) => {
-        if (!isAllowed) {
-          await handleApprove()
-        } else {
-          await handleDeposit(amount)
-        }
-        handleSuccess() // cleanup (set 'disabled' to 'false')
-      }}
-    />
+    <ScreenLayout title="Deposit REN">
+      <AmountForm
+        btnLabel={!isAllowed ? 'Approve' : 'Deposit'}
+        btnVariant={!isAllowed ? 'default' : 'success'}
+        disabled={disabled}
+        upperBound={accountBalance}
+        onBefore={handleBefore} // set 'disabled' to 'true', clean any messages, etc
+        onClientCancel={handleClientCancel}
+        onClientError={handleClientError}
+        onSuccess={async (amount: BigNumber) => {
+          if (!isAllowed) {
+            await handleApprove()
+          } else {
+            await handleDeposit(amount)
+          }
+          handleSuccess() // cleanup (set 'disabled' to 'false')
+        }}
+      />
+    </ScreenLayout>
   )
 }
