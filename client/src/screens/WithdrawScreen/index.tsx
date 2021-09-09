@@ -2,6 +2,7 @@ import React, { FC, useContext } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Text } from 'rimble-ui'
 import { RenPoolContext } from '../../context/RenPoolProvider'
+import { useConnection } from '../../hooks/useConnection'
 import { useForm } from '../../hooks/useForm'
 import { ScreenLayout } from '../../layouts/ScreenLayout'
 import { AmountForm } from '../../components/AmountForm'
@@ -23,6 +24,8 @@ export const WithdrawScreen: FC = (): JSX.Element => {
     handleSuccess,
   } = useForm(true)
 
+  const { isAccountLocked, isWrongChain } = useConnection()
+
   const handleWithdraw = async (amount: BigNumber): Promise<void> => {
     try {
       const tx = await renPool.withdraw(amount, { gasLimit: 200000 })
@@ -43,7 +46,7 @@ export const WithdrawScreen: FC = (): JSX.Element => {
       <AmountForm
         btnLabel="Withdraw"
         btnVariant="danger"
-        disabled={disabled}
+        disabled={disabled || isAccountLocked || isWrongChain}
         upperBound={accountPooled}
         onBefore={handleBefore} // set 'disabled' to 'true'
         onClientCancel={handleClientCancel}

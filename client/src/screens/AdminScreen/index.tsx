@@ -5,6 +5,7 @@ import { BOND } from '../../constants'
 import { darknodeIDBase58ToHex } from '../../utils/base58ToHex'
 import { DarknodeRegistryContext } from '../../context/DarknodeRegistryProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
+import { useConnection } from '../../hooks/useConnection'
 import { useRenAllowance } from '../../hooks/useRenAllowance'
 import { useForm } from '../../hooks/useForm'
 import { ScreenLayout } from '../../layouts/ScreenLayout'
@@ -14,6 +15,7 @@ export const AdminScreen: FC = (): JSX.Element => {
   const { darknodeRegistry } = useContext(DarknodeRegistryContext)
   const { renPool, isLocked } = useContext(RenPoolContext)
 
+  const { isAccountLocked, isWrongChain } = useConnection()
   const { isAllowed, checkForAllowance } = useRenAllowance(renPool?.address, darknodeRegistry?.address, BOND)
   const {
     disabled,
@@ -55,27 +57,29 @@ export const AdminScreen: FC = (): JSX.Element => {
 
   return (
     <ScreenLayout title="Admin Panel">
-      {!isLocked ? (
-        <Flash my={3} variant="warning">
-            Pool needs to be locked before registration
-        </Flash>
-      ) : (
-        <DarknoneUrlForm
-          btnLabel={!isAllowed ? 'Approve Registration' : 'Register darknode'}
-          disabled={disabled}
-          onBefore={handleBefore} // set 'disabled' to 'true', clean error messages, ...
-          onClientCancel={handleClientCancel}
-          onClientError={handleClientError}
-          onSuccess={async (darknodeParams: DarknodeParams) => {
-            if (!isAllowed) {
-              await handleApprove()
-            } else {
-              await handleRegister(darknodeParams)
-            }
-            handleSuccess() // cleanup (set 'disabled' to 'false')
-          }}
-        />
+      {!isLocked && (
+        <>
+          <Flash my={3} variant="warning">
+            Pool needs to be locked for the darknode to be registered
+          </Flash>
+          <Box p={2} />
+        </>
       )}
+      <DarknoneUrlForm
+        btnLabel={!isAllowed ? 'Approve Registration' : 'Register darknode'}
+        disabled={disabled || !isLocked || isAccountLocked || isWrongChain}
+        onBefore={handleBefore} // set 'disabled' to 'true', clean error messages, ...
+        onClientCancel={handleClientCancel}
+        onClientError={handleClientError}
+        onSuccess={async (darknodeParams: DarknodeParams) => {
+          if (!isAllowed) {
+            await handleApprove()
+          } else {
+            await handleRegister(darknodeParams)
+          }
+          handleSuccess() // cleanup (set 'disabled' to 'false')
+        }}
+      />
     </ScreenLayout>
   )
 }

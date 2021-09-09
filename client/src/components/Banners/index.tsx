@@ -1,21 +1,18 @@
-import React, { useContext } from 'react'
+import React, { useContext }  from 'react'
 import { Flash, Box, Text } from 'rimble-ui'
 import { NETWORKS } from '../../constants'
 import { RenPoolContext } from '../../context/RenPoolProvider'
-import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
+import { useConnection } from '../../hooks/useConnection'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
 export const Banners = (): JSX.Element => {
-  const { chainId, account } = useActiveWeb3React()
+  const { isAccountLocked, isWrongChain } = useConnection()
   const { isLocked } = useContext(RenPoolContext)
-
-  const isAccountsUnlocked = account != null
-  const wrongChain = chainId != parseInt(CHAIN_ID, 10)
 
   return (
     <>
-      {!isAccountsUnlocked && (
+      {isAccountLocked && (
         <Box p={3}>
           <Flash my={3} variant="warning">
             Please, connect with MetaMask
@@ -23,7 +20,7 @@ export const Banners = (): JSX.Element => {
         </Box>
       )}
 
-      {wrongChain && (
+      {isWrongChain && (
         <Box p={3}>
           <Flash my={3} variant="warning">
             Please, switch network to <Text.span fontWeight={600}>{NETWORKS[CHAIN_ID]}</Text.span>

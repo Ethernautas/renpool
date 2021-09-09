@@ -5,13 +5,13 @@ import { MAX_UINT256 } from '../../constants'
 import { RenTokenContext } from '../../context/RenTokenProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
+import { useConnection } from '../../hooks/useConnection'
 import { useForm } from '../../hooks/useForm'
 import { useRenAllowance } from '../../hooks/useRenAllowance'
 import { ScreenLayout } from '../../layouts/ScreenLayout'
 import { AmountForm } from '../../components/AmountForm'
 
 export const DepositScreen: FC = (): JSX.Element => {
-  const { account } = useActiveWeb3React()
   const { renToken, accountBalance } = useContext(RenTokenContext)
   const {
     renPool,
@@ -20,6 +20,8 @@ export const DepositScreen: FC = (): JSX.Element => {
     refetchAccountPooled,
   } = useContext(RenPoolContext)
 
+  const { account } = useActiveWeb3React()
+  const { isAccountLocked, isWrongChain } = useConnection()
   const { isAllowed, checkForAllowance } = useRenAllowance(account, renPool?.address, MAX_UINT256)
   const {
     disabled,
@@ -68,7 +70,7 @@ export const DepositScreen: FC = (): JSX.Element => {
       <AmountForm
         btnLabel={!isAllowed ? 'Approve' : 'Deposit'}
         btnVariant={!isAllowed ? 'default' : 'success'}
-        disabled={disabled}
+        disabled={disabled || isAccountLocked || isWrongChain}
         upperBound={accountBalance}
         onBefore={handleBefore} // set 'disabled' to 'true', clean any messages, etc
         onClientCancel={handleClientCancel}
