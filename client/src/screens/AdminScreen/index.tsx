@@ -66,7 +66,8 @@ export const AdminScreen: FC = (): JSX.Element => {
         </>
       )}
       <DarknoneUrlForm
-        btnLabel={!isAllowed ? 'Approve Registration' : 'Register darknode'}
+        btnLabel={!isAllowed ? 'Approve registration' : 'Register darknode'}
+        btnVariant={!isAllowed ? 'default' : 'success'}
         disabled={disabled || !isLocked || isAccountLocked || isWrongChain}
         onBefore={handleBefore} // set 'disabled' to 'true', clean error messages, ...
         onClientCancel={handleClientCancel}

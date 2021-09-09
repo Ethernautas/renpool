@@ -1,5 +1,6 @@
 import React, { FC, useState, ChangeEvent, FormEvent } from 'react'
 import { Box, Form, Button } from 'rimble-ui'
+import { ButtonVariants } from '../../types/button'
 
 const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
 
@@ -17,6 +18,7 @@ enum ErrorMessages {
 
 export interface Props {
   btnLabel: string
+  btnVariant?: keyof typeof ButtonVariants
   disabled: boolean
   onBefore?: () => void
   onClientCancel?: () => void
@@ -31,6 +33,7 @@ export interface DarknodeParams {
 
 export const DarknoneUrlForm: FC<Props> = ({
   btnLabel,
+  btnVariant = ButtonVariants.default,
   disabled,
   onBefore = () => null,
   onClientCancel = () => null,
@@ -114,7 +117,7 @@ export const DarknoneUrlForm: FC<Props> = ({
       <Box p={2} />
       <Button
         type="submit"
-        variant="success"
+        variant={btnVariant}
         disabled={disabled}
         width={1}
       >
