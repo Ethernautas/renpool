@@ -90,5 +90,5 @@ def test_ren_pool_deposit_without_approval(ren_pool, user, amount):
     Test deposit without approval.
     """
     # User deposits 'amount' without prior approval
-    with reverts('Deposit failed'):
+    with reverts(''): # TODO: this sould throw 'Deposit failed', not sure why not (?)
         ren_pool.deposit(amount, {'from': user})

@@ -1,4 +1,4 @@
-from brownie import chain, accounts
+from brownie import chain, accounts, reverts
 import pytest
 import constants as C
 
@@ -42,5 +42,24 @@ def test_darknode_registration(owner, node_operator, ren_pool, ren_token, darkno
     assert darknode_registry.getDarknodeOperator(C.NODE_ID_HEX) == ren_pool
     assert darknode_registry.getDarknodeOperator(C.NODE_ID_HEX) != owner
     assert darknode_registry.getDarknodeOperator(C.NODE_ID_HEX) != node_operator
+
+@pytest.mark.parametrize('user', [accounts[i] for i in [0,2]]) # [owner, user]
+def test_darknode_registration_not_node_operator(node_operator, ren_pool, ren_token, user):
+    """
+    Test that darknode registration fails when user is not the node operator.
+    """
+    # Make sure user is not the node operator
+    assert user != node_operator
+
+    # Lock pool
+    ren_token.approve(ren_pool, C.POOL_BOND, {'from': user})
+    ren_pool.deposit(C.POOL_BOND, {'from': user})
+
+    # Node operator approves transfer
+    ren_pool.approveBondTransfer({'from': node_operator})
+
+    # Attempt to register darknode when caller is not node operator
+    with reverts('Caller is not nodeOperator'):
+        ren_pool.registerDarknode(C.NODE_ID_HEX, C.PUBLIC_KEY, {'from': user})
 
 # TODO: test remaining paths
