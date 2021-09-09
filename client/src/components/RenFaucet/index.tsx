@@ -2,11 +2,11 @@ import React, { FC, useContext } from 'react'
 import { Button } from 'rimble-ui'
 import { RenTokenContext } from '../../context/RenTokenProvider'
 
-export interface RenFaucetProps {
+export interface Props {
   disabled?: boolean
 }
 
-export const RenFaucet: FC<RenFaucetProps> = ({
+export const RenFaucet: FC<Props> = ({
   disabled = false,
 }): JSX.Element => {
   const { renToken } = useContext(RenTokenContext)
