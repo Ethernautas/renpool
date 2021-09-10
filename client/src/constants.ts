@@ -27,13 +27,8 @@ export enum ContractNames {
   RenPool = 'RenPool',
   RenToken = 'RenToken',
   // ^ Implementation of the Ren Token used when network === '1337'.
-  // In live networks we use the IERC20 interface below.
+  // In live networks we use the IERC20 interface.
   // See /context/RenTokenProvider.tsx
-}
-
-export enum InterfaceNames {
-  IERC20 = 'IERC20',
-  IDarknodeRegistry = 'IDarknodeRegistry',
 }
 
 export const FAUCETS = {
