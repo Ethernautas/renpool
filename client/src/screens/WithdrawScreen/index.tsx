@@ -11,6 +11,7 @@ export const WithdrawScreen: FC = (): JSX.Element => {
   const {
     renPool,
     accountPooled,
+    isLocked,
     refetchTotalPooled,
     refetchAccountPooled,
   } = useContext(RenPoolContext)
@@ -46,7 +47,7 @@ export const WithdrawScreen: FC = (): JSX.Element => {
       <AmountForm
         btnLabel="Withdraw"
         btnVariant="danger"
-        disabled={disabled || isAccountLocked || isWrongChain}
+        disabled={disabled || isAccountLocked || isWrongChain || isLocked}
         upperBound={accountPooled}
         onBefore={handleBefore} // set 'disabled' to 'true'
         onClientCancel={handleClientCancel}

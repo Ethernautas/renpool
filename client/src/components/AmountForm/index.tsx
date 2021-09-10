@@ -2,14 +2,9 @@ import React, { FC, useState, ChangeEvent, FormEvent } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
 import { Box, Form, Input, Button } from 'rimble-ui'
+import { ButtonVariants } from '../../types/button'
 import { DECIMALS } from '../../constants'
 import { str2BN } from '../../utils/str2BN'
-
-enum ButtonVariants {
-  default = 'default',
-  success = 'success',
-  danger = 'danger',
-}
 
 export interface Props {
   btnLabel: string

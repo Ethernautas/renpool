@@ -25,8 +25,8 @@ def main():
     account = accounts.add(config['wallets']['from_key'])
     owner = copy.copy(account)
     nodeOperator = copy.copy(account)
-    renTokenAddr = C.CONTRACT_ADDRESSES[network].REN_TOKEN
-    darknodeRegistryAddr = C.CONTRACT_ADDRESSES[network].DARKNODE_REGISTRY
+    renTokenAddr = C.CONTRACT_ADDRESSES[network]['REN_TOKEN']
+    darknodeRegistryAddr = C.CONTRACT_ADDRESSES[network]['DARKNODE_REGISTRY']
     renToken = utils.load_contract(renTokenAddr)
 
   renPool = RenPool.deploy(

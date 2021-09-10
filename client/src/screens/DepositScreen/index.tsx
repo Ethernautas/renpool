@@ -15,6 +15,7 @@ export const DepositScreen: FC = (): JSX.Element => {
   const { renToken, accountBalance } = useContext(RenTokenContext)
   const {
     renPool,
+    isLocked,
     refetchTotalPooled,
     refetchIsLocked,
     refetchAccountPooled,
@@ -52,9 +53,9 @@ export const DepositScreen: FC = (): JSX.Element => {
       const tx = await renPool.deposit(amount, { gasLimit: 200000 })
       await tx.wait() // wait for mining
       await Promise.all([
-        refetchTotalPooled,
-        refetchIsLocked,
-        refetchAccountPooled,
+        refetchTotalPooled(),
+        refetchIsLocked(),
+        refetchAccountPooled(),
       ])
     } catch (e) {
       alert(`Error during deposit, ${JSON.stringify(e, null, 2)}`)
@@ -70,7 +71,7 @@ export const DepositScreen: FC = (): JSX.Element => {
       <AmountForm
         btnLabel={!isAllowed ? 'Approve' : 'Deposit'}
         btnVariant={!isAllowed ? 'default' : 'success'}
-        disabled={disabled || isAccountLocked || isWrongChain}
+        disabled={disabled || isAccountLocked || isWrongChain || isLocked}
         upperBound={accountBalance}
         onBefore={handleBefore} // set 'disabled' to 'true', clean any messages, etc
         onClientCancel={handleClientCancel}
