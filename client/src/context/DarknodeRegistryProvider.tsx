@@ -1,8 +1,9 @@
 
 import React, { FC, useState, useEffect, createContext } from 'react'
-import { Contract, ContractInterface } from '@ethersproject/contracts'
+import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
-import { InterfaceNames, CONTRACT_ADDRESSES } from '../constants'
+import { CONTRACT_ADDRESSES } from '../constants'
+import artifact from'../artifacts/interfaces/IDarknodeRegistry.json'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
 
@@ -44,15 +45,6 @@ export const DarknodeRegistryProvider: FC = ({
   children,
 }) => {
   // const { account } = useActiveWeb3React()
-
-  let artifact: { abi: ContractInterface }
-
-  try {
-    artifact = require(`../artifacts/interfaces/${InterfaceNames.IDarknodeRegistry}.json`)
-  } catch (e) {
-    alert(`Could not load contract ${InterfaceNames.IDarknodeRegistry}, ${JSON.stringify(e, null, 2)}`)
-    return null
-  }
 
   const darknodeRegistry = CHAIN_ID !== '1337'
     ? useContract(CONTRACT_ADDRESSES[CHAIN_ID].DARKNODE_REGISTRY, artifact.abi)

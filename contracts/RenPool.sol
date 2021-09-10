@@ -91,17 +91,12 @@ contract RenPool {
     /**
      * TODO
      */
-    function _lockPool()
-        private
-    {
+    function _lockPool() private {
         isLocked = true;
         emit PoolLocked();
     }
 
-    function unlockPool()
-        external
-        onlyOwnerNodeOperator
-    {
+    function unlockPool() external onlyOwnerNodeOperator {
         require(renToken.balanceOf(address(this)) > 0, "Pool balance is zero");
         isLocked = false;
         emit PoolUnlocked();
@@ -115,9 +110,7 @@ contract RenPool {
      *
      * @param _amount The amount of REN to be deposited into the pool.
      */
-    function deposit(uint _amount)
-        external
-    {
+    function deposit(uint _amount) external {
         address sender = msg.sender;
 
         require(isLocked == false, "Pool is locked");
@@ -142,9 +135,7 @@ contract RenPool {
     /**
      * TODO
      */
-    function withdraw(uint _amount)
-        external
-    {
+    function withdraw(uint _amount) external {
         address sender = msg.sender;
         uint senderBalance = balances[sender];
 
@@ -167,9 +158,7 @@ contract RenPool {
      * @dev Users can have up to a single request active. In case of several
      * calls to this method, only the last request will be preserved.
      */
-    function requestWithdraw(uint _amount)
-        external
-    {
+    function requestWithdraw(uint _amount) external {
         address sender = msg.sender;
         uint senderBalance = balances[sender];
 
@@ -184,9 +173,7 @@ contract RenPool {
     /**
      * TODO
      */
-    function fulfillWithdrawRequest(address _target)
-        external
-    {
+    function fulfillWithdrawRequest(address _target) external {
         address sender = msg.sender;
         uint amount = withdrawRequests[_target];
         // ^ This could not be defined plus make sure amount > 0
@@ -219,21 +206,14 @@ contract RenPool {
      *
      * @param _target The address ...
      */
-    function balanceOf(address _target)
-        external
-        view
-        returns(uint)
-    {
+    function balanceOf(address _target) external view returns(uint) {
         return balances[_target];
     }
 
     /**
      * @notice Transfer bond to the REN contract before registering the darknode.
      */
-    function approveBondTransfer()
-        external
-        onlyNodeOperator
-    {
+    function approveBondTransfer() external onlyNodeOperator {
         // Do we need to be this restrictive?
         // maybe even renToken.balanceOf(address(this)) == bond
         require(totalPooled == bond, "Total pooled does not equal bond");
@@ -259,10 +239,7 @@ contract RenPool {
      * @param _publicKey The public key of the darknode. It is stored to allow
      * other darknodes and traders to encrypt messages to the trader.
      */
-    function registerDarknode(address _darknodeID, bytes calldata _publicKey)
-        external
-        onlyNodeOperator
-    {
+    function registerDarknode(address _darknodeID, bytes calldata _publicKey) external onlyNodeOperator {
         require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
@@ -279,11 +256,7 @@ contract RenPool {
      * of this method store.darknodeRegisteredAt(_darknodeID) must be
      * the owner of this darknode.
      */
-    function deregister(address _darknodeID)
-        external
-        onlyOwnerNodeOperator
-        returns(bool)
-    {
+    function deregister(address _darknodeID) external onlyOwnerNodeOperator returns(bool) {
         darknodeRegistry.deregister(_darknodeID);
         return true;
     }
@@ -296,18 +269,12 @@ contract RenPool {
      * @param _darknodeID The darknode ID that will be refunded. The caller
      * of this method must be the owner of this darknode.
     */
-    function refund(address _darknodeID)
-        external
-        returns(bool)
-    {
+    function refund(address _darknodeID) external returns(bool) {
         darknodeRegistry.refund(_darknodeID);
         return true;
     }
 
-    receive()
-        external
-        payable
-    {
+    receive() external payable {
         emit EthDeposited(msg.sender, msg.value);
     }
 
