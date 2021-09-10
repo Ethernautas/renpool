@@ -9,9 +9,13 @@ venv
 .env
 .env.dev
 .env.kovan
+.env.kovan2
 .env.rinkeby
 .env.mainnet
 .env.mainnet_fork
 node_modules/
 package-lock.json
 package.json
+
+# Local Netlify folder
+.netlify
