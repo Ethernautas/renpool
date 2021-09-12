@@ -256,9 +256,8 @@ contract RenPool {
      * of this method store.darknodeRegisteredAt(_darknodeID) must be
      * the owner of this darknode.
      */
-    function deregister(address _darknodeID) external onlyOwnerNodeOperator returns(bool) {
+    function deregister(address _darknodeID) external onlyOwnerNodeOperator {
         darknodeRegistry.deregister(_darknodeID);
-        return true;
     }
 
     /**
@@ -269,19 +268,15 @@ contract RenPool {
      * @param _darknodeID The darknode ID that will be refunded. The caller
      * of this method must be the owner of this darknode.
     */
-    function refund(address _darknodeID) external returns(bool) {
+    function refund(address _darknodeID) external {
         darknodeRegistry.refund(_darknodeID);
-        return true;
     }
 
     receive() external payable {
         emit EthDeposited(msg.sender, msg.value);
     }
 
-    function withdrawGas()
-        external
-        onlyNodeOperator
-    {
+    function withdrawGas() external onlyNodeOperator {
         uint balance = address(this).balance;
         payable(nodeOperator).transfer(balance);
         emit EthWithdrawn(nodeOperator, balance);
