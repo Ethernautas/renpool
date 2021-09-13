@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 */
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
-// TODO: do we need to use safeMath?
+// TODO: use safeMath?
 
 contract RenPool {
     uint8 public constant DECIMALS = 18;
@@ -15,8 +15,9 @@ contract RenPool {
     address public darknodeRegistryAddr;
     address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
     address public nodeOperator;
+    address public darknodeID;
 
-    // TODO: store darknodeID and publicKey on registration
+    bytes public publicKey;
     // ^ What happens if we register and deregister and register back again?
 
     uint public bond;
@@ -233,8 +234,6 @@ contract RenPool {
      * epoch. Only after this period can the darknode be deregistered. The
      * caller of this method will be stored as the owner of the darknode.
      *
-     * question What if this function is called more then once?
-     *
      * @param _darknodeID The darknode ID that will be registered.
      * @param _publicKey The public key of the darknode. It is stored to allow
      * other darknodes and traders to encrypt messages to the trader.
@@ -243,8 +242,10 @@ contract RenPool {
         require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
-        // TODO: store darknodeID and publicKey
         darknodeRegistry.register(_darknodeID, _publicKey);
+
+        darknodeID = _darknodeID;
+        publicKey = _publicKey;
     }
 
     /**
@@ -252,12 +253,11 @@ contract RenPool {
      * until the end of the epoch. After another epoch, the bond can be
      * refunded by calling the refund method.
      *
-     * @param _darknodeID The darknode ID that will be deregistered. The caller
-     * of this method store.darknodeRegisteredAt(_darknodeID) must be
-     * the owner of this darknode.
+     * @dev We are not clearing darknodeID nor publicKey in order to be able
+     * to call refund.
      */
-    function deregister(address _darknodeID) external onlyOwnerNodeOperator {
-        darknodeRegistry.deregister(_darknodeID);
+    function deregister() external onlyOwnerNodeOperator {
+        darknodeRegistry.deregister(darknodeID);
     }
 
     /**
@@ -265,11 +265,10 @@ contract RenPool {
      * darknode available for registration again. Anyone can call this function
      * but the bond will always be refunded to the darknode owner.
      *
-     * @param _darknodeID The darknode ID that will be refunded. The caller
-     * of this method must be the owner of this darknode.
-    */
-    function refund(address _darknodeID) external {
-        darknodeRegistry.refund(_darknodeID);
+     * @dev We are not clearing darknodeID nor publicKey just in case.
+     */
+    function refund() external {
+        darknodeRegistry.refund(darknodeID);
     }
 
     receive() external payable {
