@@ -253,8 +253,8 @@ contract RenPool {
      * until the end of the epoch. After another epoch, the bond can be
      * refunded by calling the refund method.
      *
-     * @dev We don't reset darknodeID/publicKey values in order to being
-     * able to call refund.
+     * @dev We don't reset darknodeID/publicKey values after deregistration in order
+     * to being able to call refund.
      */
     function deregister() external onlyOwnerNodeOperator {
         darknodeRegistry.deregister(darknodeID);
@@ -265,7 +265,7 @@ contract RenPool {
      * darknode available for registration again. Anyone can call this function
      * but the bond will always be refunded to the darknode owner.
      *
-     * @dev No need to reset darknodeID/publicKey values.
+     * @dev No need to reset darknodeID/publicKey values after refund.
      */
     function refund() external {
         darknodeRegistry.refund(darknodeID);
