@@ -90,7 +90,8 @@ contract RenPool {
     }
 
     /**
-     * TODO
+     * @notice Lock pool so that no direct deposits/withdrawals can
+     * be performed.
      */
     function _lockPool() private {
         isLocked = true;
@@ -179,6 +180,7 @@ contract RenPool {
         uint amount = withdrawRequests[_target];
         // ^ This could not be defined plus make sure amount > 0
         // TODO: make sure user cannot fullfil his own request
+        // TODO: add test for when _target doesn't have an associated withdrawRequest
 
         require(isLocked == true, "Pool is not locked");
 
@@ -203,21 +205,19 @@ contract RenPool {
     // TODO: getWithdrawRequests
 
     /**
-     * @notice Returns the REN balance of the target address.
+     * @notice Return REN balance for the given address.
      *
-     * @param _target The address ...
+     * @param _target Address to be queried.
      */
     function balanceOf(address _target) external view returns(uint) {
         return balances[_target];
     }
 
     /**
-     * @notice Transfer bond to the REN contract before registering the darknode.
+     * @notice Transfer bond to the darknodeRegistry contract prior to
+     * registering the darknode.
      */
     function approveBondTransfer() external onlyNodeOperator {
-        // Do we need to be this restrictive?
-        // maybe even renToken.balanceOf(address(this)) == bond
-        require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
         require(
@@ -227,19 +227,19 @@ contract RenPool {
     }
 
     /**
-     * @notice Register a darknode and transfer the bond to the REN contract.
-     * Before registering, the bond transfer must be approved in the REN
-     * contract. The caller must provide a public encryption key for the
-     * darknode. The darknode will remain pending registration until the next
-     * epoch. Only after this period can the darknode be deregistered. The
-     * caller of this method will be stored as the owner of the darknode.
+     * @notice Register a darknode and transfer the bond to the darknodeRegistry
+     * contract. Before registering, the bond transfer must be approved in the
+     * darknodeRegistry contract (see approveTransferBond). The caller must
+     * provide a public encryption key for the darknode. The darknode will remain
+     * pending registration until the next epoch. Only after this period can the
+     * darknode be deregistered. The caller of this method will be stored as the
+     * owner of the darknode.
      *
      * @param _darknodeID The darknode ID that will be registered.
      * @param _publicKey The public key of the darknode. It is stored to allow
      * other darknodes and traders to encrypt messages to the trader.
      */
     function registerDarknode(address _darknodeID, bytes calldata _publicKey) external onlyNodeOperator {
-        require(totalPooled == bond, "Total pooled does not equal bond");
         require(isLocked == true, "Pool is not locked");
 
         darknodeRegistry.register(_darknodeID, _publicKey);
@@ -253,8 +253,8 @@ contract RenPool {
      * until the end of the epoch. After another epoch, the bond can be
      * refunded by calling the refund method.
      *
-     * @dev We are not clearing darknodeID nor publicKey in order to be able
-     * to call refund.
+     * @dev We don't reset darknodeID/publicKey values in order to being
+     * able to call refund.
      */
     function deregister() external onlyOwnerNodeOperator {
         darknodeRegistry.deregister(darknodeID);
@@ -265,16 +265,22 @@ contract RenPool {
      * darknode available for registration again. Anyone can call this function
      * but the bond will always be refunded to the darknode owner.
      *
-     * @dev We are not clearing darknodeID nor publicKey just in case.
+     * @dev No need to reset darknodeID/publicKey values.
      */
     function refund() external {
         darknodeRegistry.refund(darknodeID);
     }
 
+    /**
+     * @notice Allow ETH deposits in case gas is necessary to pay for transactions.
+     */
     receive() external payable {
         emit EthDeposited(msg.sender, msg.value);
     }
 
+    /**
+     * @notice Allow node operator to withdraw any remaining gas.
+     */
     function withdrawGas() external onlyNodeOperator {
         uint balance = address(this).balance;
         payable(nodeOperator).transfer(balance);
