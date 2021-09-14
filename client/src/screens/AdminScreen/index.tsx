@@ -1,5 +1,4 @@
 import React, { FC, useContext } from 'react'
-import { formatBytes32String } from '@ethersproject/strings'
 import { Box, Flash, Text } from 'rimble-ui'
 import { BOND } from '../../constants'
 import { darknodeIDBase58ToHex } from '../../utils/base58ToHex'
@@ -43,7 +42,7 @@ export const AdminScreen: FC = (): JSX.Element => {
     }
 
     try {
-      const tx = await renPool.registerDarknode(darknodeIDBase58ToHex(darknodeID), formatBytes32String(publicKey), { gasLimit: 20000000 })
+      const tx = await renPool.registerDarknode(darknodeIDBase58ToHex(darknodeID), publicKey, { gasLimit: 2000000 })
       await tx.wait() // wait for mining
     } catch (e) {
       handleServerError(`Error during darknode registration, ${JSON.stringify(e, null, 2)}`)
