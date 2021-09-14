@@ -25,3 +25,6 @@ def test_ren_pool_withdraw(ren_pool, ren_token, user, amount):
     assert ren_token.balanceOf(user) == user_init_balance
     assert ren_pool.balanceOf(user) == 0
     assert ren_pool.totalPooled() == 0
+
+# Test case when 'uint senderBalance = balances[sender];' is
+# undefined for the given sender

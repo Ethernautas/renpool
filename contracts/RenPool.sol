@@ -135,7 +135,7 @@ contract RenPool {
     }
 
     /**
-     * TODO
+     * @notice Withdraw REN tokens while the pool is still open.
      */
     function withdraw(uint _amount) external {
         address sender = msg.sender;
