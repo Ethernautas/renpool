@@ -54,16 +54,11 @@ def ren_token():
 
 @pytest.fixture(scope='module', autouse=True)
 def distribute_tokens(ren_token):
+    """
+    Set accounts initial balance to match C.POOL_BOND
+    """
     for i in range(0, 10):
-        user = accounts[i]
-
-        # Reset user balance to C.POOL_BOND
-        ren_token._mint_for_testing(user, C.POOL_BOND)
-
-        # Verify balance matches C.POOL_BOND
-        if ren_token.balanceOf(user) != C.POOL_BOND:
-            raise ValueError(f'Wrong initial balance for account {i}, balance {ren_token.balanceOf(user)}')
-
+        ren_token._mint_for_testing(accounts[i], C.POOL_BOND)
 
 @pytest.fixture(scope='module')
 def owner():
@@ -82,7 +77,7 @@ def node_operator():
 @pytest.fixture(scope='module')
 def darknode_registry():
     """
-    Yield a `Contract` object for the DarknodeRegistrycontract.
+    Yield a `Contract` object for the DarknodeRegistry contract.
     """
     yield utils.load_contract(darknodeRegistryAddr)
 

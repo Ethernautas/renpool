@@ -28,7 +28,7 @@ def test_darknode_deregistration(node_operator, ren_pool, ren_token, darknode_re
     assert darknode_registry.isRegistered(C.NODE_ID_HEX) == True
 
     # Deregister darknode
-    ren_pool.deregister(C.NODE_ID_HEX, {'from': node_operator})
+    ren_pool.deregister({'from': node_operator})
 
     # Make sure the darknode is under the 'pending deregistration' state
     assert darknode_registry.isPendingDeregistration(C.NODE_ID_HEX) == True
@@ -39,3 +39,7 @@ def test_darknode_deregistration(node_operator, ren_pool, ren_token, darknode_re
 
     # Make sure the darknode is now under the 'deregistered' state
     assert darknode_registry.isDeregistered(C.NODE_ID_HEX) == True
+
+    # Make sure darknodeID and publicKey variables have the correct values
+    assert ren_pool.darknodeID() == C.NODE_ID_HEX
+    assert ren_pool.publicKey() == C.PUBLIC_KEY
