@@ -10,7 +10,7 @@ import { AddressesSection } from './sections/AddressesSection'
 import { Header } from './components/Header'
 import { Banners } from './components/Banners'
 import { NavLink } from './components/NavLink'
-import { Instructions } from './components/Instructions'
+// import { Instructions } from './components/Instructions'
 import { Footer } from './components/Footer'
 
 enum Views {
@@ -73,17 +73,16 @@ export const App = (): JSX.Element => {
           <AdminScreen />
         )}
 
-        <Box p={3} />
-
-        <StatsSection />
-
-        <Box p={2} />
-
-        <AddressesSection />
-
-        <Box p={2} />
-
-        {/* <Instructions /> */}
+        {[Views.DEPOSIT, Views.WITHDRAW].includes(view) && (
+          <>
+            <Box p={3} />
+            <StatsSection />
+            <Box p={2} />
+            <AddressesSection />
+            <Box p={2} />
+            {/* <Instructions /> */}
+          </>
+        )}
 
         <Footer />
       </div>

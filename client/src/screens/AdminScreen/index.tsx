@@ -1,5 +1,5 @@
 import React, { FC, useContext } from 'react'
-import { Box, Flash, Text } from 'rimble-ui'
+import { Box, Flash, Text, Button } from 'rimble-ui'
 import { BOND } from '../../constants'
 import { darknodeIDBase58ToHex } from '../../utils/base58ToHex'
 import { DarknodeRegistryContext } from '../../context/DarknodeRegistryProvider'
@@ -49,8 +49,46 @@ export const AdminScreen: FC = (): JSX.Element => {
     }
   }
 
-  // if (darknodeRegistry == null || renPool == null) {
-  if (renPool == null) {
+  const handleEpoch = async (): Promise<void> => {
+    try {
+      const tx = await darknodeRegistry.epoch({ gasLimit: 2000000 })
+      await tx.wait() // wait for mining
+    } catch (e) {
+      handleServerError(`Error during epoch, ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  const handleDeregister = async (): Promise<void> => {
+    try {
+      // TODO: change name to deregisterDarknode
+      const tx = await renPool.deregister({ gasLimit: 2000000 })
+      await tx.wait() // wait for mining
+    } catch (e) {
+      handleServerError(`Error during darknode deregistration, ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  const handleRefund = async (): Promise<void> => {
+    try {
+      // TODO: change name to refundBond
+      const tx = await renPool.refund({ gasLimit: 2000000 })
+      await tx.wait() // wait for mining
+    } catch (e) {
+      handleServerError(`Error during bond refund, ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  const handleUnlock = async (): Promise<void> => {
+    try {
+      const tx = await renPool.unlockPool({ gasLimit: 2000000 })
+      await tx.wait() // wait for mining
+    } catch (e) {
+      handleServerError(`Error during bond refund, ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  if (darknodeRegistry == null || renPool == null) {
+    // if (renPool == null) {
     return <Text>Loading...</Text>
   }
 
@@ -80,6 +118,34 @@ export const AdminScreen: FC = (): JSX.Element => {
           handleSuccess() // cleanup (set 'disabled' to 'false')
         }}
       />
+      <Box p={4} />
+      <Button
+        onClick={handleEpoch}
+        width={1}
+      >
+        Epoch
+      </Button>
+      <Box p={2} />
+      <Button
+        onClick={handleDeregister}
+        width={1}
+      >
+        Deregister
+      </Button>
+      <Box p={2} />
+      <Button
+        onClick={handleRefund}
+        width={1}
+      >
+        Refund
+      </Button>
+      <Box p={2} />
+      <Button
+        onClick={handleUnlock}
+        width={1}
+      >
+        Unlock pool
+      </Button>
     </ScreenLayout>
   )
 }

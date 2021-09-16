@@ -256,7 +256,7 @@ contract RenPool {
      * @dev We don't reset darknodeID/publicKey values after deregistration in order
      * to being able to call refund.
      */
-    function deregister() external onlyOwnerNodeOperator {
+    function deregisterDarknode() external onlyOwnerNodeOperator {
         darknodeRegistry.deregister(darknodeID);
     }
 
@@ -267,7 +267,7 @@ contract RenPool {
      *
      * @dev No need to reset darknodeID/publicKey values after refund.
      */
-    function refund() external {
+    function refundBond() external {
         darknodeRegistry.refund(darknodeID);
     }
 
