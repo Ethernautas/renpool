@@ -201,7 +201,12 @@ contract RenPool {
         // TODO emit event
     }
 
-    // TODO: cancelWithdrawRequest
+    function cancelWithdrawRequest() external {
+        address sender = msg.sender;
+        require(withdrawRequests[sender] >= 0, "No withdraw request");
+
+        delete withdrawRequests[sender];
+    } 
     // TODO: getWithdrawRequests
 
     /**
