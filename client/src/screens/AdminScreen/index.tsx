@@ -1,6 +1,5 @@
 import React, { FC, useContext } from 'react'
-import { formatBytes32String } from '@ethersproject/strings'
-import { Box, Flash, Text } from 'rimble-ui'
+import { Box, Flash, Text, Button } from 'rimble-ui'
 import { BOND } from '../../constants'
 import { darknodeIDBase58ToHex } from '../../utils/base58ToHex'
 import { DarknodeRegistryContext } from '../../context/DarknodeRegistryProvider'
@@ -43,15 +42,51 @@ export const AdminScreen: FC = (): JSX.Element => {
     }
 
     try {
-      const tx = await renPool.registerDarknode(darknodeIDBase58ToHex(darknodeID), formatBytes32String(publicKey), { gasLimit: 20000000 })
+      const tx = await renPool.registerDarknode(darknodeIDBase58ToHex(darknodeID), publicKey, { gasLimit: 2000000 })
       await tx.wait() // wait for mining
     } catch (e) {
       handleServerError(`Error during darknode registration, ${JSON.stringify(e, null, 2)}`)
     }
   }
 
-  // if (darknodeRegistry == null || renPool == null) {
-  if (renPool == null) {
+  const handleEpoch = async (): Promise<void> => {
+    try {
+      const tx = await darknodeRegistry.epoch({ gasLimit: 2000000 })
+      await tx.wait() // wait for mining
+    } catch (e) {
+      handleServerError(`Error during epoch, ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  const handleDeregister = async (): Promise<void> => {
+    try {
+      const tx = await renPool.deregisterDarknode({ gasLimit: 2000000 })
+      await tx.wait() // wait for mining
+    } catch (e) {
+      handleServerError(`Error during darknode deregistration, ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  const handleRefund = async (): Promise<void> => {
+    try {
+      const tx = await renPool.refundBond({ gasLimit: 2000000 })
+      await tx.wait() // wait for mining
+    } catch (e) {
+      handleServerError(`Error during bond refund, ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  const handleUnlock = async (): Promise<void> => {
+    try {
+      const tx = await renPool.unlockPool({ gasLimit: 2000000 })
+      await tx.wait() // wait for mining
+    } catch (e) {
+      handleServerError(`Error during pool unlock, ${JSON.stringify(e, null, 2)}`)
+    }
+  }
+
+  if (darknodeRegistry == null || renPool == null) {
+    // if (renPool == null) {
     return <Text>Loading...</Text>
   }
 
@@ -81,6 +116,34 @@ export const AdminScreen: FC = (): JSX.Element => {
           handleSuccess() // cleanup (set 'disabled' to 'false')
         }}
       />
+      <Box p={4} />
+      <Button
+        onClick={handleEpoch}
+        width={1}
+      >
+        Epoch
+      </Button>
+      <Box p={2} />
+      <Button
+        onClick={handleDeregister}
+        width={1}
+      >
+        Deregister
+      </Button>
+      <Box p={2} />
+      <Button
+        onClick={handleRefund}
+        width={1}
+      >
+        Refund
+      </Button>
+      <Box p={2} />
+      <Button
+        onClick={handleUnlock}
+        width={1}
+      >
+        Unlock pool
+      </Button>
     </ScreenLayout>
   )
 }

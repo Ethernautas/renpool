@@ -31,7 +31,7 @@ def test_darknode_refund(node_operator, ren_pool, ren_token, darknode_registry, 
     assert darknode_registry.isRegistered(C.NODE_ID_HEX) == True
 
     # Deregister darknode
-    ren_pool.deregister({'from': node_operator})
+    ren_pool.deregisterDarknode({'from': node_operator})
 
     # Make sure the darknode is under the 'pending deregistration' state
     assert darknode_registry.isPendingDeregistration(C.NODE_ID_HEX) == True
@@ -48,7 +48,7 @@ def test_darknode_refund(node_operator, ren_pool, ren_token, darknode_registry, 
     darknode_registry.epoch({'from': ren_pool})
 
     # Call refund
-    ren_pool.refund({'from': node_operator})
+    ren_pool.refundBond({'from': node_operator})
 
     # Make sure funds are back into the RenPool contract
     assert ren_token.balanceOf(darknodeRegistryStoreAddr) == registry_store_init_balance
