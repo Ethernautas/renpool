@@ -60,8 +60,7 @@ export const AdminScreen: FC = (): JSX.Element => {
 
   const handleDeregister = async (): Promise<void> => {
     try {
-      // TODO: change name to deregisterDarknode
-      const tx = await renPool.deregister({ gasLimit: 2000000 })
+      const tx = await renPool.deregisterDarknode({ gasLimit: 2000000 })
       await tx.wait() // wait for mining
     } catch (e) {
       handleServerError(`Error during darknode deregistration, ${JSON.stringify(e, null, 2)}`)
@@ -70,8 +69,7 @@ export const AdminScreen: FC = (): JSX.Element => {
 
   const handleRefund = async (): Promise<void> => {
     try {
-      // TODO: change name to refundBond
-      const tx = await renPool.refund({ gasLimit: 2000000 })
+      const tx = await renPool.refundBond({ gasLimit: 2000000 })
       await tx.wait() // wait for mining
     } catch (e) {
       handleServerError(`Error during bond refund, ${JSON.stringify(e, null, 2)}`)
