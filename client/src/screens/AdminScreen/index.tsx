@@ -81,7 +81,7 @@ export const AdminScreen: FC = (): JSX.Element => {
       const tx = await renPool.unlockPool({ gasLimit: 2000000 })
       await tx.wait() // wait for mining
     } catch (e) {
-      handleServerError(`Error during bond refund, ${JSON.stringify(e, null, 2)}`)
+      handleServerError(`Error during pool unlock, ${JSON.stringify(e, null, 2)}`)
     }
   }
 
