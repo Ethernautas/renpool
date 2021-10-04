@@ -100,6 +100,8 @@ export const AdminScreen: FC = (): JSX.Element => {
           <Box p={2} />
         </>
       )}
+      <Text>Register your darknode by pasting the darknode URL in the box below</Text>
+      <Box p={2} />
       <DarknoneUrlForm
         btnLabel={!isAllowed ? 'Approve registration' : 'Register darknode'}
         btnVariant={!isAllowed ? 'default' : 'success'}
