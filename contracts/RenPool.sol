@@ -6,7 +6,8 @@ pragma solidity ^0.8.0;
 */
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
-// TODO: use safeMath?
+import "../interfaces/IClaimRewards.sol";
+// TODO: use safeMath
 
 contract RenPool {
 	uint8 public constant DECIMALS = 18;
@@ -41,11 +42,18 @@ contract RenPool {
 	event PoolUnlocked();
 
 	/**
-	 * TODO
+	 * @notice Deploy a new RenPool instance.
+	 *
+	 * @param _renTokenAddr The REN token contract address.
+	 * @param _darknodeRegistryAddr The DarknodeRegistry contract address.
+	 * @param _claimRewardsAddr The ClaimRewards contract address.
+	 * @param _onwer The protocol owner's address. Possibly a multising wallet.
+	 * @param _bond The amount of REN tokens required to register a darknode.
 	 */
 	constructor(
 		address _renTokenAddr,
 		address _darknodeRegistryAddr,
+		address _claimRewardsAddr,
 		address _owner,
 		uint _bond
 	)
@@ -56,6 +64,7 @@ contract RenPool {
 		nodeOperator = msg.sender;
 		renToken = IERC20(_renTokenAddr);
 		darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
+		claimsRewards = IClaimRewards(_claimRewardsAddr);
 		bond = _bond;
 		isLocked = false;
 		totalPooled = 0;
@@ -282,6 +291,15 @@ contract RenPool {
 	 * @notice Allow node operator to withdraw any remaining gas.
 	 */
 	function withdrawGas() external onlyNodeOperator {
+		uint balance = address(this).balance;
+		payable(nodeOperator).transfer(balance);
+		emit EthWithdrawn(nodeOperator, balance);
+	}
+
+	/**
+	 * @notice Claim user rewards
+	 */
+	function withdrawGas(string memory _assetSymbol, address _recipientAddress) {
 		uint balance = address(this).balance;
 		payable(nodeOperator).transfer(balance);
 		emit EthWithdrawn(nodeOperator, balance);
