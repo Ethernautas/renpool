@@ -1,7 +1,7 @@
 import React, { FC, useContext } from 'react'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Text } from 'rimble-ui'
-import { MAX_UINT256 } from '../../constants'
+import { MAX_UINT256, BOND } from '../../constants'
 import { RenTokenContext } from '../../context/RenTokenProvider'
 import { RenPoolContext } from '../../context/RenPoolProvider'
 import { useActiveWeb3React } from '../../hooks/useActiveWeb3React'
@@ -23,7 +23,7 @@ export const DepositScreen: FC = (): JSX.Element => {
 
   const { account } = useActiveWeb3React()
   const { isAccountLocked, isWrongChain } = useConnection()
-  const { isAllowed, checkForAllowance } = useRenAllowance(account, renPool?.address, MAX_UINT256)
+  const { isAllowed, checkForAllowance } = useRenAllowance(account, renPool?.address, BOND)
   const {
     disabled,
     handleBefore,

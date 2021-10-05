@@ -12,6 +12,6 @@ def test_initial_state(ren_pool, ren_token, user):
     # See distribute_tokens fixture for initial token allocation.
     assert ren_token.balanceOf(user) == C.POOL_BOND
 
-    # Make sure the pool is empty
+    # Make sure pool is empty
     assert ren_token.balanceOf(ren_pool) == 0
     assert ren_pool.totalPooled() == 0

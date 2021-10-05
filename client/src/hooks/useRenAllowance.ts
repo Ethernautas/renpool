@@ -25,7 +25,7 @@ export const useRenAllowance = (owner: string | null, spender: string | null, am
       .then((_isAllowed: boolean) => { setIsAllowed(_isAllowed) })
       .catch((e: Error) => { alert(`Error checking for allowance ${JSON.stringify(e, null, 2)}`) })
       .finally(() => { setRefetch(false) })
-  }, [renToken, refetch])
+  }, [renToken, owner, spender, amount, refetch])
 
   return {
     isAllowed,

@@ -31,8 +31,10 @@ export const WithdrawScreen: FC = (): JSX.Element => {
     try {
       const tx = await renPool.withdraw(amount, { gasLimit: 200000 })
       await tx.wait() // wait for mining
-      await refetchTotalPooled()
-      await refetchAccountPooled()
+      await Promise.all([
+        refetchTotalPooled(),
+        refetchAccountPooled(),
+      ])
     } catch (e) {
       handleServerError(`Error during withdrawal, ${JSON.stringify(e, null, 2)}`)
     }

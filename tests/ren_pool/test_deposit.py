@@ -32,7 +32,7 @@ def test_ren_pool_deposit_locking(ren_pool, ren_token, user):
     ren_token.approve(ren_pool, C.POOL_BOND, {'from': user})
     ren_pool.deposit(C.POOL_BOND, {'from': user})
 
-    # Make sure the pool is locked
+    # Make sure pool is locked
     assert ren_pool.isLocked() == True
 
 @pytest.mark.parametrize('user', accounts[0:3]) # [owner, nodeOperator, user]
@@ -74,7 +74,7 @@ def test_ren_pool_deposit_after_locking(owner, ren_pool, ren_token, user, amount
     ren_token.approve(ren_pool, C.POOL_BOND, {'from': owner})
     ren_pool.deposit(C.POOL_BOND, {'from': owner})
 
-    # Make sure the pool is locked
+    # Make sure pool is locked
     assert ren_pool.isLocked() == True
 
     # Attempt deposit
@@ -91,4 +91,32 @@ def test_ren_pool_deposit_without_approval(ren_pool, user, amount):
     """
     # User deposits 'amount' without prior approval
     with reverts(''): # TODO: this sould throw 'Deposit failed', not sure why not (?)
+        ren_pool.deposit(amount, {'from': user})
+
+@pytest.mark.parametrize('user', accounts[0:3]) # [owner, nodeOperator, user]
+@given(
+    amount=strategy('uint256', min_value = 1, max_value = C.POOL_BOND + 1),
+)
+def test_ren_pool_deposit_after_unlocking(owner, node_operator, ren_pool, ren_token, user, amount):
+    """
+    Test deposit after unlocking.
+    """
+    # Lock pool
+    ren_token.approve(ren_pool, C.POOL_BOND, {'from': owner})
+    ren_pool.deposit(C.POOL_BOND, {'from': owner})
+
+    # Make sure pool is locked
+    assert ren_pool.isLocked() == True
+
+    # Unlock pool
+    ren_pool.unlockPool({'from': node_operator})
+
+    # Make sure pool is unlocked
+    assert ren_pool.isLocked() == False
+
+    # User approves 'amount > 0'
+    ren_token.approve(ren_pool, amount, {'from': user})
+
+    # User deposits 'amount' into the pool
+    with reverts('Amount surpasses bond'):
         ren_pool.deposit(amount, {'from': user})
