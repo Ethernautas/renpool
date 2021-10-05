@@ -7,7 +7,9 @@ pragma solidity ^0.8.0;
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IClaimRewards.sol";
+import "../interfaces/IGateway.sol";
 // TODO: use safeMath
+// TODO: Ownable + Ownable.initialize(_owner);
 
 contract RenPool {
 	uint8 public constant DECIMALS = 18;
@@ -33,6 +35,8 @@ contract RenPool {
 
 	IERC20 public renToken;
 	IDarknodeRegistry public darknodeRegistry;
+	IClaimRewards public claimRewards;
+	IGateway public gateway; // OR IMintGateway????
 
 	event RenDeposited(address indexed _from, uint _amount);
 	event RenWithdrawn(address indexed _from, uint _amount);
@@ -47,6 +51,7 @@ contract RenPool {
 	 * @param _renTokenAddr The REN token contract address.
 	 * @param _darknodeRegistryAddr The DarknodeRegistry contract address.
 	 * @param _claimRewardsAddr The ClaimRewards contract address.
+	 * @param _gatewayAddr The Gateway contract address.
 	 * @param _onwer The protocol owner's address. Possibly a multising wallet.
 	 * @param _bond The amount of REN tokens required to register a darknode.
 	 */
@@ -54,6 +59,7 @@ contract RenPool {
 		address _renTokenAddr,
 		address _darknodeRegistryAddr,
 		address _claimRewardsAddr,
+		address _gatewayAddr,
 		address _owner,
 		uint _bond
 	)
@@ -65,6 +71,7 @@ contract RenPool {
 		renToken = IERC20(_renTokenAddr);
 		darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
 		claimsRewards = IClaimRewards(_claimRewardsAddr);
+		gateway = IGateway(_gatewayAddr);
 		bond = _bond;
 		isLocked = false;
 		totalPooled = 0;
@@ -297,11 +304,15 @@ contract RenPool {
 	}
 
 	/**
-	 * @notice Claim user rewards
+	 * @notice Claim darknode rewards.
+	 *
+	 * @param _assetSymbol The asset being claimed. e.g. "BTC" or "DOGE".
+	 * @param _recipientAddress The Ethereum address to which the assets are
+	 * being withdrawn to. This same address must then call `mint` on
+	 * the asset's Ren Gateway contract.
 	 */
-	function withdrawGas(string memory _assetSymbol, address _recipientAddress) {
-		uint balance = address(this).balance;
-		payable(nodeOperator).transfer(balance);
-		emit EthWithdrawn(nodeOperator, balance);
+	function claimDarknodeRewards(string memory _assetSymbol, address _recipientAddress) external {
+		bytes calldata sig = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, 10_000);
+		gateway.
 	}
 }
