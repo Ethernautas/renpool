@@ -1,4 +1,4 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.7;
 
 /*
 * Observation, ideally we should import both RenToken and DarknodeRegistry interfaces
@@ -23,25 +23,26 @@ contract RenPool {
 	bytes public publicKey;
 	// ^ What happens if we register and deregister and register back again?
 
-	uint public bond;
-	uint public totalPooled;
-	uint public ownerFee; // Percentage
-	uint public nodeOperatorFee; // Percentage
+	uint256 public bond;
+	uint256 public totalPooled;
+	uint256 public ownerFee; // Percentage
+	uint256 public nodeOperatorFee; // Percentage
+	uint256 public nonce; // is it ok to be public
 
 	bool public isLocked;
 
-	mapping(address => uint) public balances;
-	mapping(address => uint) public withdrawRequests;
+	mapping(address => uint256) public balances;
+	mapping(address => uint256) public withdrawRequests;
 
 	IERC20 public renToken;
 	IDarknodeRegistry public darknodeRegistry;
 	IClaimRewards public claimRewards;
 	IGateway public gateway; // OR IMintGateway????
 
-	event RenDeposited(address indexed _from, uint _amount);
-	event RenWithdrawn(address indexed _from, uint _amount);
-	event EthDeposited(address indexed _from, uint _amount);
-	event EthWithdrawn(address indexed _from, uint _amount);
+	event RenDeposited(address indexed _from, uint256 _amount);
+	event RenWithdrawn(address indexed _from, uint256 _amount);
+	event EthDeposited(address indexed _from, uint256 _amount);
+	event EthWithdrawn(address indexed _from, uint256 _amount);
 	event PoolLocked();
 	event PoolUnlocked();
 
@@ -52,7 +53,7 @@ contract RenPool {
 	 * @param _darknodeRegistryAddr The DarknodeRegistry contract address.
 	 * @param _claimRewardsAddr The ClaimRewards contract address.
 	 * @param _gatewayAddr The Gateway contract address.
-	 * @param _onwer The protocol owner's address. Possibly a multising wallet.
+	 * @param _owner The protocol owner's address. Possibly a multising wallet.
 	 * @param _bond The amount of REN tokens required to register a darknode.
 	 */
 	constructor(
@@ -61,7 +62,7 @@ contract RenPool {
 		address _claimRewardsAddr,
 		address _gatewayAddr,
 		address _owner,
-		uint _bond
+		uint256 _bond
 	)
 	{
 		renTokenAddr = _renTokenAddr;
@@ -70,13 +71,14 @@ contract RenPool {
 		nodeOperator = msg.sender;
 		renToken = IERC20(_renTokenAddr);
 		darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
-		claimsRewards = IClaimRewards(_claimRewardsAddr);
+		claimRewards = IClaimRewards(_claimRewardsAddr);
 		gateway = IGateway(_gatewayAddr);
 		bond = _bond;
 		isLocked = false;
 		totalPooled = 0;
 		ownerFee = 5;
 		nodeOperatorFee = 5;
+		nonce = 0;
 
 		// TODO: register pool into RenPoolStore
 	}
@@ -128,7 +130,7 @@ contract RenPool {
 	 *
 	 * @param _amount The amount of REN to be deposited into the pool.
 	 */
-	function deposit(uint _amount) external {
+	function deposit(uint256 _amount) external {
 		address sender = msg.sender;
 
 		require(isLocked == false, "Pool is locked");
@@ -153,9 +155,9 @@ contract RenPool {
 	/**
 	 * @notice Withdraw REN tokens while the pool is still open.
 	 */
-	function withdraw(uint _amount) external {
+	function withdraw(uint256 _amount) external {
 		address sender = msg.sender;
-		uint senderBalance = balances[sender];
+		uint256 senderBalance = balances[sender];
 
 		require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
 		require(isLocked == false, "Pool is locked");
@@ -176,9 +178,9 @@ contract RenPool {
 	 * @dev Users can have up to a single request active. In case of several
 	 * calls to this method, only the last request will be preserved.
 	 */
-	function requestWithdraw(uint _amount) external {
+	function requestWithdraw(uint256 _amount) external {
 		address sender = msg.sender;
-		uint senderBalance = balances[sender];
+		uint256 senderBalance = balances[sender];
 
 		require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
 		require(isLocked == true, "Pool is not locked");
@@ -193,7 +195,7 @@ contract RenPool {
 	 */
 	function fulfillWithdrawRequest(address _target) external {
 		address sender = msg.sender;
-		uint amount = withdrawRequests[_target];
+		uint256 amount = withdrawRequests[_target];
 		// ^ This could not be defined plus make sure amount > 0
 		// TODO: make sure user cannot fullfil his own request
 		// TODO: add test for when _target doesn't have an associated withdrawRequest
@@ -298,7 +300,7 @@ contract RenPool {
 	 * @notice Allow node operator to withdraw any remaining gas.
 	 */
 	function withdrawGas() external onlyNodeOperator {
-		uint balance = address(this).balance;
+		uint256 balance = address(this).balance;
 		payable(nodeOperator).transfer(balance);
 		emit EthWithdrawn(nodeOperator, balance);
 	}
@@ -307,12 +309,44 @@ contract RenPool {
 	 * @notice Claim darknode rewards.
 	 *
 	 * @param _assetSymbol The asset being claimed. e.g. "BTC" or "DOGE".
+	 * @param _amount The amount of the token being minted, in its smallest
+	 * denomination (e.g. satoshis for BTC).
 	 * @param _recipientAddress The Ethereum address to which the assets are
 	 * being withdrawn to. This same address must then call `mint` on
 	 * the asset's Ren Gateway contract.
 	 */
-	function claimDarknodeRewards(string memory _assetSymbol, address _recipientAddress) external {
-		bytes calldata sig = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, 10_000);
-		gateway.
+	function claimDarknodeRewards(
+		string memory _assetSymbol,
+		uint256 _amount, // avoid this param, read from user balance instead. What about airdrops?
+		address _recipientAddress
+	)
+		external
+	{
+		// TODO: check that sender has the amount to be claimed
+		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
+		uint256 sig = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
+
+		nonce += 1;
+		bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
+		bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
+
+		gateway.mint(pHash, _amount, nHash, sig);
+
+		/*
+                    const nHash = randomBytes(32);
+                    const pHash = randomBytes(32);
+
+                    const hash = await gateway.hashForSignature.call(
+                        pHash,
+                        value,
+                        user,
+                        nHash
+                    );
+                    const sig = ecsign(
+                        Buffer.from(hash.slice(2), "hex"),
+                        privKey
+                    );
+										See: https://github.com/renproject/gateway-sol/blob/7bd51d8a897952a31134875d7b2b621e4542deaa/test/Gateway.ts
+		*/
 	}
 }
