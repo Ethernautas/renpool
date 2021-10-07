@@ -27,7 +27,8 @@ contract RenPool {
 	uint256 public totalPooled;
 	uint256 public ownerFee; // Percentage
 	uint256 public nodeOperatorFee; // Percentage
-	uint256 public nonce; // is it ok to be public
+
+	uint64 public nonce;
 
 	bool public isLocked;
 
@@ -321,16 +322,18 @@ contract RenPool {
 		address _recipientAddress
 	)
 		external
+		returns(uint256, uint256)
 	{
 		// TODO: check that sender has the amount to be claimed
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
 		uint256 sig = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
-
 		nonce += 1;
-		bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
-		bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
 
-		gateway.mint(pHash, _amount, nHash, sig);
+		return (sig, nonce);
+		// bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
+		// bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
+
+		// gateway.mint(pHash, _amount, nHash, sig);
 
 		/*
                     const nHash = randomBytes(32);

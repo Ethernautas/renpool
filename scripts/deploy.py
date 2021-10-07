@@ -4,37 +4,44 @@ import constants as C
 import utils
 
 def main():
-  """
-  Set your .env file accordingly before deploying the RenPool contract.
-  In case of live networks, make sure your account is funded.
-  """
-  network = config['networks']['default']
+	"""
+	Set your .env file accordingly before deploying the RenPool contract.
+	In case of live networks, make sure your account is funded.
+	"""
+	network = config['networks']['default']
 
-  owner = None
-  nodeOperator = None
-  renTokenAddr = ZERO_ADDRESS
-  darknodeRegistryAddr = ZERO_ADDRESS
-  renToken = None
+	renTokenAddr = ZERO_ADDRESS
+	darknodeRegistryAddr = ZERO_ADDRESS
+	claimRewardsAddr = ZERO_ADDRESS
+	gatewayAddr = ZERO_ADDRESS
+	owner = None
+	nodeOperator = None
+	renToken = None
 
-  if network == C.NETWORKS['DEVELOPMENT']:
-    owner = accounts[0]
-    nodeOperator = accounts[1]
-    renToken = RenToken.deploy({'from': owner})
-    renTokenAddr = renToken.address
-  else:
-    account = accounts.add(config['wallets']['from_key'])
-    owner = copy.copy(account)
-    nodeOperator = copy.copy(account)
-    renTokenAddr = C.CONTRACT_ADDRESSES[network]['REN_TOKEN']
-    darknodeRegistryAddr = C.CONTRACT_ADDRESSES[network]['DARKNODE_REGISTRY']
-    renToken = utils.load_contract(renTokenAddr)
+	if network == C.NETWORKS['DEVELOPMENT']:
+		renToken = RenToken.deploy({'from': owner})
+		renTokenAddr = renToken.address
+		owner = accounts[0]
+		nodeOperator = accounts[1]
+	else:
+		renTokenAddr = C.CONTRACT_ADDRESSES[network]['REN_TOKEN']
+		darknodeRegistryAddr = C.CONTRACT_ADDRESSES[network]['DARKNODE_REGISTRY']
+		claimRewardsAddr = C.CONTRACT_ADDRESSES[network]['CLAIM_REWARDS']
+		gatewayAddr = C.CONTRACT_ADDRESSES[network]['GATEWAY']
+		renToken = utils.load_contract(renTokenAddr)
 
-  renPool = RenPool.deploy(
-    renTokenAddr,
-    darknodeRegistryAddr,
-    owner,
-    C.POOL_BOND,
-    {'from': nodeOperator}
-  )
+		account = accounts.add(config['wallets']['from_key'])
+		owner = copy.copy(account)
+		nodeOperator = copy.copy(account)
 
-  return renToken, renPool
+	renPool = RenPool.deploy(
+		renTokenAddr,
+		darknodeRegistryAddr,
+		claimRewardsAddr,
+		gatewayAddr,
+		owner,
+		C.POOL_BOND,
+		{'from': nodeOperator}
+	)
+
+	return renToken, renPool

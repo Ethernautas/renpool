@@ -9,10 +9,10 @@ import { sha256 } from 'ethereumjs-util'
 import { DEFAULT_REQUEST_TIMEOUT } from '../constants'
 // import { retryNTimes } from '../retryNTimes'
 // import { hashTransaction } from '../web3/signatures'
-import {
-  // QueryBlockStateResponse,
-  toNativeTokenSymbol,
-} from './utils/blockStateUtils'
+// import {
+//   // QueryBlockStateResponse,
+//   toNativeTokenSymbol,
+// } from './utils/blockStateUtils'
 
 // interface ResponseQueryStat {
 //     version: string;
@@ -49,9 +49,9 @@ import {
 // }) {}
 
 export interface RPCResponse<T> {
-    jsonrpc: '2.0';
+    jsonrpc: string; // '2.0'
     id: number;
-    result: T;
+    result?: T;
 }
 
 export const getLightnode = (
@@ -132,6 +132,82 @@ const marshalPackTypeDefinition = (type: PackTypeDefinition): Buffer => {
   throw new Error(`Unable to marshal type ${String(type)}.`)
 }
 
+
+const marshalPackStructType = (type: PackStructType) => {
+  const length = marshalU32(type.struct.length)
+
+  return Buffer.concat([
+    length,
+    ...type.struct.map((field) => {
+      const keys = Object.keys(field)
+      if (keys.length === 0) {
+        throw new Error('Invalid struct field with no entries.')
+      }
+      if (keys.length > 1) {
+        throw new Error('Invalid struct field with multiple entries.')
+      }
+      const key = Object.keys(field)[0]
+      const fieldType = field[key]
+      return Buffer.concat([
+        marshalString(key),
+        marshalPackTypeDefinition(fieldType),
+      ])
+    }),
+  ])
+}
+
+const marshalPackType = (type: PackType) => {
+  switch (type) {
+    case 'nil':
+      return 0
+
+      // KindBool is the kind of all Bool values.
+    case PackPrimitive.Bool:
+      return 1
+      // KindU8 is the kind of all U8 values.
+    case PackPrimitive.U8:
+      return 2
+      // KindU16 is the kind of all U16 values.
+    case PackPrimitive.U16:
+      return 3
+      // KindU32 is the kind of all U32 values.
+    case PackPrimitive.U32:
+      return 4
+      // KindU64 is the kind of all U64 values.
+    case PackPrimitive.U64:
+      return 5
+      // KindU128 is the kind of all U128 values.
+    case PackPrimitive.U128:
+      return 6
+      // KindU256 is the kind of all U256 values.
+    case PackPrimitive.U256:
+      return 7
+
+      // KindString is the kind of all utf8 strings.
+    case PackPrimitive.Str:
+      return 10
+      // KindBytes is the kind of all dynamic byte arrays.
+    case PackPrimitive.Bytes:
+      return 11
+      // KindBytes32 is the kind of all 32-byte arrays.
+    case PackPrimitive.Bytes32:
+      return 12
+      // KindBytes65 is the kind of all 65-byte arrays.
+    case PackPrimitive.Bytes65:
+      return 13
+
+      // KindStruct is the kind of all struct values. It is abstract, because it does
+      // not specify the fields in the struct.
+    case 'struct':
+      return 20
+      // KindList is the kind of all list values. It is abstract, because it does
+      // not specify the type of the elements in the list.
+    case 'list':
+      return 21
+  }
+  throw new Error(`Unknown type ${String(type)}.`)
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const marshalPackStruct = (type: PackStructType, value: any): Buffer => {
   return Buffer.concat(
@@ -203,6 +279,10 @@ const marshalPackPrimitive = (
   }
 }
 
+export const fromBase64 = (base64: Buffer | string): Buffer => {
+  return Buffer.isBuffer(base64) ? base64 : Buffer.from(base64, 'base64')
+}
+
 const marshalPackValue = (
   type: PackTypeDefinition,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -239,6 +319,47 @@ export const hashTransaction = (
       marshalTypedPackValue(packValue),
     ]),
   )
+}
+
+type PackNilType = 'nil';
+
+export type PackType = PackPrimitive | PackNilType | 'list' | 'struct';
+
+export type PackTypeDefinition =
+    | PackPrimitive
+    | PackStructType
+    | PackListType
+    | PackNilType;
+
+// Not implemented.
+type PackListType = never;
+
+export interface TypedPackValue<V = any> {
+    t: PackTypeDefinition;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    v: V;
+}
+
+export enum PackPrimitive {
+    Bool = 'bool',
+    U8 = 'u8',
+    U16 = 'u16',
+    U32 = 'u32',
+    U64 = 'u64',
+    U128 = 'u128',
+    U256 = 'u256',
+    Str = 'string',
+    Bytes = 'bytes',
+    Bytes32 = 'bytes32',
+    Bytes65 = 'bytes65',
+}
+
+export interface PackStructType {
+    struct: Array<{ [name: string]: PackTypeDefinition }>;
+}
+
+interface PackArrayType {
+    list: PackTypeDefinition;
 }
 
 // export const queryStat = async (lightnode: string, darknodeID: string) => {
@@ -487,6 +608,10 @@ export const claimFees = async (
   })
   console.info(request, response)
   return response
+}
+
+export const toNativeTokenSymbol = (symbol: string) => {
+  return symbol.replace(/^ren/, '').replace(/^test/, '').replace(/^dev/, '')
 }
 
 // export enum ClaimFeesStatus {
