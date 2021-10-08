@@ -8,6 +8,8 @@ def load_contract(addr):
     c = Contract(addr)
   except ValueError:
     c = Contract.from_explorer(addr)
+  except ValueError:
+    c = Contract.from_ethpm(addr)
   return c
 
 def base58_to_hex(str):

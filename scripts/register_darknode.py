@@ -1,46 +1,60 @@
-from brownie import accounts, config, RenPool
+from brownie import accounts, config, RenPool, Contract
+from brownie.network.account import Account
 from brownie_tokens import MintableForkToken
+from kovan_tokens.forked import MintableKovanForkToken
 import constants as C
 
 def main():
-  """
-  Deploy a RenPool contract to the mainnet-fork, lock the
-  pool by providing liquidity and finally register a
-  darknode instance.
-  See: https://youtu.be/0JrDbvBClEA (brownie tutorial)
-  See: https://renproject.github.io/contracts-ts/#/mainnet
-  """
+	"""
+	Deploy a RenPool contract to the mainnet-fork, lock the
+	pool by providing liquidity and finally register a
+	darknode instance.
+	See: https://youtu.be/0JrDbvBClEA (brownie tutorial)
+	See: https://renproject.github.io/contracts-ts/#/mainnet
+	"""
 
-  network = C.NETWORKS['MAINNET_FORK']
+	connected_network: str = config['networks']['default']
+	supported_networks: list[str] = [C.NETWORKS['MAINNET_FORK'], C.NETWORKS['KOVAN_FORK']]
 
-  if config['networks']['default'] != network:
-    raise ValueError(f'Unsupported network, switch to {network}')
+	if connected_network not in supported_networks:
+		raise ValueError(f'Unsupported network, switch to {str(supported_networks)}')
 
-  owner = accounts[0]
-  nodeOperator = accounts[1]
-  user = accounts[2]
+	owner: Account = accounts[0]
+	nodeOperator: Account = accounts[1]
+	user: Account = accounts[2]
 
-  renTokenAddr = C.CONTRACT_ADDRESSES[network].REN_TOKEN
-  darknodeRegistryAddr = C.CONTRACT_ADDRESSES[network].DARKNODE_REGISTRY
+	renTokenAddr: str = C.CONTRACT_ADDRESSES[connected_network]['REN_TOKEN']
+	darknodeRegistryAddr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY']
+	darknodeRegistryStoreAddr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY_STORE']
+	claimRewardsAddr: str = C.CONTRACT_ADDRESSES[connected_network]['CLAIM_REWARDS']
+	gatewayAddr: str = C.CONTRACT_ADDRESSES[connected_network]['GATEWAY']
 
-  renPool = RenPool.deploy(
-    renTokenAddr,
-    darknodeRegistryAddr,
-    owner,
-    C.POOL_BOND,
-    {'from': nodeOperator}
-  )
+	renPool: Contract = RenPool.deploy(
+		renTokenAddr,
+		darknodeRegistryAddr,
+		claimRewardsAddr,
+		gatewayAddr,
+		owner,
+		C.POOL_BOND,
+		{'from': nodeOperator}
+	)
 
-  renToken = MintableForkToken(renTokenAddr)
-  renToken._mint_for_testing(user, C.POOL_BOND)
+	renToken: Contract = None
 
-  renToken.approve(renPool, C.POOL_BOND, {'from': user})
-  renPool.deposit(C.POOL_BOND, {'from': user})
+	if connected_network == C.NETWORKS['MAINNET_FORK']:
+		renToken = MintableForkToken(renTokenAddr)
+	elif connected_network == C.NETWORKS['KOVAN_FORK']:
+		renToken = MintableKovanForkToken(renTokenAddr)
 
-  if renPool.isLocked() != True:
-    raise ValueError('Pool is not locked')
+	renToken._mint_for_testing(user, C.POOL_BOND)
 
-  renPool.approveBondTransfer({'from': nodeOperator})
-  renPool.registerDarknode(user, 'some_public_key', {'from': nodeOperator})
+	renToken.approve(renPool, C.POOL_BOND, {'from': user})
+	renPool.deposit(C.POOL_BOND, {'from': user})
 
-  return renToken, renPool
+	if renPool.isLocked() != True:
+		raise ValueError('Pool is not locked')
+
+	renPool.approveBondTransfer({'from': nodeOperator})
+	renPool.registerDarknode(user, 'some_public_key', {'from': nodeOperator})
+
+	return renToken, renPool

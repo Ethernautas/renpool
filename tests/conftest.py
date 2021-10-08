@@ -1,5 +1,6 @@
 from brownie import ZERO_ADDRESS, network, accounts, config, RenPool
 from brownie_tokens import MintableForkToken
+from kovan_tokens.forked import MintableKovanForkToken
 import pytest
 import constants as C
 import utils
@@ -20,18 +21,20 @@ Once pytest finds them, it runs those fixtures, captures what they returned
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtures
 """
 
-net = C.NETWORKS['MAINNET_FORK']
-renTokenAddr = C.CONTRACT_ADDRESSES[net]['REN_TOKEN']
-darknodeRegistryAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY']
-darknodeRegistryStoreAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY_STORE']
-claimRewardsAddr = C.CONTRACT_ADDRESSES[net]['CLAIM_REWARDS']
-gatewayAddr = C.CONTRACT_ADDRESSES[net]['GATEWAY']
+connected_network = config['networks']['default']
+supported_networks = [C.NETWORKS['MAINNET_FORK'], C.NETWORKS['KOVAN_FORK']]
 
-if config['networks']['default'] != net:
-	raise ValueError(f'Unsupported network, switch to {net}')
+if connected_network not in supported_networks:
+	raise ValueError(f'Unsupported network, switch to {str(supported_networks)}')
 
 # Required due to this bug https://github.com/eth-brownie/brownie/issues/918
-network.connect(net)
+network.connect(connected_network)
+
+renTokenAddr = C.CONTRACT_ADDRESSES[connected_network]['REN_TOKEN']
+darknodeRegistryAddr = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY']
+darknodeRegistryStoreAddr = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY_STORE']
+claimRewardsAddr = C.CONTRACT_ADDRESSES[connected_network]['CLAIM_REWARDS']
+gatewayAddr = C.CONTRACT_ADDRESSES[connected_network]['GATEWAY']
 
 """
 A common pattern is to include one or more module-scoped setup fixtures that define
@@ -52,7 +55,10 @@ def ren_token():
 	"""
 	Yield a `Contract` object for the RenToken contract.
 	"""
-	yield MintableForkToken(renTokenAddr)
+	if connected_network == C.NETWORKS['MAINNET_FORK']:
+		yield MintableForkToken(renTokenAddr)
+	elif connected_network == C.NETWORKS['KOVAN_FORK']:
+		yield MintableKovanForkToken(renTokenAddr)
 
 @pytest.fixture(scope='module', autouse=True)
 def distribute_tokens(ren_token):
