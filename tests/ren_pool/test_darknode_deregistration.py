@@ -2,8 +2,8 @@ from brownie import chain, accounts
 import pytest
 import constants as C
 
-net = C.NETWORKS['MAINNET_FORK']
-darknodeRegistryStoreAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY_STORE']
+connected_network: str = C.NETWORKS['MAINNET_FORK']
+darknodeRegistryStoreAddr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY_STORE']
 
 @pytest.mark.parametrize('user', accounts[0:3]) # [owner, nodeOperator, user]
 def test_darknode_deregistration(node_operator, ren_pool, ren_token, darknode_registry, user):
