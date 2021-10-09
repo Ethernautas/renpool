@@ -14,9 +14,7 @@ import "../interfaces/IGateway.sol";
 contract RenPool {
 	uint8 public constant DECIMALS = 18;
 
-	address public renTokenAddr;
-	address public darknodeRegistryAddr;
-	address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
+	address public owner; // This will be our address, in case we need to refund everyone
 	address public nodeOperator;
 	address public darknodeID;
 
@@ -66,8 +64,6 @@ contract RenPool {
 		uint256 _bond
 	)
 	{
-		renTokenAddr = _renTokenAddr;
-		darknodeRegistryAddr = _darknodeRegistryAddr;
 		owner = _owner;
 		nodeOperator = msg.sender;
 		renToken = IERC20(_renTokenAddr);
@@ -240,7 +236,7 @@ contract RenPool {
 		require(isLocked == true, "Pool is not locked");
 
 		require(
-			renToken.approve(darknodeRegistryAddr, bond) == true,
+			renToken.approve(address(darknodeRegistry), bond) == true,
 			"Bond transfer failed"
 		);
 	}
@@ -305,7 +301,30 @@ contract RenPool {
 		payable(nodeOperator).transfer(balance);
 		emit EthWithdrawn(nodeOperator, balance);
 	}
+		// TODO: we probably need to call withdraw before calling claimRewards
+		// https://github.com/Ethernautas/darknode-sol/blob/master/contracts/DarknodePayment/DarknodePayment.sol
+    // /// @notice Transfers the funds allocated to the darknode to the darknode
+    // ///         owner.
+    // ///
+    // /// @param _darknode The address of the darknode
+    // /// @param _token Which token to transfer
+    // function withdraw(address _darknode, address _token) public {
+    //     address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
+    //     require(darknodeOwner != address(0x0), "DarknodePayment: invalid darknode owner");
 
+    //     uint256 amount = store.darknodeBalances(_darknode, _token);
+    //     require(amount > 0, "DarknodePayment: nothing to withdraw");
+
+    //     store.transfer(_darknode, _token, amount, darknodeOwner);
+    //     emit LogDarknodeWithdrew(_darknode, amount, _token);
+    // }
+		// OR
+		//     function withdrawMultiple(address _darknode, address[] calldata _tokens) external {
+    //     for (uint i = 0; i < _tokens.length; i++) {
+    //         withdraw(_darknode, _tokens[i]);
+    //     }
+    // }
+		// ^ do we need to keep a list of tokens inside the contract? Probably to keep everyones balances
 	/**
 	 * @notice Claim darknode rewards.
 	 *
