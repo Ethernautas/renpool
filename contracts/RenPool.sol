@@ -1,11 +1,8 @@
 pragma solidity ^0.8.7;
 
-/*
-* Observation, ideally we should import both RenToken and DarknodeRegistry interfaces
-* from 'renproject/darknode-sol@1.0.1'. Unfortunately, said interfaces are not being exposed.
-*/
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
+import "../interfaces/IDarknodePayment.sol";
 import "../interfaces/IClaimRewards.sol";
 import "../interfaces/IGateway.sol";
 // TODO: use safeMath
@@ -35,6 +32,7 @@ contract RenPool {
 
 	IERC20 public renToken;
 	IDarknodeRegistry public darknodeRegistry;
+	IDarknodePayment public darknodePayment;
 	IClaimRewards public claimRewards;
 	IGateway public gateway; // OR IMintGateway????
 
@@ -50,6 +48,7 @@ contract RenPool {
 	 *
 	 * @param _renTokenAddr The REN token contract address.
 	 * @param _darknodeRegistryAddr The DarknodeRegistry contract address.
+	 * @param _darknodePaymentAddr The DarknodePayment contract address.
 	 * @param _claimRewardsAddr The ClaimRewards contract address.
 	 * @param _gatewayAddr The Gateway contract address.
 	 * @param _owner The protocol owner's address. Possibly a multising wallet.
@@ -58,6 +57,7 @@ contract RenPool {
 	constructor(
 		address _renTokenAddr,
 		address _darknodeRegistryAddr,
+		address _darknodePaymentAddr,
 		address _claimRewardsAddr,
 		address _gatewayAddr,
 		address _owner,
@@ -68,6 +68,7 @@ contract RenPool {
 		nodeOperator = msg.sender;
 		renToken = IERC20(_renTokenAddr);
 		darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
+		darknodePayment = IDarknodePayment(_darknodePaymentAddr);
 		claimRewards = IClaimRewards(_claimRewardsAddr);
 		gateway = IGateway(_gatewayAddr);
 		bond = _bond;
@@ -301,30 +302,16 @@ contract RenPool {
 		payable(nodeOperator).transfer(balance);
 		emit EthWithdrawn(nodeOperator, balance);
 	}
-		// TODO: we probably need to call withdraw before calling claimRewards
-		// https://github.com/Ethernautas/darknode-sol/blob/master/contracts/DarknodePayment/DarknodePayment.sol
-    // /// @notice Transfers the funds allocated to the darknode to the darknode
-    // ///         owner.
-    // ///
-    // /// @param _darknode The address of the darknode
-    // /// @param _token Which token to transfer
-    // function withdraw(address _darknode, address _token) public {
-    //     address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
-    //     require(darknodeOwner != address(0x0), "DarknodePayment: invalid darknode owner");
 
-    //     uint256 amount = store.darknodeBalances(_darknode, _token);
-    //     require(amount > 0, "DarknodePayment: nothing to withdraw");
+	/**
+	 * @notice Transfer rewards from darknode to darknode owner prior to calling claimDarknodeRewards.
+	 *
+	 * @param _tokens List of tokens to transfer. (here we could have a list with all available tokens)
+	 */
+	function transferRewardsToDarknodeOwner(address[] calldata _tokens) external {
+		darknodePayment.withdrawMultiple(address(this), _tokens);
+	}
 
-    //     store.transfer(_darknode, _token, amount, darknodeOwner);
-    //     emit LogDarknodeWithdrew(_darknode, amount, _token);
-    // }
-		// OR
-		//     function withdrawMultiple(address _darknode, address[] calldata _tokens) external {
-    //     for (uint i = 0; i < _tokens.length; i++) {
-    //         withdraw(_darknode, _tokens[i]);
-    //     }
-    // }
-		// ^ do we need to keep a list of tokens inside the contract? Probably to keep everyones balances
 	/**
 	 * @notice Claim darknode rewards.
 	 *

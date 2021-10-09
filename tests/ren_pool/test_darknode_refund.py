@@ -2,17 +2,21 @@ from brownie import chain, accounts
 import pytest
 import constants as C
 
-connected_network: str = C.NETWORKS['MAINNET_FORK']
-darknodeRegistryStoreAddr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY_STORE']
-
 @pytest.mark.parametrize('user', accounts[0:3]) # [owner, nodeOperator, user]
-def test_darknode_refund(node_operator, ren_pool, ren_token, darknode_registry, user):
+def test_darknode_refund(
+	node_operator,
+	ren_pool,
+	ren_token,
+	darknode_registry,
+	darknode_registry_store,
+	user,
+):
 	"""
 	Test darknode refund happy path.
 	"""
 	chain.snapshot()
 
-	registry_store_init_balance = ren_token.balanceOf(darknodeRegistryStoreAddr)
+	registry_store_init_balance = ren_token.balanceOf(darknode_registry_store)
 	user_init_balance = ren_token.balanceOf(user)
 
 	# Lock pool
@@ -51,7 +55,7 @@ def test_darknode_refund(node_operator, ren_pool, ren_token, darknode_registry, 
 	ren_pool.refundBond({'from': node_operator})
 
 	# Make sure funds are back into the RenPool contract
-	assert ren_token.balanceOf(darknodeRegistryStoreAddr) == registry_store_init_balance
+	assert ren_token.balanceOf(darknode_registry_store) == registry_store_init_balance
 	assert ren_token.balanceOf(ren_pool) == C.POOL_BOND
 
 	# Unlock pool to release funds

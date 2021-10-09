@@ -2,17 +2,22 @@ from brownie import chain, accounts, reverts
 import pytest
 import constants as C
 
-connected_network: str = C.NETWORKS['MAINNET_FORK']
-darknodeRegistryStoreAddr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY_STORE']
-
 @pytest.mark.parametrize('user', accounts[0:3]) # [owner, nodeOperator, user]
-def test_darknode_registration(owner, node_operator, ren_pool, ren_token, darknode_registry, user):
+def test_darknode_registration(
+	owner,
+	node_operator,
+	ren_pool,
+	ren_token,
+	darknode_registry,
+	darknode_registry_store,
+	user,
+):
 	"""
 	Test darknode registration and ownership.
 	"""
 	chain.snapshot()
 
-	registry_store_init_balance = ren_token.balanceOf(darknodeRegistryStoreAddr)
+	registry_store_init_balance = ren_token.balanceOf(darknode_registry_store)
 
 	# Lock pool
 	ren_token.approve(ren_pool, C.POOL_BOND, {'from': user})
@@ -24,7 +29,7 @@ def test_darknode_registration(owner, node_operator, ren_pool, ren_token, darkno
 
 	# Make sure funds are transferred to the DarknodeRegistryStore contract
 	# and the darknode is under 'pending registration' state
-	assert ren_token.balanceOf(darknodeRegistryStoreAddr) == registry_store_init_balance + C.POOL_BOND
+	assert ren_token.balanceOf(darknode_registry_store) == registry_store_init_balance + C.POOL_BOND
 	assert ren_token.balanceOf(ren_pool) == 0
 	assert darknode_registry.isPendingRegistration(C.NODE_ID_HEX) == True
 	assert darknode_registry.isRegistered(C.NODE_ID_HEX) == False
