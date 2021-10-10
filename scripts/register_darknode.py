@@ -20,41 +20,60 @@ def main():
 		raise ValueError(f'Unsupported network, switch to {str(supported_networks)}')
 
 	owner: Account = accounts[0]
-	nodeOperator: Account = accounts[1]
+	node_operator: Account = accounts[1]
 	user: Account = accounts[2]
 
-	renTokenAddr: str = C.CONTRACT_ADDRESSES[connected_network]['REN_TOKEN']
-	darknodeRegistryAddr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY']
-	darknodeRegistryStoreAddr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY_STORE']
-	claimRewardsAddr: str = C.CONTRACT_ADDRESSES[connected_network]['CLAIM_REWARDS']
-	gatewayAddr: str = C.CONTRACT_ADDRESSES[connected_network]['GATEWAY']
+	ren_BTC_addr: str = C.TOKEN_ADDRESSES[connected_network]['renBTC']
+	ren_token_addr: str = C.CONTRACT_ADDRESSES[connected_network]['REN_TOKEN']
+	darknode_registry_addr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY']
+	darknode_payment_addr: str = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_PAYMENT']
+	claim_rewards_addr: str = C.CONTRACT_ADDRESSES[connected_network]['CLAIM_REWARDS']
+	gateway_addr: str = C.CONTRACT_ADDRESSES[connected_network]['GATEWAY']
 
-	renPool: Contract = RenPool.deploy(
-		renTokenAddr,
-		darknodeRegistryAddr,
-		claimRewardsAddr,
-		gatewayAddr,
+	ren_pool: Contract = RenPool.deploy(
+		ren_token_addr,
+		darknode_registry_addr,
+		darknode_payment_addr,
+		claim_rewards_addr,
+		gateway_addr,
 		owner,
 		C.POOL_BOND,
-		{'from': nodeOperator}
+		{'from': node_operator},
 	)
 
-	renToken: Contract = None
+	darknode_registry: Contract = Contract(darknode_registry_addr)
+	ren_BTC: Contract = Contract(ren_BTC_addr)
+
+	ren_token: Contract = None
 
 	if connected_network == C.NETWORKS['MAINNET_FORK']:
-		renToken = MintableForkToken(renTokenAddr)
+		ren_token = MintableForkToken(ren_token_addr)
 	elif connected_network == C.NETWORKS['KOVAN_FORK']:
-		renToken = MintableKovanForkToken(renTokenAddr)
+		ren_token = MintableKovanForkToken(ren_token_addr)
 
-	renToken._mint_for_testing(user, C.POOL_BOND)
+	ren_token._mint_for_testing(user, C.POOL_BOND)
 
-	renToken.approve(renPool, C.POOL_BOND, {'from': user})
-	renPool.deposit(C.POOL_BOND, {'from': user})
+	ren_token.approve(ren_pool, C.POOL_BOND, {'from': user})
+	ren_pool.deposit(C.POOL_BOND, {'from': user})
 
-	if renPool.isLocked() != True:
+	if ren_pool.isLocked() != True:
 		raise ValueError('Pool is not locked')
 
-	renPool.approveBondTransfer({'from': nodeOperator})
-	renPool.registerDarknode(user, 'some_public_key', {'from': nodeOperator})
+	ren_pool.approveBondTransfer({'from': node_operator})
+	ren_pool.registerDarknode(C.NODE_ID_HEX, C.PUBLIC_KEY, {'from': node_operator})
 
-	return renToken, renPool
+	# Skip to the next epoch (1 month) for the registration to settle
+	darknode_registry.epoch({'from': ren_pool})
+
+	# Transfer fees from darknode to the darknode's owner account on the REN protocol
+	tx1 = ren_pool.transferRewardsToDarknodeOwner([ren_BTC])
+	# Is there any way to test this?
+
+	# Transfer rewards from the REN protocol to the node operator wallet
+	# tx2 = ren_pool.claimDarknodeRewards('renBTC', 1, node_operator)
+	tx2 = ren_pool.claimDarknodeRewards('BTC', 1, node_operator)
+
+	# Make sure rewards have been transferred to the target wallet
+	# ren_BTC.balanceOf(node_operator) > node_operator_init_BTC_balance # Try to improve this!
+
+	return ren_token, ren_pool, tx1, tx2

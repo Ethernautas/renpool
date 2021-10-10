@@ -31,6 +31,7 @@ if connected_network not in supported_networks:
 network.connect(connected_network)
 
 ren_token_addr = C.CONTRACT_ADDRESSES[connected_network]['REN_TOKEN']
+ren_BTC_addr: str = C.TOKEN_ADDRESSES[connected_network]['renBTC']
 darknode_registry_addr = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY']
 darknode_registry_store_addr = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_REGISTRY_STORE']
 darknode_payment_addr = C.CONTRACT_ADDRESSES[connected_network]['DARKNODE_PAYMENT']
@@ -54,7 +55,7 @@ def shared_setup(module_isolation):
 @pytest.fixture(scope='module', autouse=True)
 def ren_token():
 	"""
-	Yield a `Contract` object for the RenToken contract.
+	Yield a `Contract` object for the REN token contract.
 	"""
 	if connected_network == C.NETWORKS['MAINNET_FORK']:
 		yield MintableForkToken(ren_token_addr)
@@ -62,7 +63,14 @@ def ren_token():
 		yield MintableKovanForkToken(ren_token_addr)
 
 @pytest.fixture(scope='module', autouse=True)
-def distribute_tokens(ren_token):
+def ren_BTC():
+	"""
+	Yield a `Contract` object for the renBTC contract.
+	"""
+	yield utils.load_contract(ren_BTC_addr)
+
+@pytest.fixture(scope='module', autouse=True)
+def distribute_ren_tokens(ren_token):
 	"""
 	Set accounts initial balance to match C.POOL_BOND
 	"""

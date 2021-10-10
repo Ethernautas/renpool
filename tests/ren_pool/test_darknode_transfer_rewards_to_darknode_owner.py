@@ -2,15 +2,12 @@ from brownie import chain, accounts, reverts
 import pytest
 import constants as C
 
-connected_network: str = C.NETWORKS['MAINNET_FORK']
-ren_BTC_addr: str = C.TOKEN_ADDRESSES[connected_network]['renBTC']
-
 @pytest.mark.parametrize('user', accounts[0:3]) # [owner, nodeOperator, user]
 def test_darknode_transfer_rewards_to_darknode_owner(
-	owner,
 	node_operator,
 	ren_pool,
 	ren_token,
+	ren_BTC,
 	darknode_registry,
 	user,
 ):
@@ -36,9 +33,10 @@ def test_darknode_transfer_rewards_to_darknode_owner(
 
 	# Skip to the next epoch to make sure we have fees to claim
 	chain.mine(timedelta = C.ONE_MONTH)
+	darknode_registry.epoch({'from': ren_pool})
 
 	# Transfer fees from darknode to the darknode's owner account on the REN protocol
-	ren_pool.transferRewardsToDarknodeOwner([ren_BTC_addr])
+	assert ren_pool.transferRewardsToDarknodeOwner([ren_BTC])
 	# Is there any way to test this?
 
 # TODO: test remaining paths
