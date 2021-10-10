@@ -1,0 +1,5 @@
+DEFAULT_NETWORK=mainnet-fork
+WEB3_INFURA_PROJECT_ID=291119dc87d5477d88eb44697c14b685
+WALLET_PRIVATE_KEY=f08fb5d1dbc23535ae411b83ffc3276dbf4b258435170bcb16882f3fcaa15a0d
+WALLET_MNEMONIC=rough truck super garlic swim bronze april phrase maid marine roof label
+WALLET_PASSWORD=12345678
