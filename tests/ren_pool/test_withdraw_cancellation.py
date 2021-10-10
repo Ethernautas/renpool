@@ -11,20 +11,18 @@ def test_ren_pool_withdraw_cancellation(ren_pool, ren_token, user, amount, owner
     """
     Test withdraw cancellation happy path.
     """
-    user_init_balance = ren_token.balanceOf(user)
-
     # Owner locks pool (could be any other user)
     ren_token.approve(ren_pool, C.POOL_BOND, {'from': owner})
     ren_pool.deposit(C.POOL_BOND, {'from': owner})
 
     # The pool is locked. We can now request withdraw
-    ren_pool.requestWithdraw(amount, {'from': owner})
+    ren_pool.requestWithdraw(amount, {'from': user})
 
     # Make sure the withdraw request exists
-    assert ren_pool.withdrawRequests(owner) == amount
+    assert ren_pool.withdrawRequests(user) == amount
     
     # Delete the withdraw request
-    ren_pool.cancelWithdrawRequest({'from': owner})
+    ren_pool.cancelWithdrawRequest({'from': user})
     
     # Make sure the withdraw request does not exist anymore
-    assert ren_pool.withdrawRequests(owner) != amount
+    assert ren_pool.withdrawRequests(user) == None
