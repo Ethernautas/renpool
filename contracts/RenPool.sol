@@ -178,8 +178,8 @@ contract RenPool {
     function fulfillWithdrawRequest(address _target) external {
         address sender = msg.sender;
         uint amount = withdrawRequests[_target];
-        require(amount > 0, "Amount has to be positive");
-        require(sender != _target, "Sender cannot be yourself");
+        // ^ This could not be defined plus make sure amount > 0
+        // TODO: make sure user cannot fullfil his own request
         // TODO: add test for when _target doesn't have an associated withdrawRequest
 
         require(isLocked == true, "Pool is not locked");
