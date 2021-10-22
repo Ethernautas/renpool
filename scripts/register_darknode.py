@@ -1,4 +1,4 @@
-from brownie import accounts, config, RenPool, Contract
+from brownie import accounts, Contract, network, RenPool
 from brownie.network.account import Account
 from brownie_tokens import MintableForkToken
 from kovan_tokens.forked import MintableKovanForkToken
@@ -14,29 +14,29 @@ def main():
     See: https://renproject.github.io/contracts-ts/#/mainnet
     """
 
-    connected_network: str = config["networks"]["default"]
+    active_network: str or None = network.show_active()
     supported_networks: list[str] = [
         C.NETWORKS["MAINNET_FORK"],
         C.NETWORKS["KOVAN_FORK"],
     ]
 
-    if connected_network not in supported_networks:
+    if active_network not in supported_networks:
         raise ValueError(f"Unsupported network, switch to {str(supported_networks)}")
 
     owner: Account = accounts[0]
     node_operator: Account = accounts[1]
     user: Account = accounts[2]
 
-    ren_BTC_addr: str = C.TOKEN_ADDRESSES[connected_network]["renBTC"]
-    ren_token_addr: str = C.CONTRACT_ADDRESSES[connected_network]["REN_TOKEN"]
-    darknode_registry_addr: str = C.CONTRACT_ADDRESSES[connected_network][
+    ren_BTC_addr: str = C.TOKEN_ADDRESSES[active_network]["renBTC"]
+    ren_token_addr: str = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
+    darknode_registry_addr: str = C.CONTRACT_ADDRESSES[active_network][
         "DARKNODE_REGISTRY"
     ]
-    darknode_payment_addr: str = C.CONTRACT_ADDRESSES[connected_network][
+    darknode_payment_addr: str = C.CONTRACT_ADDRESSES[active_network][
         "DARKNODE_PAYMENT"
     ]
-    claim_rewards_addr: str = C.CONTRACT_ADDRESSES[connected_network]["CLAIM_REWARDS"]
-    gateway_addr: str = C.CONTRACT_ADDRESSES[connected_network]["GATEWAY"]
+    claim_rewards_addr: str = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
+    gateway_addr: str = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
 
     ren_pool: Contract = RenPool.deploy(
         ren_token_addr,
@@ -54,9 +54,9 @@ def main():
 
     ren_token: Contract = None
 
-    if connected_network == C.NETWORKS["MAINNET_FORK"]:
+    if active_network == C.NETWORKS["MAINNET_FORK"]:
         ren_token = MintableForkToken(ren_token_addr)
-    elif connected_network == C.NETWORKS["KOVAN_FORK"]:
+    elif active_network == C.NETWORKS["KOVAN_FORK"]:
         ren_token = MintableKovanForkToken(ren_token_addr)
 
     ren_token._mint_for_testing(user, C.POOL_BOND)

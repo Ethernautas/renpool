@@ -21,24 +21,24 @@ Once pytest finds them, it runs those fixtures, captures what they returned
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtures
 """
 
-connected_network = config["networks"]["default"]
+active_network = network.show_active()
 supported_networks = [C.NETWORKS["MAINNET_FORK"], C.NETWORKS["KOVAN_FORK"]]
 
-if connected_network not in supported_networks:
+if active_network not in supported_networks:
     raise ValueError(f"Unsupported network, switch to {str(supported_networks)}")
 
 # Required due to this bug https://github.com/eth-brownie/brownie/issues/918
-network.connect(connected_network)
+network.connect(active_network)
 
-ren_token_addr = C.CONTRACT_ADDRESSES[connected_network]["REN_TOKEN"]
-ren_BTC_addr: str = C.TOKEN_ADDRESSES[connected_network]["renBTC"]
-darknode_registry_addr = C.CONTRACT_ADDRESSES[connected_network]["DARKNODE_REGISTRY"]
-darknode_registry_store_addr = C.CONTRACT_ADDRESSES[connected_network][
+ren_token_addr = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
+ren_BTC_addr: str = C.TOKEN_ADDRESSES[active_network]["renBTC"]
+darknode_registry_addr = C.CONTRACT_ADDRESSES[active_network]["DARKNODE_REGISTRY"]
+darknode_registry_store_addr = C.CONTRACT_ADDRESSES[active_network][
     "DARKNODE_REGISTRY_STORE"
 ]
-darknode_payment_addr = C.CONTRACT_ADDRESSES[connected_network]["DARKNODE_PAYMENT"]
-claim_rewards_addr = C.CONTRACT_ADDRESSES[connected_network]["CLAIM_REWARDS"]
-gateway_addr = C.CONTRACT_ADDRESSES[connected_network]["GATEWAY"]
+darknode_payment_addr = C.CONTRACT_ADDRESSES[active_network]["DARKNODE_PAYMENT"]
+claim_rewards_addr = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
+gateway_addr = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
 
 """
 A common pattern is to include one or more module-scoped setup fixtures that define
@@ -62,9 +62,9 @@ def ren_token():
     """
     Yield a `Contract` object for the REN token contract.
     """
-    if connected_network == C.NETWORKS["MAINNET_FORK"]:
+    if active_network == C.NETWORKS["MAINNET_FORK"]:
         yield MintableForkToken(ren_token_addr)
-    elif connected_network == C.NETWORKS["KOVAN_FORK"]:
+    elif active_network == C.NETWORKS["KOVAN_FORK"]:
         yield MintableKovanForkToken(ren_token_addr)
 
 
