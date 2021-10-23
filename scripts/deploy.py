@@ -1,42 +1,47 @@
-import copy
-from brownie import ZERO_ADDRESS, accounts, config, network, RenToken, RenPool
+from brownie import accounts, config, network, RenToken, RenPool
+from brownie.network.account import Account
+from brownie.network.contract import Contract
 import constants as C
 import utils
 
+active_network: str or None = network.show_active()
+is_development: bool = active_network == C.NETWORKS["DEVELOPMENT"]
 
-def main():
+ren_token_addr = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
+darknode_registry_addr = C.CONTRACT_ADDRESSES[active_network]["DARKNODE_REGISTRY"]
+claim_rewards_addr = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
+gateway_addr = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
+
+
+def get_owner() -> Account:
+    return (
+        accounts[0] if is_development else accounts.add(config["wallets"]["from_key"])
+    )
+
+
+def get_node_operator() -> Account:
+    return get_owner()
+
+
+def get_ren_token(owner: Account) -> Contract or None:
+    return (
+        RenToken.deploy({"from": owner})
+        if is_development
+        else utils.load_contract(ren_token_addr)
+    )
+
+
+def main() -> tuple[Contract, Contract]:
     """
     Set your .env file accordingly before deploying the RenPool contract.
     In case of live networks, make sure your account is funded.
     """
-    active_network: (str or None) = network.show_active()
+    owner: Account = get_owner()
+    node_operator: Account = get_node_operator()
+    ren_token: Contract = get_ren_token(owner)
 
-    ren_token_addr = ZERO_ADDRESS
-    darknode_registry_addr = ZERO_ADDRESS
-    claim_rewards_addr = ZERO_ADDRESS
-    gateway_addr = ZERO_ADDRESS
-    owner = None
-    node_operator = None
-    ren_token = None
-
-    if active_network == C.NETWORKS["DEVELOPMENT"]:
-        ren_token = RenToken.deploy({"from": owner})
-        ren_token_addr = ren_token.address
-        owner = accounts[0]
-        node_operator = accounts[1]
-    else:
-        ren_token_addr = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
-        darknode_registry_addr = C.CONTRACT_ADDRESSES[active_network]["DARKNODE_REGISTRY"]
-        claim_rewards_addr = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
-        gateway_addr = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
-        ren_token = utils.load_contract(ren_token_addr)
-
-        account = accounts.add(config["wallets"]["from_key"])
-        owner = copy.copy(account)
-        node_operator = copy.copy(account)
-
-    renPool = RenPool.deploy(
-        ren_token_addr,
+    ren_pool = RenPool.deploy(
+        ren_token.address(),
         darknode_registry_addr,
         claim_rewards_addr,
         gateway_addr,
@@ -45,4 +50,4 @@ def main():
         {"from": node_operator},
     )
 
-    return ren_token, renPool
+    return ren_token, ren_pool

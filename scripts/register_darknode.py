@@ -4,8 +4,35 @@ from brownie_tokens import MintableForkToken
 from kovan_tokens.forked import MintableKovanForkToken
 import constants as C
 
+active_network: str or None = network.show_active()
+supported_networks: list[str] = [
+    C.NETWORKS["MAINNET_FORK"],
+    C.NETWORKS["KOVAN_FORK"],
+]
 
-def main():
+ren_BTC_addr: str = C.TOKEN_ADDRESSES[active_network]["renBTC"]
+ren_token_addr: str = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
+darknode_registry_addr: str = C.CONTRACT_ADDRESSES[active_network][
+    "DARKNODE_REGISTRY"
+]
+darknode_payment_addr: str = C.CONTRACT_ADDRESSES[active_network][
+    "DARKNODE_PAYMENT"
+]
+claim_rewards_addr: str = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
+gateway_addr: str = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
+
+def check_network() -> None:
+    if active_network not in supported_networks:
+        raise ValueError(f"Unsupported network, switch to {str(supported_networks)}")
+
+def get_ren_token(owner: Account) -> Contract or None:
+    return (
+        MintableForkToken(ren_token_addr)
+        if active_network == C.NETWORKS["MAINNET_FORK"]
+        else MintableKovanForkToken(ren_token_addr)
+    )
+
+def main() -> list[Contract, Contract, any, any]:
     """
     Deploy a RenPool contract to the mainnet-fork, lock the
     pool by providing liquidity and finally register a
@@ -13,30 +40,11 @@ def main():
     See: https://youtu.be/0JrDbvBClEA (brownie tutorial)
     See: https://renproject.github.io/contracts-ts/#/mainnet
     """
-
-    active_network: str or None = network.show_active()
-    supported_networks: list[str] = [
-        C.NETWORKS["MAINNET_FORK"],
-        C.NETWORKS["KOVAN_FORK"],
-    ]
-
-    if active_network not in supported_networks:
-        raise ValueError(f"Unsupported network, switch to {str(supported_networks)}")
+    check_network()
 
     owner: Account = accounts[0]
     node_operator: Account = accounts[1]
     user: Account = accounts[2]
-
-    ren_BTC_addr: str = C.TOKEN_ADDRESSES[active_network]["renBTC"]
-    ren_token_addr: str = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
-    darknode_registry_addr: str = C.CONTRACT_ADDRESSES[active_network][
-        "DARKNODE_REGISTRY"
-    ]
-    darknode_payment_addr: str = C.CONTRACT_ADDRESSES[active_network][
-        "DARKNODE_PAYMENT"
-    ]
-    claim_rewards_addr: str = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
-    gateway_addr: str = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
 
     ren_pool: Contract = RenPool.deploy(
         ren_token_addr,
@@ -52,13 +60,7 @@ def main():
     darknode_registry: Contract = Contract(darknode_registry_addr)
     ren_BTC: Contract = Contract(ren_BTC_addr)
 
-    ren_token: Contract = None
-
-    if active_network == C.NETWORKS["MAINNET_FORK"]:
-        ren_token = MintableForkToken(ren_token_addr)
-    elif active_network == C.NETWORKS["KOVAN_FORK"]:
-        ren_token = MintableKovanForkToken(ren_token_addr)
-
+    ren_token = get_ren_token()
     ren_token._mint_for_testing(user, C.POOL_BOND)
 
     ren_token.approve(ren_pool, C.POOL_BOND, {"from": user})
