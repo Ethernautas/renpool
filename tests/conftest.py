@@ -1,4 +1,4 @@
-from brownie import ZERO_ADDRESS, network, accounts, config, RenPool
+from brownie import network, accounts, config, RenPool
 from brownie_tokens import MintableForkToken
 from kovan_tokens.forked import MintableKovanForkToken
 import pytest
@@ -20,9 +20,8 @@ Once pytest finds them, it runs those fixtures, captures what they returned
 
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtures
 """
-
-active_network = network.show_active()
-supported_networks = [C.NETWORKS["MAINNET_FORK"], C.NETWORKS["KOVAN_FORK"]]
+active_network: str = config["networks"]["default"]
+supported_networks: list[str] = ["mainnet-fork", "kovan-fork"]
 
 if active_network not in supported_networks:
     raise ValueError(f"Unsupported network, switch to {str(supported_networks)}")
@@ -30,15 +29,15 @@ if active_network not in supported_networks:
 # Required due to this bug https://github.com/eth-brownie/brownie/issues/918
 network.connect(active_network)
 
-ren_token_addr = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
-ren_BTC_addr: str = C.TOKEN_ADDRESSES[active_network]["renBTC"]
-darknode_registry_addr = C.CONTRACT_ADDRESSES[active_network]["DARKNODE_REGISTRY"]
-darknode_registry_store_addr = C.CONTRACT_ADDRESSES[active_network][
-    "DARKNODE_REGISTRY_STORE"
-]
-darknode_payment_addr = C.CONTRACT_ADDRESSES[active_network]["DARKNODE_PAYMENT"]
-claim_rewards_addr = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
-gateway_addr = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
+contracts = config["networks"][active_network]["contracts"]
+
+ren_BTC_addr: str = contracts["ren_BTC"]
+ren_token_addr: str = contracts["ren_token"]
+darknode_registry_addr: str = contracts["darknode_registry"]
+darknode_registry_store_addr: str = contracts["darknode_registry_store"]
+darknode_payment_addr: str = contracts["darknode_payment"]
+claim_rewards_addr: str = contracts["claim_rewards"]
+gateway_addr: str = contracts["gateway"]
 
 """
 A common pattern is to include one or more module-scoped setup fixtures that define
@@ -62,9 +61,9 @@ def ren_token():
     """
     Yield a `Contract` object for the REN token contract.
     """
-    if active_network == C.NETWORKS["MAINNET_FORK"]:
+    if active_network == "mainnet-fork":
         yield MintableForkToken(ren_token_addr)
-    elif active_network == C.NETWORKS["KOVAN_FORK"]:
+    elif active_network == "kovan-fork":
         yield MintableKovanForkToken(ren_token_addr)
 
 

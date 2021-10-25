@@ -4,26 +4,39 @@ from brownie.network.contract import Contract
 import constants as C
 import utils
 
-active_network: str or None = network.show_active()
-is_development: bool = active_network == C.NETWORKS["DEVELOPMENT"]
+active_network: str = config["networks"]["default"]
+is_development: bool = active_network == "development"
 
-ren_token_addr = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
-darknode_registry_addr = C.CONTRACT_ADDRESSES[active_network]["DARKNODE_REGISTRY"]
-claim_rewards_addr = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
-gateway_addr = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
+contracts = config["networks"][active_network]["contracts"]
+
+ren_token_addr: str = contracts["ren_token"]
+darknode_registry_addr: str = contracts["darknode_registry"]
+claim_rewards_addr: str = contracts["claim_rewards"]
+gateway_addr: str = contracts["gateway"]
 
 
 def get_owner() -> Account:
+    """
+    When in development, use the first Ganache account as the owner.
+    Otherwise, load from config.
+    """
     return (
         accounts[0] if is_development else accounts.add(config["wallets"]["from_key"])
     )
 
 
 def get_node_operator() -> Account:
+    """
+    For now we set node_operator to equal owner, could be a different account in the future.
+    """
     return get_owner()
 
 
 def get_ren_token(owner: Account) -> Contract or None:
+    """
+    When in development, we a mock to interact to the ren token contract.
+    Load the real contract otherwise.
+    """
     return (
         RenToken.deploy({"from": owner})
         if is_development
@@ -48,7 +61,7 @@ def main() -> tuple[Contract, Contract]:
         owner,
         C.POOL_BOND,
         {"from": node_operator},
-        publish_source = True,
+        publish_source=True,
     )
 
     return ren_token, ren_pool

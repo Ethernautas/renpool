@@ -1,29 +1,26 @@
-from brownie import accounts, Contract, network, RenPool
+from brownie import accounts, config, Contract, RenPool
 from brownie.network.account import Account
 from brownie_tokens import MintableForkToken
 from kovan_tokens.forked import MintableKovanForkToken
 import constants as C
 
-active_network: str or None = network.show_active()
-supported_networks: list[str] = [
-    C.NETWORKS["MAINNET_FORK"],
-    C.NETWORKS["KOVAN_FORK"],
-]
+active_network: str = config["networks"]["default"]
+supported_networks: list[str] = ["mainnet-fork", "kovan-fork"]
 
-ren_BTC_addr: str = C.TOKEN_ADDRESSES[active_network]["renBTC"]
-ren_token_addr: str = C.CONTRACT_ADDRESSES[active_network]["REN_TOKEN"]
-darknode_registry_addr: str = C.CONTRACT_ADDRESSES[active_network][
-    "DARKNODE_REGISTRY"
-]
-darknode_payment_addr: str = C.CONTRACT_ADDRESSES[active_network][
-    "DARKNODE_PAYMENT"
-]
-claim_rewards_addr: str = C.CONTRACT_ADDRESSES[active_network]["CLAIM_REWARDS"]
-gateway_addr: str = C.CONTRACT_ADDRESSES[active_network]["GATEWAY"]
+contracts = config["networks"][active_network]["contracts"]
+
+ren_BTC_addr: str = contracts["ren_BTC"]
+ren_token_addr: str = contracts["ren_token"]
+darknode_registry_addr: str = contracts["darknode_registry"]
+darknode_payment_addr: str = contracts["darknode_payment"]
+claim_rewards_addr: str = contracts["payment_rewards"]
+gateway_addr: str = contracts["gateway"]
+
 
 def check_network() -> None:
     if active_network not in supported_networks:
         raise ValueError(f"Unsupported network, switch to {str(supported_networks)}")
+
 
 def get_ren_token(owner: Account) -> Contract or None:
     return (
@@ -31,6 +28,7 @@ def get_ren_token(owner: Account) -> Contract or None:
         if active_network == C.NETWORKS["MAINNET_FORK"]
         else MintableKovanForkToken(ren_token_addr)
     )
+
 
 def main() -> list[Contract, Contract, any, any]:
     """
