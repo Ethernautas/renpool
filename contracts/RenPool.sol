@@ -26,6 +26,7 @@ contract RenPool {
 	uint64 public nonce;
 
 	bool public isLocked;
+  // ^ we could use enum instead POOL_STATUS = { OPEN /* 0 */, CLOSE /* 1 */ }
 
 	mapping(address => uint256) public balances;
 	mapping(address => uint256) public withdrawRequests;
