@@ -1,10 +1,11 @@
-from brownie import accounts, config, network, RenToken, RenPool
+from brownie import accounts, config, RenToken, RenPool
 from brownie.network.account import Account
 from brownie.network.contract import Contract
 import constants as C
 import utils
 
 active_network: str = config["networks"]["default"]
+private_key: str = config["wallets"]["from_key"]
 is_development: bool = active_network == "development"
 
 contracts = config["networks"][active_network]["contracts"]
@@ -21,7 +22,7 @@ def get_owner() -> Account:
     Otherwise, load from config.
     """
     return (
-        accounts[0] if is_development else accounts.add(config["wallets"]["from_key"])
+        accounts[0] if is_development else accounts.add(private_key)
     )
 
 
