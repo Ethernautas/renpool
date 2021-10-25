@@ -48,6 +48,7 @@ def main() -> tuple[Contract, Contract]:
         owner,
         C.POOL_BOND,
         {"from": node_operator},
+        publish_source = True,
     )
 
     return ren_token, ren_pool
