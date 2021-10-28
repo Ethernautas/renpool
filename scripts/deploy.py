@@ -21,9 +21,7 @@ def get_owner() -> Account:
     When in development, use the first Ganache account as the owner.
     Otherwise, load from config.
     """
-    return (
-        accounts[0] if is_development else accounts.add(private_key)
-    )
+    return accounts[0] if is_development else accounts.add(private_key)
 
 
 def get_node_operator() -> Account:
