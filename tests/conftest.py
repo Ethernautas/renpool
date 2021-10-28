@@ -1,5 +1,6 @@
-from brownie import ZERO_ADDRESS, network, accounts, config, RenPool
+from brownie import network, accounts, config, RenPool
 from brownie_tokens import MintableForkToken
+from kovan_tokens.forked import MintableKovanForkToken
 import pytest
 import constants as C
 import utils
@@ -19,17 +20,24 @@ Once pytest finds them, it runs those fixtures, captures what they returned
 
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#fixtures
 """
+active_network: str = config["networks"]["default"]
+supported_networks: list[str] = ["mainnet-fork", "kovan-fork"]
 
-net = C.NETWORKS['MAINNET_FORK']
-renTokenAddr = C.CONTRACT_ADDRESSES[net]['REN_TOKEN']
-darknodeRegistryAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY']
-darknodeRegistryStoreAddr = C.CONTRACT_ADDRESSES[net]['DARKNODE_REGISTRY_STORE']
-
-if config['networks']['default'] != net:
-  raise ValueError(f'Unsupported network, switch to {net}')
+if active_network not in supported_networks:
+    raise ValueError(f"Unsupported network, switch to {str(supported_networks)}")
 
 # Required due to this bug https://github.com/eth-brownie/brownie/issues/918
-network.connect(net)
+network.connect(active_network)
+
+contracts = config["networks"][active_network]["contracts"]
+
+ren_BTC_addr: str = contracts["ren_BTC"]
+ren_token_addr: str = contracts["ren_token"]
+darknode_registry_addr: str = contracts["darknode_registry"]
+darknode_registry_store_addr: str = contracts["darknode_registry_store"]
+darknode_payment_addr: str = contracts["darknode_payment"]
+claim_rewards_addr: str = contracts["claim_rewards"]
+gateway_addr: str = contracts["gateway"]
 
 """
 A common pattern is to include one or more module-scoped setup fixtures that define
@@ -38,6 +46,8 @@ at the start of each test.
 
 See: https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html#isolation-fixtures
 """
+
+
 @pytest.fixture(scope="module", autouse=True)
 def shared_setup(module_isolation):
     """
@@ -45,61 +55,91 @@ def shared_setup(module_isolation):
     """
     pass
 
-@pytest.fixture(scope='module', autouse=True)
+
+@pytest.fixture(scope="module", autouse=True)
 def ren_token():
     """
-    Yield a `Contract` object for the RenToken contract.
+    Yield a `Contract` object for the REN token contract.
     """
-    yield MintableForkToken(renTokenAddr)
+    if active_network == "mainnet-fork":
+        yield MintableForkToken(ren_token_addr)
+    elif active_network == "kovan-fork":
+        yield MintableKovanForkToken(ren_token_addr)
 
-@pytest.fixture(scope='module', autouse=True)
-def distribute_tokens(ren_token):
+
+@pytest.fixture(scope="module", autouse=True)
+def ren_BTC():
+    """
+    Yield a `Contract` object for the renBTC contract.
+    """
+    yield utils.load_contract(ren_BTC_addr)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def distribute_ren_tokens(ren_token):
     """
     Set accounts initial balance to match C.POOL_BOND
     """
     for i in range(0, 10):
         ren_token._mint_for_testing(accounts[i], C.POOL_BOND)
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def owner():
     """
     Yield an `Account` object for the contract's owner.
     """
     yield accounts[0]
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def node_operator():
     """
     Yield an `Account` object for the contract's node operator.
     """
     yield accounts[1]
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def darknode_registry():
     """
     Yield a `Contract` object for the DarknodeRegistry contract.
     """
-    yield utils.load_contract(darknodeRegistryAddr)
+    yield utils.load_contract(darknode_registry_addr)
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def darknode_registry_store():
     """
     Yield a `Contract` object for the DarknodeRegistryStore contract.
     """
-    yield utils.load_contract(darknodeRegistryStoreAddr)
+    yield utils.load_contract(darknode_registry_store_addr)
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
+def darknode_payment():
+    """
+    Yield a `Contract` object for the DarknodePayment contract.
+    """
+    yield utils.load_contract(darknode_payment_addr)
+
+
+@pytest.fixture(scope="module")
 def ren_pool(owner, node_operator):
     """
     Yield a `Contract` object for the RenPool contract.
     """
     yield RenPool.deploy(
-        renTokenAddr,
-        darknodeRegistryAddr,
+        ren_token_addr,
+        darknode_registry_addr,
+        darknode_payment_addr,
+        claim_rewards_addr,
+        gateway_addr,
         owner,
         C.POOL_BOND,
-        {'from': node_operator},
+        {"from": node_operator},
     )
+
 
 @pytest.fixture(autouse=True)
 def setup(fn_isolation):
@@ -108,4 +148,3 @@ def setup(fn_isolation):
     This ensures that each test runs against the same base environment.
     """
     pass
-

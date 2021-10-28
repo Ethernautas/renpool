@@ -1,20 +1,23 @@
-from brownie import chain, accounts
+from brownie import chain, accounts, reverts
 import pytest
 import constants as C
 
 
 @pytest.mark.parametrize("user", accounts[0:3])  # [owner, nodeOperator, user]
-def test_darknode_deregistration(
+def test_darknode_claim_rewards(
     node_operator,
     ren_pool,
     ren_token,
+    ren_BTC,
     darknode_registry,
     user,
 ):
     """
-    Test darknode deregistration.
+    Test transfering rewards from the REN protocol to the given address.
     """
     chain.snapshot()
+
+    node_operator_init_BTC_balance: int = ren_BTC.balanceOf(node_operator)
 
     # Lock pool
     ren_token.approve(ren_pool, C.POOL_BOND, {"from": user})
@@ -31,19 +34,21 @@ def test_darknode_deregistration(
     # Make sure the darknode is under the 'registered' state
     assert darknode_registry.isRegistered(C.NODE_ID_HEX) == True
 
-    # Deregister darknode
-    ren_pool.deregisterDarknode({"from": node_operator})
-
-    # Make sure the darknode is under the 'pending deregistration' state
-    assert darknode_registry.isPendingDeregistration(C.NODE_ID_HEX) == True
-
-    # Skip to the next epoch (1 month) for the deregistration to settle
+    # Skip to the next epoch to make sure we have fees to claim
     chain.mine(timedelta=C.ONE_MONTH)
     darknode_registry.epoch({"from": ren_pool})
 
-    # Make sure the darknode is now under the 'deregistered' state
-    assert darknode_registry.isDeregistered(C.NODE_ID_HEX) == True
+    # Transfer fees from darknode to the darknode's owner account on the REN protocol
+    ren_pool.transferRewardsToDarknodeOwner([ren_BTC])
+    # Is there any way to test this?
 
-    # Make sure darknodeID and publicKey variables have the correct values
-    assert ren_pool.darknodeID() == C.NODE_ID_HEX
-    assert ren_pool.publicKey() == C.PUBLIC_KEY
+    # Transfer rewards from the REN protocol to the node operator wallet
+    ren_pool.claimDarknodeRewards("renBTC", 1, node_operator)
+
+    # Make sure rewards have been transferred to the target wallet
+    ren_BTC.balanceOf(
+        node_operator
+    ) > node_operator_init_BTC_balance  # Try to improve this!
+
+
+# TODO: test remaining paths

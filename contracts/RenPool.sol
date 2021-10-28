@@ -1,289 +1,362 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.7;
 
-/*
-* Observation, ideally we should import both RenToken and DarknodeRegistry interfaces
-* from 'renproject/darknode-sol@1.0.1'. Unfortunately, said interfaces are not being exposed.
-*/
 import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
-// TODO: use safeMath?
+import "../interfaces/IDarknodePayment.sol";
+import "../interfaces/IClaimRewards.sol";
+import "../interfaces/IGateway.sol";
+// TODO: use safeMath
+// TODO: Ownable + Ownable.initialize(_owner);
 
 contract RenPool {
-    uint8 public constant DECIMALS = 18;
+	uint8 public constant DECIMALS = 18;
 
-    address public renTokenAddr;
-    address public darknodeRegistryAddr;
-    address public owner; // This will be our address, in case we need to destroy the contract and refund everyone
-    address public nodeOperator;
-    address public darknodeID;
+	address public owner; // This will be our address, in case we need to refund everyone
+	address public nodeOperator;
+	address public darknodeID;
 
-    bytes public publicKey;
-    // ^ What happens if we register and deregister and register back again?
+	bytes public publicKey;
+	// ^ What happens if we register and deregister and register back again?
 
-    uint public bond;
-    uint public totalPooled;
-    uint public ownerFee; // Percentage
-    uint public nodeOperatorFee; // Percentage
+	uint256 public bond;
+	uint256 public totalPooled;
+	uint256 public ownerFee; // Percentage
+	uint256 public nodeOperatorFee; // Percentage
 
-    bool public isLocked;
+	uint64 public nonce;
 
-    mapping(address => uint) public balances;
-    mapping(address => uint) public withdrawRequests;
+	bool public isLocked;
+  // ^ we could use enum instead POOL_STATUS = { OPEN /* 0 */, CLOSE /* 1 */ }
 
-    IERC20 public renToken;
-    IDarknodeRegistry public darknodeRegistry;
+	mapping(address => uint256) public balances;
+	mapping(address => uint256) public withdrawRequests;
 
-    event RenDeposited(address indexed _from, uint _amount);
-    event RenWithdrawn(address indexed _from, uint _amount);
-    event EthDeposited(address indexed _from, uint _amount);
-    event EthWithdrawn(address indexed _from, uint _amount);
-    event PoolLocked();
-    event PoolUnlocked();
+	IERC20 public renToken;
+	IDarknodeRegistry public darknodeRegistry;
+	IDarknodePayment public darknodePayment;
+	IClaimRewards public claimRewards;
+	IGateway public gateway; // OR IMintGateway????
 
-    /**
-     * TODO
-     */
-    constructor(
-        address _renTokenAddr,
-        address _darknodeRegistryAddr,
-        address _owner,
-        uint _bond
-    )
-    {
-        renTokenAddr = _renTokenAddr;
-        darknodeRegistryAddr = _darknodeRegistryAddr;
-        owner = _owner;
-        nodeOperator = msg.sender;
-        renToken = IERC20(_renTokenAddr);
-        darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
-        bond = _bond;
-        isLocked = false;
-        totalPooled = 0;
-        ownerFee = 5;
-        nodeOperatorFee = 5;
+	event RenDeposited(address indexed _from, uint256 _amount);
+	event RenWithdrawn(address indexed _from, uint256 _amount);
+	event EthDeposited(address indexed _from, uint256 _amount);
+	event EthWithdrawn(address indexed _from, uint256 _amount);
+	event PoolLocked();
+	event PoolUnlocked();
 
-        // TODO: register pool into RenPoolStore
-    }
+	/**
+	 * @notice Deploy a new RenPool instance.
+	 *
+	 * @param _renTokenAddr The REN token contract address.
+	 * @param _darknodeRegistryAddr The DarknodeRegistry contract address.
+	 * @param _darknodePaymentAddr The DarknodePayment contract address.
+	 * @param _claimRewardsAddr The ClaimRewards contract address.
+	 * @param _gatewayAddr The Gateway contract address.
+	 * @param _owner The protocol owner's address. Possibly a multising wallet.
+	 * @param _bond The amount of REN tokens required to register a darknode.
+	 */
+	constructor(
+		address _renTokenAddr,
+		address _darknodeRegistryAddr,
+		address _darknodePaymentAddr,
+		address _claimRewardsAddr,
+		address _gatewayAddr,
+		address _owner,
+		uint256 _bond
+	)
+	{
+		owner = _owner;
+		nodeOperator = msg.sender;
+		renToken = IERC20(_renTokenAddr);
+		darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
+		darknodePayment = IDarknodePayment(_darknodePaymentAddr);
+		claimRewards = IClaimRewards(_claimRewardsAddr);
+		gateway = IGateway(_gatewayAddr);
+		bond = _bond;
+		isLocked = false;
+		totalPooled = 0;
+		ownerFee = 5;
+		nodeOperatorFee = 5;
+		nonce = 0;
 
-    modifier onlyNodeOperator() {
-        require (
-            msg.sender == nodeOperator,
-            "Caller is not nodeOperator"
-        );
-        _;
-    }
+		// TODO: register pool into RenPoolStore
+	}
 
-    modifier onlyOwnerNodeOperator() {
-        require (
-            msg.sender == owner || msg.sender == nodeOperator,
-            "Caller is not owner/nodeOperator"
-        );
-        _;
-    }
+	modifier onlyNodeOperator() {
+		require (
+			msg.sender == nodeOperator,
+			"Caller is not nodeOperator"
+		);
+		_;
+	}
 
-    modifier onlyOwner() {
-        require (
-            msg.sender == owner,
-            "Caller is not owner"
-        );
-        _;
-    }
+	modifier onlyOwnerNodeOperator() {
+		require (
+			msg.sender == owner || msg.sender == nodeOperator,
+			"Caller is not owner/nodeOperator"
+		);
+		_;
+	}
 
-    /**
-     * @notice Lock pool so that no direct deposits/withdrawals can
-     * be performed.
-     */
-    function _lockPool() private {
-        isLocked = true;
-        emit PoolLocked();
-    }
+	modifier onlyOwner() {
+		require (
+			msg.sender == owner,
+			"Caller is not owner"
+		);
+		_;
+	}
 
-    function unlockPool() external onlyOwnerNodeOperator {
-        require(renToken.balanceOf(address(this)) > 0, "Pool balance is zero");
-        isLocked = false;
-        emit PoolUnlocked();
-    }
+	/**
+	 * @notice Lock pool so that no direct deposits/withdrawals can
+	 * be performed.
+	 */
+	function _lockPool() private {
+		isLocked = true;
+		emit PoolLocked();
+	}
 
-    /**
-     * @notice Deposit REN into the RenPool contract. Before depositing,
-     * the transfer must be approved in the REN contract. In case the
-     * predefined bond is reached, the pool is locked preventing any
-     * further deposits or withdrawals.
-     *
-     * @param _amount The amount of REN to be deposited into the pool.
-     */
-    function deposit(uint _amount) external {
-        address sender = msg.sender;
+	function unlockPool() external onlyOwnerNodeOperator {
+		require(renToken.balanceOf(address(this)) > 0, "Pool balance is zero");
+		isLocked = false;
+		emit PoolUnlocked();
+	}
 
-        require(isLocked == false, "Pool is locked");
-        require(_amount > 0, "Invalid amount");
-        require(_amount + totalPooled <= bond, "Amount surpasses bond");
+	/**
+	 * @notice Deposit REN into the RenPool contract. Before depositing,
+	 * the transfer must be approved in the REN contract. In case the
+	 * predefined bond is reached, the pool is locked preventing any
+	 * further deposits or withdrawals.
+	 *
+	 * @param _amount The amount of REN to be deposited into the pool.
+	 */
+	function deposit(uint256 _amount) external {
+		address sender = msg.sender;
 
-        balances[sender] += _amount;
-        totalPooled += _amount;
+		require(isLocked == false, "Pool is locked");
+		require(_amount > 0, "Invalid amount");
+		require(_amount + totalPooled <= bond, "Amount surpasses bond");
 
-        require(
-            renToken.transferFrom(sender, address(this), _amount) == true,
-            "Deposit failed"
-        );
+		balances[sender] += _amount;
+		totalPooled += _amount;
 
-        emit RenDeposited(sender, _amount);
+		require(
+			renToken.transferFrom(sender, address(this), _amount) == true,
+			"Deposit failed"
+		);
 
-        if (totalPooled == bond) {
-            _lockPool();
-        }
-    }
+		emit RenDeposited(sender, _amount);
 
-    /**
-     * @notice Withdraw REN tokens while the pool is still open.
-     */
-    function withdraw(uint _amount) external {
-        address sender = msg.sender;
-        uint senderBalance = balances[sender];
+		if (totalPooled == bond) {
+			_lockPool();
+		}
+	}
 
-        require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-        require(isLocked == false, "Pool is locked");
+	/**
+	 * @notice Withdraw REN tokens while the pool is still open.
+	 */
+	function withdraw(uint256 _amount) external {
+		address sender = msg.sender;
+		uint256 senderBalance = balances[sender];
 
-        totalPooled -= _amount;
-        balances[sender] -= _amount;
+		require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
+		require(isLocked == false, "Pool is locked");
 
-        require(
-            renToken.transfer(sender, _amount) == true,
-            "Withdraw failed"
-        );
+		totalPooled -= _amount;
+		balances[sender] -= _amount;
 
-        emit RenWithdrawn(sender, _amount);
-    }
+		require(
+			renToken.transfer(sender, _amount) == true,
+			"Withdraw failed"
+		);
 
-    /**
-     * TODO
-     * @dev Users can have up to a single request active. In case of several
-     * calls to this method, only the last request will be preserved.
-     */
-    function requestWithdraw(uint _amount) external {
-        address sender = msg.sender;
-        uint senderBalance = balances[sender];
+		emit RenWithdrawn(sender, _amount);
+	}
 
-        require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-        require(isLocked == true, "Pool is not locked");
+	/**
+	 * TODO
+	 * @dev Users can have up to a single request active. In case of several
+	 * calls to this method, only the last request will be preserved.
+	 */
+	function requestWithdraw(uint256 _amount) external {
+		address sender = msg.sender;
+		uint256 senderBalance = balances[sender];
 
-        withdrawRequests[sender] = _amount;
+		require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
+		require(isLocked == true, "Pool is not locked");
 
-        // TODO emit event
-    }
+		withdrawRequests[sender] = _amount;
 
-    /**
-     * TODO
-     */
-    function fulfillWithdrawRequest(address _target) external {
-        address sender = msg.sender;
-        uint amount = withdrawRequests[_target];
-        // ^ This could not be defined plus make sure amount > 0
-        // TODO: make sure user cannot fullfil his own request
-        // TODO: add test for when _target doesn't have an associated withdrawRequest
+		// TODO emit event
+	}
 
-        require(isLocked == true, "Pool is not locked");
+	/**
+	 * TODO
+	 */
+	function fulfillWithdrawRequest(address _target) external {
+		address sender = msg.sender;
+		uint256 amount = withdrawRequests[_target];
+		// ^ This could not be defined plus make sure amount > 0
+		// TODO: make sure user cannot fullfil his own request
+		// TODO: add test for when _target doesn't have an associated withdrawRequest
 
-        balances[sender] += amount;
-        balances[_target] -= amount;
-        delete withdrawRequests[_target];
+		require(isLocked == true, "Pool is not locked");
 
-        // Transfer funds from sender to _target
-        require(
-            renToken.transferFrom(sender, address(this), amount) == true,
-            "Deposit failed"
-        );
-        require(
-            renToken.transfer(_target, amount) == true,
-            "Refund failed"
-        );
+		balances[sender] += amount;
+		balances[_target] -= amount;
+		delete withdrawRequests[_target];
 
-        // TODO emit event
-    }
+		// Transfer funds from sender to _target
+		require(
+			renToken.transferFrom(sender, address(this), amount) == true,
+			"Deposit failed"
+		);
+		require(
+			renToken.transfer(_target, amount) == true,
+			"Refund failed"
+		);
 
-    // TODO: cancelWithdrawRequest
-    // TODO: getWithdrawRequests
+		// TODO emit event
+	}
 
-    /**
-     * @notice Return REN balance for the given address.
-     *
-     * @param _target Address to be queried.
-     */
-    function balanceOf(address _target) external view returns(uint) {
-        return balances[_target];
-    }
+	// TODO: cancelWithdrawRequest
+	// TODO: getWithdrawRequests
 
-    /**
-     * @notice Transfer bond to the darknodeRegistry contract prior to
-     * registering the darknode.
-     */
-    function approveBondTransfer() external onlyNodeOperator {
-        require(isLocked == true, "Pool is not locked");
+	/**
+	 * @notice Return REN balance for the given address.
+	 *
+	 * @param _target Address to be queried.
+	 */
+	function balanceOf(address _target) external view returns(uint) {
+		return balances[_target];
+	}
 
-        require(
-            renToken.approve(darknodeRegistryAddr, bond) == true,
-            "Bond transfer failed"
-        );
-    }
+	/**
+	 * @notice Transfer bond to the darknodeRegistry contract prior to
+	 * registering the darknode.
+	 */
+	function approveBondTransfer() external onlyNodeOperator {
+		require(isLocked == true, "Pool is not locked");
 
-    /**
-     * @notice Register a darknode and transfer the bond to the darknodeRegistry
-     * contract. Before registering, the bond transfer must be approved in the
-     * darknodeRegistry contract (see approveTransferBond). The caller must
-     * provide a public encryption key for the darknode. The darknode will remain
-     * pending registration until the next epoch. Only after this period can the
-     * darknode be deregistered. The caller of this method will be stored as the
-     * owner of the darknode.
-     *
-     * @param _darknodeID The darknode ID that will be registered.
-     * @param _publicKey The public key of the darknode. It is stored to allow
-     * other darknodes and traders to encrypt messages to the trader.
-     */
-    function registerDarknode(address _darknodeID, bytes calldata _publicKey) external onlyNodeOperator {
-        require(isLocked == true, "Pool is not locked");
+		require(
+			renToken.approve(address(darknodeRegistry), bond) == true,
+			"Bond transfer failed"
+		);
+	}
 
-        darknodeRegistry.register(_darknodeID, _publicKey);
+	/**
+	 * @notice Register a darknode and transfer the bond to the darknodeRegistry
+	 * contract. Before registering, the bond transfer must be approved in the
+	 * darknodeRegistry contract (see approveTransferBond). The caller must
+	 * provide a public encryption key for the darknode. The darknode will remain
+	 * pending registration until the next epoch. Only after this period can the
+	 * darknode be deregistered. The caller of this method will be stored as the
+	 * owner of the darknode.
+	 *
+	 * @param _darknodeID The darknode ID that will be registered.
+	 * @param _publicKey The public key of the darknode. It is stored to allow
+	 * other darknodes and traders to encrypt messages to the trader.
+	 */
+	function registerDarknode(address _darknodeID, bytes calldata _publicKey) external onlyNodeOperator {
+		require(isLocked == true, "Pool is not locked");
 
-        darknodeID = _darknodeID;
-        publicKey = _publicKey;
-    }
+		darknodeRegistry.register(_darknodeID, _publicKey);
 
-    /**
-     * @notice Deregister a darknode. The darknode will not be deregistered
-     * until the end of the epoch. After another epoch, the bond can be
-     * refunded by calling the refund method.
-     *
-     * @dev We don't reset darknodeID/publicKey values after deregistration in order
-     * to being able to call refund.
-     */
-    function deregisterDarknode() external onlyOwnerNodeOperator {
-        darknodeRegistry.deregister(darknodeID);
-    }
+		darknodeID = _darknodeID;
+		publicKey = _publicKey;
+	}
 
-    /**
-     * @notice Refund the bond of a deregistered darknode. This will make the
-     * darknode available for registration again. Anyone can call this function
-     * but the bond will always be refunded to the darknode owner.
-     *
-     * @dev No need to reset darknodeID/publicKey values after refund.
-     */
-    function refundBond() external {
-        darknodeRegistry.refund(darknodeID);
-    }
+	/**
+	 * @notice Deregister a darknode. The darknode will not be deregistered
+	 * until the end of the epoch. After another epoch, the bond can be
+	 * refunded by calling the refund method.
+	 *
+	 * @dev We don't reset darknodeID/publicKey values after deregistration in order
+	 * to being able to call refund.
+	 */
+	function deregisterDarknode() external onlyOwnerNodeOperator {
+		darknodeRegistry.deregister(darknodeID);
+	}
 
-    /**
-     * @notice Allow ETH deposits in case gas is necessary to pay for transactions.
-     */
-    receive() external payable {
-        emit EthDeposited(msg.sender, msg.value);
-    }
+	/**
+	 * @notice Refund the bond of a deregistered darknode. This will make the
+	 * darknode available for registration again. Anyone can call this function
+	 * but the bond will always be refunded to the darknode owner.
+	 *
+	 * @dev No need to reset darknodeID/publicKey values after refund.
+	 */
+	function refundBond() external {
+		darknodeRegistry.refund(darknodeID);
+	}
 
-    /**
-     * @notice Allow node operator to withdraw any remaining gas.
-     */
-    function withdrawGas() external onlyNodeOperator {
-        uint balance = address(this).balance;
-        payable(nodeOperator).transfer(balance);
-        emit EthWithdrawn(nodeOperator, balance);
-    }
+	/**
+	 * @notice Allow ETH deposits in case gas is necessary to pay for transactions.
+	 */
+	receive() external payable {
+		emit EthDeposited(msg.sender, msg.value);
+	}
+
+	/**
+	 * @notice Allow node operator to withdraw any remaining gas.
+	 */
+	function withdrawGas() external onlyNodeOperator {
+		uint256 balance = address(this).balance;
+		payable(nodeOperator).transfer(balance);
+		emit EthWithdrawn(nodeOperator, balance);
+	}
+
+	/**
+	 * @notice Transfer rewards from darknode to darknode owner prior to calling claimDarknodeRewards.
+	 *
+	 * @param _tokens List of tokens to transfer. (here we could have a list with all available tokens)
+	 */
+	function transferRewardsToDarknodeOwner(address[] calldata _tokens) external {
+		darknodePayment.withdrawMultiple(address(this), _tokens);
+	}
+
+	/**
+	 * @notice Claim darknode rewards.
+	 *
+	 * @param _assetSymbol The asset being claimed. e.g. "BTC" or "DOGE".
+	 * @param _amount The amount of the token being minted, in its smallest
+	 * denomination (e.g. satoshis for BTC).
+	 * @param _recipientAddress The Ethereum address to which the assets are
+	 * being withdrawn to. This same address must then call `mint` on
+	 * the asset's Ren Gateway contract.
+	 */
+	function claimDarknodeRewards(
+		string memory _assetSymbol,
+		uint256 _amount, // avoid this param, read from user balance instead. What about airdrops?
+		address _recipientAddress
+	)
+		external
+		returns(uint256, uint256)
+	{
+		// TODO: check that sender has the amount to be claimed
+		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
+		uint256 sig = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
+		nonce += 1;
+
+		return (sig, nonce);
+		// bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
+		// bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
+
+		// gateway.mint(pHash, _amount, nHash, sig);
+
+		/*
+                    const nHash = randomBytes(32);
+                    const pHash = randomBytes(32);
+
+                    const hash = await gateway.hashForSignature.call(
+                        pHash,
+                        value,
+                        user,
+                        nHash
+                    );
+                    const sig = ecsign(
+                        Buffer.from(hash.slice(2), "hex"),
+                        privKey
+                    );
+										See: https://github.com/renproject/gateway-sol/blob/7bd51d8a897952a31134875d7b2b621e4542deaa/test/Gateway.ts
+		*/
+	}
 }

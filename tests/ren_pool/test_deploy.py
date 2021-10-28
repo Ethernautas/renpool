@@ -1,5 +1,6 @@
 import constants as C
 
+
 def test_ren_pool_deploy(owner, node_operator, ren_pool):
     """
     Test if the contract is correctly deployed.

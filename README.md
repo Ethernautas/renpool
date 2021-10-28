@@ -120,6 +120,9 @@ The app is deployed to [https://renpool.netlify.app/](https://renpool.netlify.ap
 
 2. [https://youtu.be/KNBneUpFaGo](https://youtu.be/KNBneUpFaGo)
 
+3. Add kovan-fork to Development networks:
+`brownie networks add Development kovan-fork host=http://127.0.0.1 cmd=ganache-cli  mnemonic=brownie port=8545 accounts=10 evm_version=istanbul fork=kovan gas_limit=12000000 name="Ganache-CLI (Kovan Fork)" timeout=120`
+
 # Brownie React Mix
 
 This mix comes with everything you need to start using [React](https://reactjs.org/) with a Brownie project.
