@@ -36,6 +36,7 @@ ren_token_addr: str = contracts["ren_token"]
 darknode_registry_addr: str = contracts["darknode_registry"]
 darknode_registry_store_addr: str = contracts["darknode_registry_store"]
 darknode_payment_addr: str = contracts["darknode_payment"]
+darknode_payment_store_addr: str = contracts["darknode_payment_store"]
 claim_rewards_addr: str = contracts["claim_rewards"]
 gateway_addr: str = contracts["gateway"]
 
@@ -125,6 +126,14 @@ def darknode_payment():
 
 
 @pytest.fixture(scope="module")
+def darknode_payment_store():
+    """
+    Yield a `Contract` object for the DarknodePaymentStore contract.
+    """
+    yield utils.load_contract(darknode_payment_store_addr)
+
+
+@pytest.fixture(scope="module")
 def ren_pool(owner, node_operator):
     """
     Yield a `Contract` object for the RenPool contract.
@@ -133,6 +142,7 @@ def ren_pool(owner, node_operator):
         ren_token_addr,
         darknode_registry_addr,
         darknode_payment_addr,
+        # darknode_payment_store_addr,
         claim_rewards_addr,
         gateway_addr,
         owner,
