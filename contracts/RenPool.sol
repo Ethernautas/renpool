@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IDarknodePayment.sol";
 import "../interfaces/IClaimRewards.sol";

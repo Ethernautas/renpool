@@ -13,9 +13,9 @@ venv
 .env.rinkeby
 .env.mainnet
 .env.mainnet_fork
-node_modules/
-package-lock.json
-package.json
+/node_modules/
+/cache/
+/artifacts/
 
 # Local Netlify folder
 .netlify
