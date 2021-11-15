@@ -19,11 +19,11 @@ describe('RenPool contract', function () {
 
   const renToken = new ethers.Contract(renTokenAddr, RenToken.abi);
 
-  let owner, nodeOperator, alice;
+  let owner, nodeOperator, alice, bob;
   let renPool;
 
   before(async () => {
-    [owner, nodeOperator, alice] = await ethers.getSigners();
+    [owner, nodeOperator, alice, bob] = await ethers.getSigners();
 
     const topRenTokenHolder = hre.network.config.topRenTokenHolder;
     expect(await renToken.connect(owner).balanceOf(topRenTokenHolder)).to.be.above(0);
@@ -62,76 +62,130 @@ describe('RenPool contract', function () {
     expect(await renPool.totalPooled()).to.equal(0);
   });
 
-  it('should deposit REN into RenPool', async function () {
-    const amount = 1;
+  describe('deposit', function () {
 
-    const initBalance = await renToken.connect(alice).balanceOf(alice.address);
+    it('should deposit REN into RenPool', async function () {
+      const amount = 1;
 
-    await renToken.connect(alice).approve(renPool.address, amount);
-    await renPool.connect(alice).deposit(amount);
+      const initBalance = await renToken.connect(alice).balanceOf(alice.address);
 
-    expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(amount);
-    expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(initBalance.sub(amount));
-    expect(await renPool.balanceOf(alice.address)).to.equal(amount);
-    expect(await renPool.totalPooled()).to.equal(amount);
+      await renToken.connect(alice).approve(renPool.address, amount);
+      await renPool.connect(alice).deposit(amount);
+
+      expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(amount);
+      expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(initBalance.sub(amount));
+      expect(await renPool.balanceOf(alice.address)).to.equal(amount);
+      expect(await renPool.totalPooled()).to.equal(amount);
+    });
+
+    it('should lock the pool after a deposit of `POOL_BOND`', async function () {
+      await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+      await renPool.connect(alice).deposit(POOL_BOND);
+
+      expect(await renPool.isLocked()).to.be.true;
+    });
+
+    it('should fail when deposit without approval', async function () {
+      const amount = 1;
+      await expect(
+        //TODO: This should throw 'Deposit failed', not sure why not (?)
+        renPool.connect(alice).deposit(amount)
+      ).to.be.reverted;
+    });
+
+    it('should fail when deposit is 0', async function () {
+      await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+
+      await expect(
+        renPool.connect(alice).deposit(0)
+      ).to.be.revertedWith('RenPool: Invalid amount');
+    });
+
+    it('should fail when deposit surpasses bond', async function () {
+      const amount = POOL_BOND.mul(2);
+      await renToken.connect(alice).approve(renPool.address, amount);
+
+      await expect(
+        renPool.connect(alice).deposit(amount)
+      ).to.be.revertedWith('RenPool: Amount surpasses bond');
+    });
+
+    it('should fail when deposit after locking', async function () {
+      await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+      await renPool.connect(alice).deposit(POOL_BOND);
+
+      expect(await renPool.isLocked()).to.be.true;
+      const amount = 1;
+      await expect(
+        renPool.connect(alice).deposit(amount)
+      ).to.be.revertedWith('RenPool: Pool is locked');
+    });
+
+    it('should fail when deposit after unlocking', async function () {
+      await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+      await renPool.connect(alice).deposit(POOL_BOND);
+
+      expect(await renPool.isLocked()).to.be.true;
+
+      await renPool.connect(nodeOperator).unlockPool();
+      expect(await renPool.isLocked()).to.be.false;
+
+      const amount = 1;
+      await renToken.connect(alice).approve(renPool.address, amount);
+      await expect(
+        renPool.connect(alice).deposit(amount)
+      ).to.be.revertedWith('RenPool: Amount surpasses bond');
+    });
+
   });
 
-  it('should lock the pool after a deposit of `POOL_BOND`', async function () {
-    await renToken.connect(alice).approve(renPool.address, POOL_BOND);
-    await renPool.connect(alice).deposit(POOL_BOND);
+  describe('withdraw', function () {
 
-    expect(await renPool.isLocked()).to.be.true;
-  });
+    it('should withdraw properly', async function () {
+      const amount = 1;
 
-  it('should fail when deposit without approval', async function() {
-    const amount = 1;
-    await expect(
-      renPool.connect(alice).deposit(amount)
-    ).to.be.reverted;
-  });
+      const balance = await renToken.connect(alice).balanceOf(alice.address);
 
-  it('should fail when deposit is 0', async function() {
-    await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+      await renToken.connect(alice).approve(renPool.address, amount);
+      await renPool.connect(alice).deposit(amount);
 
-    await expect(
-      renPool.connect(alice).deposit(0)
-    ).to.be.revertedWith('RenPool: Invalid amount');
-  });
+      await renPool.connect(alice).withdraw(amount);
 
-  it('should fail when deposit surpasses bond', async function() {
-    const amount = POOL_BOND.mul(2);
-    await renToken.connect(alice).approve(renPool.address, amount);
+      expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(0);
+      expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(balance);
+      expect(await renPool.balanceOf(alice.address)).to.equal(0);
+      expect(await renPool.totalPooled()).to.equal(0);
+    });
 
-    await expect(
-      renPool.connect(alice).deposit(amount)
-    ).to.be.revertedWith('RenPool: Amount surpasses bond');
-  });
+    it('should fulfill withdraw properly', async function () {
+      const amount = 1;
 
-  it('should fail when deposit after locking', async function() {
-    await renToken.connect(alice).approve(renPool.address, POOL_BOND);
-    await renPool.connect(alice).deposit(POOL_BOND);
+      const aliceBalance = await renToken.connect(alice).balanceOf(alice.address);
+      const bobBalance = await renToken.connect(bob).balanceOf(bob.address);
 
-    expect(await renPool.isLocked()).to.be.true;
-    const amount = 1;
-    await expect(
-      renPool.connect(alice).deposit(amount)
-    ).to.be.revertedWith('RenPool: Pool is locked');
-  });
+      await renToken.connect(bob).approve(renPool.address, POOL_BOND);
+      await renPool.connect(bob).deposit(POOL_BOND);
 
-  it('should fail when deposit after unlocking', async function() {
-    await renToken.connect(alice).approve(renPool.address, POOL_BOND);
-    await renPool.connect(alice).deposit(POOL_BOND);
+      expect(await renPool.isLocked()).to.be.true;
 
-    expect(await renPool.isLocked()).to.be.true;
+      await renPool.connect(bob).requestWithdraw(amount);
+      expect(await renPool.withdrawRequests(bob.address)).to.equal(amount);
 
-    await renPool.connect(nodeOperator).unlockPool();
-    expect(await renPool.isLocked()).to.be.false;
+      await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+      await renPool.connect(alice).fulfillWithdrawRequest(bob.address);
 
-    const amount = 1;
-    await renToken.connect(alice).approve(renPool.address, amount);
-    await expect(
-      renPool.connect(alice).deposit(amount)
-    ).to.be.revertedWith('RenPool: Amount surpasses bond');
+      expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(POOL_BOND);
+      expect(await renToken.connect(alice).balanceOf(alice.address)).to.equal(aliceBalance.sub(amount));
+      // expect(await renToken.connect(bob).balanceOf(bob.address)).to.equal(bobBalance);
+      expect(await renPool.balanceOf(alice.address)).to.equal(amount);
+      // expect(await renPool.balanceOf(bob.address)).to.equal(0);
+      expect(await renPool.isLocked()).to.be.true;
+      expect(await renPool.totalPooled()).to.equal(POOL_BOND);
+    });
+
+    // TODO: Test remaining paths
+    // TODO: Test case when 'uint senderBalance = balances[sender];' is undefined for the given sender
+
   });
 
 });
