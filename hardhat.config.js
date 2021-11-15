@@ -43,7 +43,7 @@ module.exports = {
     },
   },
   mocha: {
-    timeout: 30000
+    timeout: 60000
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
