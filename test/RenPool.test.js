@@ -1,23 +1,38 @@
-const hre = require('hardhat');
-const { expect } = require('chai');
+const {
+  ethers: {
+    utils: { base58 },
+    BigNumber: { from: bn }
+  },
+  network: {
+    config: {
+      renTokenAddr,
+      renBTC,
+      topRenTokenHolder,
+      darknodeRegistryAddr,
+      darknodePaymentAddr
+    },
+    provider
+  } } = require('hardhat');
+const { expect } = require('chai').use(require('chai-string'));
+
 const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
-
-const { ethers } = hre;
-const bn = ethers.BigNumber.from;
-
-const DECIMALS = 18;
-const DIGITS = bn(10).pow(DECIMALS);
-const POOL_BOND = bn(100_000).mul(DIGITS);
+const DarknodeRegistryLogicV1 = require('@renproject/sol/build/testnet/DarknodeRegistryLogicV1.json');
+const DarknodeRegistryProxy = require('@renproject/sol/build/testnet/DarknodeRegistryProxy.json');
+const DarknodePayment = require('@renproject/sol/build/testnet/DarknodePayment.json');
+const { config } = require('dotenv');
 
 describe('RenPool contract test', function () {
 
-  const renTokenAddr = hre.network.config.renTokenAddr;
-  const darknodeRegistryAddr = renTokenAddr;
-  const darknodePaymentAddr = renTokenAddr;
+  const DECIMALS = 18;
+  const DIGITS = bn(10).pow(DECIMALS);
+  const POOL_BOND = bn(100_000).mul(DIGITS);
+
   const claimRewardsAddr = renTokenAddr;
   const gatewayAddr = renTokenAddr;
 
   const renToken = new ethers.Contract(renTokenAddr, RenToken.abi);
+  const darknodeRegistry = new ethers.Contract(darknodeRegistryAddr, DarknodeRegistryLogicV1.abi);
+  const darknodePayment = new ethers.Contract(darknodePaymentAddr, DarknodePayment.abi);
 
   let owner, nodeOperator, alice, bob;
   let renPool;
@@ -25,9 +40,8 @@ describe('RenPool contract test', function () {
   before(async () => {
     [owner, nodeOperator, alice, bob] = await ethers.getSigners();
 
-    const topRenTokenHolder = hre.network.config.topRenTokenHolder;
     expect(await renToken.connect(owner).balanceOf(topRenTokenHolder)).to.be.above(0);
-    await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [topRenTokenHolder] });
+    await provider.request({ method: 'hardhat_impersonateAccount', params: [topRenTokenHolder] });
 
     const signer = await ethers.getSigner(topRenTokenHolder);
     for (const user of (await ethers.getSigners()).slice(2)) {
@@ -38,14 +52,14 @@ describe('RenPool contract test', function () {
       expect(await renToken.connect(owner).balanceOf(user.address)).to.equal(amount);
     }
 
-    await hre.network.provider.request({ method: 'hardhat_stopImpersonatingAccount', params: [topRenTokenHolder] });
+    await provider.request({ method: 'hardhat_stopImpersonatingAccount', params: [topRenTokenHolder] });
   });
 
   beforeEach(async () => {
     renPool = await (await ethers.getContractFactory('RenPool')).connect(nodeOperator).deploy(
-      renTokenAddr,
-      darknodeRegistryAddr,
-      darknodePaymentAddr,
+      renToken.address,
+      darknodeRegistry.address,
+      darknodePayment.address,
       claimRewardsAddr,
       gatewayAddr,
       owner.address,
@@ -203,6 +217,40 @@ describe('RenPool contract test', function () {
 
     // TODO: Test remaining paths
     // TODO: Test case when 'uint senderBalance = balances[sender];' is undefined for the given sender
+
+  });
+
+  describe('registerDarknode', function () {
+
+    function base58ToHex(textData) {
+      return '0x' + Buffer.from(base58.decode(textData)).toString('hex').slice(4);
+    }
+
+    it('should convert base58 to hex', function () {
+      expect(base58ToHex('8MHJ9prQt7UGupfZKSMVes3VzPrGBB'))
+        .to.equalIgnoreCase('0x597869E66F904F741Bf16788F1FCAe36E603F112');
+    });
+
+    const NODE_ID = base58ToHex('8MHJ9prQt7UGupfZKSMVes3VzPrGBB');
+    const PUBLIC_KEY = '0x000000077373682d727361000000030100010000010100d0feba4ae65ea9ad771d153419bcc21189d954b6bf75fd5488055cd2641231014f190c0e059a452d301c535e931df33590ec0e18c59341a2766cc885d1dc6e66f5cc65b94522ec944ae4200bd56a30223328b258d50b507dd94b4c4742768f3fec2b815c9c4b0fe26727e82865f6a064fa3ff2443d135d9788095a1c17487fd5c389a491c16b73385d516a303debc3bcccae337a7ec0d89d51ce05262a0c4c1f2178466c85379b8cd4e5cbe1c90a05fb0c1ed3eee2134774b450e7b0b70c792abad55beef919e21a03cb9de4e963a820c2f84421a4559d0b67cfd17c1686ff6f2d1bb07ac2c82cede1cf5f16a57e125a29fef65891715b061606bca1a0eb026b';
+
+    it('should transfer reward to darknode owner', async function () {
+      await renToken.connect(bob).approve(renPool.address, POOL_BOND);
+      await renPool.connect(bob).deposit(POOL_BOND);
+
+      await renPool.connect(nodeOperator).approveBondTransfer();
+      await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
+
+      // TODO: set up chain.mine(timedelta=C.ONE_MONTH)
+      await darknodeRegistry.connect(alice).epoch();
+
+      expect(await darknodeRegistry.connect(alice).isRegistered(NODE_ID)).to.be.true;
+
+      // TODO: set up chain.mine(timedelta=C.ONE_MONTH)
+      await darknodeRegistry.connect(alice).epoch();
+
+      await renPool.transferRewardsToDarknodeOwner([renBTC]);
+    });
 
   });
 
