@@ -14,12 +14,10 @@ const {
     provider
   } } = require('hardhat');
 const { expect } = require('chai').use(require('chai-string'));
-
+require('dotenv');
 const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
 const DarknodeRegistryLogicV1 = require('@renproject/sol/build/testnet/DarknodeRegistryLogicV1.json');
-const DarknodeRegistryProxy = require('@renproject/sol/build/testnet/DarknodeRegistryProxy.json');
 const DarknodePayment = require('@renproject/sol/build/testnet/DarknodePayment.json');
-const { config } = require('dotenv');
 
 describe('RenPool contract test', function () {
 
