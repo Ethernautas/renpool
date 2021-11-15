@@ -133,17 +133,14 @@ contract RenPool {
 	function deposit(uint256 _amount) external {
 		address sender = msg.sender;
 
-		require(isLocked == false, "Pool is locked");
-		require(_amount > 0, "Invalid amount");
-		require(_amount + totalPooled <= bond, "Amount surpasses bond");
+		require(isLocked == false, "RenPool: Pool is locked");
+		require(_amount > 0, "RenPool: Invalid amount");
+		require(_amount + totalPooled <= bond, "RenPool: Amount surpasses bond");
 
 		balances[sender] += _amount;
 		totalPooled += _amount;
 
-		require(
-			renToken.transferFrom(sender, address(this), _amount) == true,
-			"Deposit failed"
-		);
+		renToken.transferFrom(sender, address(this), _amount);
 
 		emit RenDeposited(sender, _amount);
 
