@@ -14,10 +14,26 @@ require("solidity-coverage");
 module.exports = {
   solidity: "0.8.7",
   networks: {
-    ropsten: {
-      url: process.env.ROPSTEN_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    hardhat: {
+      forking: {
+        url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+        blockNumber: 28381671,
+      },
+      chainId: 42,
+      renTokenAddr: '0x2CD647668494c1B15743AB283A0f980d90a87394',
+      topRenTokenHolder: '0xfd974e09363f7f823ce360d2a2006733aeb3e297',
+    },
+    mainnet: {
+      forking: {
+        url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+        blockNumber: 13611808,
+      },
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+      renTokenAddr: '0x2CD647668494c1B15743AB283A0f980d90a87394',
+    },
+    kovan: {
+      url: `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`,
+      renTokenAddr: '0x2CD647668494c1B15743AB283A0f980d90a87394',
     },
   },
   gasReporter: {
