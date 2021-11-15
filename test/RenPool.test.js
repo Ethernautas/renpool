@@ -83,4 +83,55 @@ describe('RenPool contract', function () {
     expect(await renPool.isLocked()).to.be.true;
   });
 
+  it('should fail when deposit without approval', async function() {
+    const amount = 1;
+    await expect(
+      renPool.connect(alice).deposit(amount)
+    ).to.be.reverted;
+  });
+
+  it('should fail when deposit is 0', async function() {
+    await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+
+    await expect(
+      renPool.connect(alice).deposit(0)
+    ).to.be.revertedWith('RenPool: Invalid amount');
+  });
+
+  it('should fail when deposit surpasses bond', async function() {
+    const amount = POOL_BOND.mul(2);
+    await renToken.connect(alice).approve(renPool.address, amount);
+
+    await expect(
+      renPool.connect(alice).deposit(amount)
+    ).to.be.revertedWith('RenPool: Amount surpasses bond');
+  });
+
+  it('should fail when deposit after locking', async function() {
+    await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+    await renPool.connect(alice).deposit(POOL_BOND);
+
+    expect(await renPool.isLocked()).to.be.true;
+    const amount = 1;
+    await expect(
+      renPool.connect(alice).deposit(amount)
+    ).to.be.revertedWith('RenPool: Pool is locked');
+  });
+
+  it('should fail when deposit after unlocking', async function() {
+    await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+    await renPool.connect(alice).deposit(POOL_BOND);
+
+    expect(await renPool.isLocked()).to.be.true;
+
+    await renPool.connect(nodeOperator).unlockPool();
+    expect(await renPool.isLocked()).to.be.false;
+
+    const amount = 1;
+    await renToken.connect(alice).approve(renPool.address, amount);
+    await expect(
+      renPool.connect(alice).deposit(amount)
+    ).to.be.revertedWith('RenPool: Amount surpasses bond');
+  });
+
 });
