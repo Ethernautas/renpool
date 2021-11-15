@@ -1,23 +1,19 @@
-const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
-const hre = require('hardhat');
+const { ethers, network: { config: { chainId, renTokenAddr, topRenTokenHolder } } } = require('hardhat');
 const { expect } = require('chai').use(require('chai-string'));
-const { ethers } = hre;
+const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
 
 describe('RenToken contract check', function () {
-
-  const renTokenAddr = hre.network.config.renTokenAddr;
-  const topRenTokenHolder = hre.network.config.topRenTokenHolder;
-
-  const chainId = hre.network.config.chainId;
-
-  expect(Object.keys(RenToken.networks)).to.include(chainId.toString());
-  expect(RenToken.networks[chainId].address).to.equalIgnoreCase(renTokenAddr);
 
   let renToken;
 
   before(async () => {
     const [owner] = await ethers.getSigners();
     renToken = new ethers.Contract(renTokenAddr, RenToken.abi, owner);
+  });
+
+  it(`should validate chain ID is ${chainId} and contract address is ${renTokenAddr}`, async () => {
+    expect(Object.keys(RenToken.networks)).to.include(chainId.toString());
+    expect(RenToken.networks[chainId].address).to.equalIgnoreCase(renTokenAddr);
   });
 
   it(`should check the address ${renTokenAddr} is a RenToken contract`, async function () {
