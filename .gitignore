@@ -13,9 +13,12 @@ venv
 .env.rinkeby
 .env.mainnet
 .env.mainnet_fork
-/node_modules/
-/cache/
-/artifacts/
 
 # Local Netlify folder
 .netlify
+
+/node_modules/
+/cache/
+/artifacts/
+/coverage/
+/coverage.json

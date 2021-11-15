@@ -42,6 +42,9 @@ module.exports = {
       renTokenAddr: '0x2CD647668494c1B15743AB283A0f980d90a87394',
     },
   },
+  mocha: {
+    timeout: 30000
+  },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
