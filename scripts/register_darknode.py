@@ -13,7 +13,8 @@ ren_BTC_addr: str = contracts["ren_BTC"]
 ren_token_addr: str = contracts["ren_token"]
 darknode_registry_addr: str = contracts["darknode_registry"]
 darknode_payment_addr: str = contracts["darknode_payment"]
-claim_rewards_addr: str = contracts["payment_rewards"]
+darknode_payment_store_addr: str = contracts["darknode_payment_store"]
+claim_rewards_addr: str = contracts["claim_rewards"]
 gateway_addr: str = contracts["gateway"]
 
 
@@ -22,13 +23,12 @@ def check_network() -> None:
         raise ValueError(f"Unsupported network, switch to {str(supported_networks)}")
 
 
-def get_ren_token(owner: Account) -> Contract or None:
+def get_ren_token() -> Contract or None:
     return (
         MintableForkToken(ren_token_addr)
-        if active_network == C.NETWORKS["MAINNET_FORK"]
+        if active_network == "mainnet-fork"
         else MintableKovanForkToken(ren_token_addr)
     )
-
 
 def main() -> list[Contract, Contract, any, any]:
     """
@@ -56,6 +56,8 @@ def main() -> list[Contract, Contract, any, any]:
     )
 
     darknode_registry: Contract = Contract(darknode_registry_addr)
+    darknode_payment: Contract = Contract(darknode_payment_addr)
+    darknode_payment_store: Contract = Contract(darknode_payment_store_addr)
     ren_BTC: Contract = Contract(ren_BTC_addr)
 
     ren_token = get_ren_token()
@@ -72,16 +74,43 @@ def main() -> list[Contract, Contract, any, any]:
 
     # Skip to the next epoch (1 month) for the registration to settle
     darknode_registry.epoch({"from": ren_pool})
+    darknode_registry.epoch({"from": ren_pool})
 
+    if darknode_registry.isRegistered(C.NODE_ID_HEX) != True:
+        raise ValueError("Darknode not registered")
     # Transfer fees from darknode to the darknode's owner account on the REN protocol
-    tx1 = ren_pool.transferRewardsToDarknodeOwner([ren_BTC])
+    # tx1 = ren_pool.transferRewardsToDarknodeOwner([ren_BTC])
     # Is there any way to test this?
 
     # Transfer rewards from the REN protocol to the node operator wallet
     # tx2 = ren_pool.claimDarknodeRewards('renBTC', 1, node_operator)
-    tx2 = ren_pool.claimDarknodeRewards("BTC", 1, node_operator)
+    # tx2 = ren_pool.claimDarknodeRewards("BTC", 1, node_operator)
 
+    # print("Locked balances: ", darknode_payment_store.lockedBalances("0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f"))
+    # print("Locked balances: ", darknode_payment_store.lockedBalances("0xC4375B7De8af5a38a93548eb8453a498222C4fF2"))
+    # print("Locked balances: ", darknode_payment_store.lockedBalances("0x42805DA220DF1f8a33C16B0DF9CE876B9d416610"))
+    # print("Locked balances: ", darknode_payment_store.lockedBalances("0x618dC53e856b1A601119F2Fed5F1E873bCf7Bd6e"))
+    # print("Locked balances: ", darknode_payment_store.lockedBalances("0x2CD647668494c1B15743AB283A0f980d90a87394"))
+    # print("Locked balances: ", darknode_payment_store.lockedBalances("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"))
+    print("Darknode balances: ", darknode_payment_store.darknodeBalances(ren_pool, "0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f"))
+    print("Darknode balances: ", darknode_payment_store.darknodeBalances(ren_pool, "0xC4375B7De8af5a38a93548eb8453a498222C4fF2"))
+    print("Darknode balances: ", darknode_payment_store.darknodeBalances(ren_pool, "0x42805DA220DF1f8a33C16B0DF9CE876B9d416610"))
+    print("Darknode balances: ", darknode_payment_store.darknodeBalances(ren_pool, "0x618dC53e856b1A601119F2Fed5F1E873bCf7Bd6e"))
+    print("Darknode balances: ", darknode_payment_store.darknodeBalances(ren_pool, "0x2CD647668494c1B15743AB283A0f980d90a87394"))
+    print("Darknode balances: ", darknode_payment_store.darknodeBalances(ren_pool, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"))
+
+            #     // We should have zero claimed balance before ticking
+            # new BN(
+            #     await dnp.darknodeBalances(darknode1, dai.address)
+            # ).should.bignumber.equal(new BN(0));
+
+            # // We don't need to claim since we weren't allocated rewards last cycle
+            # // But claim shouldn't revert
+    darknode_payment.claim(C.NODE_ID_HEX, {"from": node_operator})
+    darknode_registry.epoch({"from": ren_pool})
+    print("Darknode balances: ", darknode_payment_store.darknodeBalances(C.NODE_ID_HEX, "0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f"))
+            # await waitForEpoch(dnr);
     # Make sure rewards have been transferred to the target wallet
     # ren_BTC.balanceOf(node_operator) > node_operator_init_BTC_balance # Try to improve this!
 
-    return ren_token, ren_pool, tx1, tx2
+    return ren_token, ren_pool

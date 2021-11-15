@@ -2,6 +2,8 @@ from brownie import chain, accounts, reverts
 import pytest
 import constants as C
 
+ETHEREUM = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+
 
 def test_darknode_claim_rewards(
     node_operator,
@@ -9,7 +11,9 @@ def test_darknode_claim_rewards(
     ren_token,
     ren_BTC,
     darknode_registry,
+    darknode_payment,
     darknode_payment_store,
+    claimless_rewards,
 ):
     """
     Test transfering rewards from the REN protocol to the given address.
@@ -32,14 +36,35 @@ def test_darknode_claim_rewards(
 
     # Make sure the darknode is under the 'registered' state
     assert darknode_registry.isRegistered(C.NODE_ID_HEX) == True
+    assert darknode_registry.getDarknodeOperator(C.NODE_ID_HEX) == ren_pool
 
     # Skip to the next epoch to make sure we have fees to claim
-    chain.mine(timedelta=C.ONE_MONTH)
-    darknode_registry.epoch({"from": ren_pool})
-    chain.mine(timedelta=C.ONE_MONTH)
-    darknode_registry.epoch({"from": ren_pool})
+    # chain.mine(timedelta=C.ONE_MONTH)
+    # darknode_registry.epoch({"from": ren_pool})
+    # chain.mine(timedelta=C.ONE_MONTH)
+    # darknode_registry.epoch({"from": ren_pool})
+    # chain.mine(timedelta=C.ONE_MONTH)
+    # darknode_registry.epoch({"from": ren_pool})
 
-    assert darknode_payment_store.darknodeBalances(ren_pool, "0x42805DA220DF1f8a33C16B0DF9CE876B9d416610") > 0
+    # darknode_payment.claim(C.NODE_ID_HEX, {"from": node_operator})
+    chain.mine(timedelta=C.ONE_MONTH)
+    darknode_registry.epoch({"from": ren_pool})
+    # darknode_registry.epoch({"from": ren_pool})
+    assert claimless_rewards.withdraw(C.NODE_ID_HEX, "0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f", {"from": node_operator})
+    assert claimless_rewards.darknodeBalances(C.NODE_ID_HEX, "0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f") > 0
+    assert claimless_rewards.darknodeBalances(C.NODE_ID_HEX, "0xC4375B7De8af5a38a93548eb8453a498222C4fF2") > 0
+    assert claimless_rewards.darknodeBalances(C.NODE_ID_HEX, "0x42805DA220DF1f8a33C16B0DF9CE876B9d416610") > 0
+    assert claimless_rewards.darknodeBalances(C.NODE_ID_HEX, "0x618dC53e856b1A601119F2Fed5F1E873bCf7Bd6e") > 0
+    assert claimless_rewards.darknodeBalances(C.NODE_ID_HEX, "0x2CD647668494c1B15743AB283A0f980d90a87394") > 0
+    assert claimless_rewards.darknodeBalances(C.NODE_ID_HEX, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") > 0
+    # assert darknode_payment_store.darknodeBalances(ren_pool, "0x42805DA220DF1f8a33C16B0DF9CE876B9d416610") > 0
+    # assert darknode_payment_store.darknodeBalances(ren_pool, "0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f") > 0
+    # assert (
+    #     darknode_payment_store.lockedBalances(
+    #         "0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f"
+    #     )
+    #     > 0
+    # )
     # balanceBefore = ren_BTC.balanceOfUnderlying(ren_pool)
     # balanceBefore = ren_BTC.balanceOf(ren_pool)
     # assert balanceBefore > 0

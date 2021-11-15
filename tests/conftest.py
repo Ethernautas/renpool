@@ -124,6 +124,13 @@ def darknode_payment():
     """
     yield utils.load_contract(darknode_payment_addr)
 
+@pytest.fixture(scope="module")
+def claimless_rewards():
+    """
+    Yield a `Contract` object for the ClaimlessRewards contract.
+    """
+    yield utils.load_contract(darknode_payment_addr)
+
 
 @pytest.fixture(scope="module")
 def darknode_payment_store():
