@@ -51,6 +51,7 @@ describe('RenPool contract', function () {
       owner.address,
       POOL_BOND);
     await renPool.deployed();
+    expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(0);
   });
 
   it('should set the constructor args to the supplied values', async function () {
