@@ -1,9 +1,7 @@
 const hre = require('hardhat');
-const chai = require('chai');
-chai.use(require('chai-string'));
+const { expect } = require('chai');
 const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
 
-const { expect } = chai;
 const { ethers } = hre;
 const bn = ethers.BigNumber.from;
 
@@ -19,9 +17,6 @@ describe('RenPool contract', function () {
   const claimRewardsAddr = renTokenAddr;
   const gatewayAddr = renTokenAddr;
 
-  const chainId = hre.network.config.chainId;
-  expect(Object.keys(RenToken.networks)).to.include(chainId.toString());
-  expect(RenToken.networks[chainId].address).to.equalIgnoreCase(renTokenAddr);
   const renToken = new ethers.Contract(renTokenAddr, RenToken.abi);
 
   let owner, nodeOperator, alice;
@@ -64,11 +59,6 @@ describe('RenPool contract', function () {
     expect(await renPool.bond()).to.equal(POOL_BOND);
     expect(await renPool.isLocked()).to.equal(false);
     expect(await renPool.totalPooled()).to.equal(0);
-  });
-
-  it('should check the RenToken contract', async function () {
-    expect(await renToken.connect(owner).name()).to.equal('Republic Token');
-    expect(await renToken.connect(owner).symbol()).to.equal('REN');
   });
 
   it('should deposit REN into RenPool', async function () {
