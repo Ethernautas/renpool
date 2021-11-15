@@ -9,7 +9,7 @@ const DECIMALS = 18;
 const DIGITS = bn(10).pow(DECIMALS);
 const POOL_BOND = bn(100_000).mul(DIGITS);
 
-describe('RenPool contract', function () {
+describe('RenPool contract test', function () {
 
   const renTokenAddr = hre.network.config.renTokenAddr;
   const darknodeRegistryAddr = renTokenAddr;
