@@ -139,7 +139,7 @@ describe('RenPool contract', function () {
 
   });
 
-  describe('withdraw', function () {
+  describe('withdraw/fulfillWithdrawRequest', function () {
 
     it('should withdraw properly', async function () {
       const amount = 1;
@@ -150,6 +150,24 @@ describe('RenPool contract', function () {
       await renPool.connect(alice).deposit(amount);
 
       await renPool.connect(alice).withdraw(amount);
+
+      expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(0);
+      expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(balance);
+      expect(await renPool.balanceOf(alice.address)).to.equal(0);
+      expect(await renPool.totalPooled()).to.equal(0);
+    });
+
+    it('should withdraw after unlocking', async function () {
+      const balance = await renToken.connect(alice).balanceOf(alice.address);
+
+      await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+      await renPool.connect(alice).deposit(POOL_BOND);
+      expect(await renPool.isLocked()).to.be.true;
+
+      await renPool.connect(nodeOperator).unlockPool();
+      expect(await renPool.isLocked()).to.be.false;
+
+      await renPool.connect(alice).withdraw(POOL_BOND);
 
       expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(0);
       expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(balance);
