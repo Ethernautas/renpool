@@ -15,6 +15,8 @@ const {
       darknodeRegistryAddr,
       darknodePaymentAddr,
       darknodeRegistryStoreAddr,
+      claimRewardsAddr,
+      gatewayAddr,
     },
     provider
   } } = require('hardhat');
@@ -29,9 +31,6 @@ describe('RenPool contract test', function () {
   const DECIMALS = 18;
   const DIGITS = bn(10).pow(DECIMALS);
   const POOL_BOND = bn(100_000).mul(DIGITS);
-
-  const claimRewardsAddr = renTokenAddr;
-  const gatewayAddr = renTokenAddr;
 
   const renToken = new Contract(renTokenAddr, RenToken.abi);
   const darknodeRegistry = new Contract(darknodeRegistryAddr, DarknodeRegistryLogicV1.abi);
