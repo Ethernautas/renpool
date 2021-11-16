@@ -9,7 +9,6 @@ const {
   },
   network: {
     config: {
-      forking,
       renTokenAddr,
       renBTCAddr,
       topRenTokenHolderAddr,
@@ -18,8 +17,7 @@ const {
       darknodeRegistryStoreAddr,
     },
     provider
-  },
-  network } = require('hardhat');
+  } } = require('hardhat');
 const { expect } = require('chai').use(require('chai-string'));
 require('dotenv');
 const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
@@ -90,18 +88,18 @@ describe('RenPool contract test', function () {
 
   describe('deposit', function () {
 
-    it('should deposit REN into RenPool', async function () {
-      const amount = 1;
+    [bn(1), POOL_BOND].forEach(amount => {
+      it('should deposit REN into RenPool', async function () {
+        const initBalance = await renToken.connect(alice).balanceOf(alice.address);
 
-      const initBalance = await renToken.connect(alice).balanceOf(alice.address);
+        await renToken.connect(alice).approve(renPool.address, amount);
+        await renPool.connect(alice).deposit(amount);
 
-      await renToken.connect(alice).approve(renPool.address, amount);
-      await renPool.connect(alice).deposit(amount);
-
-      expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(amount);
-      expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(initBalance.sub(amount));
-      expect(await renPool.balanceOf(alice.address)).to.equal(amount);
-      expect(await renPool.totalPooled()).to.equal(amount);
+        expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(amount);
+        expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(initBalance.sub(amount));
+        expect(await renPool.balanceOf(alice.address)).to.equal(amount);
+        expect(await renPool.totalPooled()).to.equal(amount);
+      });
     });
 
     it('should lock the pool after a deposit of `POOL_BOND`', async function () {
@@ -167,20 +165,20 @@ describe('RenPool contract test', function () {
 
   describe('withdraw/fulfillWithdrawRequest', function () {
 
-    it('should withdraw properly', async function () {
-      const amount = 1;
+    [bn(1), POOL_BOND.sub(1)].forEach(amount => {
+      it('should withdraw properly', async function () {
+        const balance = await renToken.connect(alice).balanceOf(alice.address);
 
-      const balance = await renToken.connect(alice).balanceOf(alice.address);
+        await renToken.connect(alice).approve(renPool.address, amount);
+        await renPool.connect(alice).deposit(amount);
 
-      await renToken.connect(alice).approve(renPool.address, amount);
-      await renPool.connect(alice).deposit(amount);
+        await renPool.connect(alice).withdraw(amount);
 
-      await renPool.connect(alice).withdraw(amount);
-
-      expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(0);
-      expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(balance);
-      expect(await renPool.balanceOf(alice.address)).to.equal(0);
-      expect(await renPool.totalPooled()).to.equal(0);
+        expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(0);
+        expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(balance);
+        expect(await renPool.balanceOf(alice.address)).to.equal(0);
+        expect(await renPool.totalPooled()).to.equal(0);
+      });
     });
 
     it('should withdraw after unlocking', async function () {
@@ -220,9 +218,9 @@ describe('RenPool contract test', function () {
 
       expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(POOL_BOND);
       expect(await renToken.connect(alice).balanceOf(alice.address)).to.equal(aliceBalance.sub(amount));
-      // expect(await renToken.connect(bob).balanceOf(bob.address)).to.equal(bobBalance);
+      expect(await renToken.connect(bob).balanceOf(bob.address)).to.equal(bobBalance.sub(POOL_BOND).add(amount));
       expect(await renPool.balanceOf(alice.address)).to.equal(amount);
-      // expect(await renPool.balanceOf(bob.address)).to.equal(0);
+      expect(await renPool.balanceOf(bob.address)).to.equal(POOL_BOND.sub(amount));
       expect(await renPool.isLocked()).to.be.true;
       expect(await renPool.totalPooled()).to.equal(POOL_BOND);
     });
