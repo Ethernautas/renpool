@@ -86,7 +86,7 @@ contract RenPool {
 	modifier onlyNodeOperator() {
 		require (
 			msg.sender == nodeOperator,
-			"Caller is not nodeOperator"
+			"RenPool: Caller is not node operator"
 		);
 		_;
 	}
