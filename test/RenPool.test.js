@@ -10,11 +10,11 @@ const {
   network: {
     config: {
       renTokenAddr,
-      renBTC,
-      topRenTokenHolder,
+      renBTCAddr,
+      topRenTokenHolderAddr,
       darknodeRegistryAddr,
       darknodePaymentAddr,
-      darknodeRegistryStore,
+      darknodeRegistryStoreAddr,
     },
     provider
   } } = require('hardhat');
@@ -43,10 +43,10 @@ describe('RenPool contract test', function () {
   before(async () => {
     [owner, nodeOperator, alice, bob] = await getSigners();
 
-    expect(await renToken.connect(owner).balanceOf(topRenTokenHolder)).to.be.above(0);
-    await provider.request({ method: 'hardhat_impersonateAccount', params: [topRenTokenHolder] });
+    expect(await renToken.connect(owner).balanceOf(topRenTokenHolderAddr)).to.be.above(0);
+    await provider.request({ method: 'hardhat_impersonateAccount', params: [topRenTokenHolderAddr] });
 
-    const signer = await getSigner(topRenTokenHolder);
+    const signer = await getSigner(topRenTokenHolderAddr);
     for (const user of (await getSigners()).slice(2)) {
       expect(await renToken.connect(owner).balanceOf(user.address)).to.equal(0);
 
@@ -55,7 +55,7 @@ describe('RenPool contract test', function () {
       expect(await renToken.connect(owner).balanceOf(user.address)).to.equal(amount);
     }
 
-    await provider.request({ method: 'hardhat_stopImpersonatingAccount', params: [topRenTokenHolder] });
+    await provider.request({ method: 'hardhat_stopImpersonatingAccount', params: [topRenTokenHolderAddr] });
   });
 
   beforeEach(async () => {
@@ -248,7 +248,7 @@ describe('RenPool contract test', function () {
     });
 
     it('should register darknode', async function () {
-      const balance = await renToken.connect(owner).balanceOf(darknodeRegistryStore);
+      const balance = await renToken.connect(owner).balanceOf(darknodeRegistryStoreAddr);
 
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);
       await renPool.connect(alice).deposit(POOL_BOND);
@@ -256,7 +256,7 @@ describe('RenPool contract test', function () {
       await renPool.connect(nodeOperator).approveBondTransfer();
       await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
 
-      expect(await renToken.connect(owner).balanceOf(darknodeRegistryStore)).to.equal(POOL_BOND.add(balance));
+      expect(await renToken.connect(owner).balanceOf(darknodeRegistryStoreAddr)).to.equal(POOL_BOND.add(balance));
       expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(0);
       expect(await darknodeRegistry.connect(owner).isPendingRegistration(NODE_ID)).to.be.true;
       expect(await darknodeRegistry.connect(owner).isRegistered(NODE_ID)).to.be.false;
@@ -287,7 +287,7 @@ describe('RenPool contract test', function () {
       await increaseMonth();
       await darknodeRegistry.connect(alice).epoch();
 
-      await renPool.transferRewardsToDarknodeOwner([renBTC]);
+      await renPool.transferRewardsToDarknodeOwner([renBTCAddr]);
     });
 
     it('should convert base58 to hex', function () {

@@ -4,7 +4,7 @@ const {
     config: {
       chainId,
       renTokenAddr,
-      topRenTokenHolder,
+      topRenTokenHolderAddr,
       darknodeRegistryAddr,
       darknodePaymentAddr
     }
@@ -39,8 +39,8 @@ describe('RenProject contracts check', function () {
       expect(await renToken.symbol()).to.equal('REN');
     });
 
-    it(`should check the top holder account ${topRenTokenHolder} has enough REN tokens`, async () => {
-      expect(await renToken.balanceOf(topRenTokenHolder)).to.be.above(0);
+    it(`should check the top holder account ${topRenTokenHolderAddr} has enough REN tokens`, async () => {
+      expect(await renToken.balanceOf(topRenTokenHolderAddr)).to.be.above(0);
     });
 
   });
