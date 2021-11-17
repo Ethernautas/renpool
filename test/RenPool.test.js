@@ -26,6 +26,27 @@ const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
 const DarknodeRegistryLogicV1 = require('@renproject/sol/build/testnet/DarknodeRegistryLogicV1.json');
 const DarknodePayment = require('@renproject/sol/build/testnet/DarknodePayment.json');
 
+function base58ToHex(textData) {
+  return '0x' + Buffer.from(base58.decode(textData)).toString('hex').slice(4);
+}
+
+async function increaseMonth() {
+  const ONE_MONTH = 60 * 60 * 24 * 32;
+  await provider.send('evm_increaseTime', [ONE_MONTH]);
+}
+
+const NODE_ID = base58ToHex('8MHJ9prQt7UGupfZKSMVes3VzPrGBB');
+const PUBLIC_KEY = '0x000000077373682d727361000000030100010000010100d0feba4ae65ea9ad771d153419bcc21189d954b6bf75fd5488055cd2641231014f190c0e059a452d301c535e931df33590ec0e18c59341a2766cc885d1dc6e66f5cc65b94522ec944ae4200bd56a30223328b258d50b507dd94b4c4742768f3fec2b815c9c4b0fe26727e82865f6a064fa3ff2443d135d9788095a1c17487fd5c389a491c16b73385d516a303debc3bcccae337a7ec0d89d51ce05262a0c4c1f2178466c85379b8cd4e5cbe1c90a05fb0c1ed3eee2134774b450e7b0b70c792abad55beef919e21a03cb9de4e963a820c2f84421a4559d0b67cfd17c1686ff6f2d1bb07ac2c82cede1cf5f16a57e125a29fef65891715b061606bca1a0eb026b';
+
+describe('base58ToHex', function () {
+
+  it('should convert base58 to hex', function () {
+    expect(base58ToHex('8MHJ9prQt7UGupfZKSMVes3VzPrGBB'))
+      .to.equalIgnoreCase('0x597869E66F904F741Bf16788F1FCAe36E603F112');
+  });
+
+});
+
 describe('RenPool contract test', function () {
 
   const DECIMALS = 18;
@@ -230,18 +251,6 @@ describe('RenPool contract test', function () {
 
   describe('registerDarknode', function () {
 
-    function base58ToHex(textData) {
-      return '0x' + Buffer.from(base58.decode(textData)).toString('hex').slice(4);
-    }
-
-    async function increaseMonth() {
-      const ONE_MONTH = 60 * 60 * 24 * 32;
-      await provider.send('evm_increaseTime', [ONE_MONTH]);
-    }
-
-    const NODE_ID = base58ToHex('8MHJ9prQt7UGupfZKSMVes3VzPrGBB');
-    const PUBLIC_KEY = '0x000000077373682d727361000000030100010000010100d0feba4ae65ea9ad771d153419bcc21189d954b6bf75fd5488055cd2641231014f190c0e059a452d301c535e931df33590ec0e18c59341a2766cc885d1dc6e66f5cc65b94522ec944ae4200bd56a30223328b258d50b507dd94b4c4742768f3fec2b815c9c4b0fe26727e82865f6a064fa3ff2443d135d9788095a1c17487fd5c389a491c16b73385d516a303debc3bcccae337a7ec0d89d51ce05262a0c4c1f2178466c85379b8cd4e5cbe1c90a05fb0c1ed3eee2134774b450e7b0b70c792abad55beef919e21a03cb9de4e963a820c2f84421a4559d0b67cfd17c1686ff6f2d1bb07ac2c82cede1cf5f16a57e125a29fef65891715b061606bca1a0eb026b';
-
     it('should register darknode', async function () {
       const balance = await renToken.connect(owner).balanceOf(darknodeRegistryStoreAddr);
 
@@ -330,9 +339,54 @@ describe('RenPool contract test', function () {
       // or has been replaced by the RenVM.
     });
 
-    it('should convert base58 to hex', function () {
-      expect(base58ToHex('8MHJ9prQt7UGupfZKSMVes3VzPrGBB'))
-        .to.equalIgnoreCase('0x597869E66F904F741Bf16788F1FCAe36E603F112');
+  });
+
+  describe('deregisterDarknode', function () {
+
+    it('should deregister darknode', async function () {
+      await renToken.connect(bob).approve(renPool.address, POOL_BOND);
+      await renPool.connect(bob).deposit(POOL_BOND);
+
+      await renPool.connect(nodeOperator).approveBondTransfer();
+      await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
+
+      await increaseMonth();
+      await darknodeRegistry.connect(alice).epoch();
+
+      expect(await darknodeRegistry.connect(alice).isRegistered(NODE_ID)).to.be.true;
+
+      await renPool.connect(nodeOperator).deregisterDarknode();
+
+      expect(await darknodeRegistry.connect(alice).isPendingDeregistration(NODE_ID)).to.be.true;
+
+      await increaseMonth();
+      await darknodeRegistry.connect(alice).epoch();
+
+      expect(await darknodeRegistry.connect(alice).isDeregistered(NODE_ID)).to.be.true;
+
+      expect(await renPool.connect(owner).darknodeID()).to.equalIgnoreCase(NODE_ID);
+      expect(await renPool.connect(owner).publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
+    });
+
+    it('should fail when darknode deregistration is not performed by node operator', async () => {
+      expect(alice).to.not.equal(nodeOperator);
+
+      await renToken.connect(bob).approve(renPool.address, POOL_BOND);
+      await renPool.connect(bob).deposit(POOL_BOND);
+
+      await renPool.connect(nodeOperator).approveBondTransfer();
+      await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
+
+      await increaseMonth();
+      await darknodeRegistry.connect(alice).epoch();
+
+      await expect(
+        renPool.connect(alice).deregisterDarknode()
+      ).to.be.revertedWith('RenPool: Caller is not owner nor node operator');
+
+      expect(await darknodeRegistry.connect(alice).isRegistered(NODE_ID)).to.be.true;
+      expect(await renPool.connect(owner).darknodeID()).to.equalIgnoreCase(NODE_ID);
+      expect(await renPool.connect(owner).publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
     });
 
   });
