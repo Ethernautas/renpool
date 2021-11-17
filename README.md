@@ -6,6 +6,13 @@ Bringing community pools to the REN ecosystem.
 
 The RenPool project uses the _Yarn_ package manager and _Hardhat_ [https://hardhat.org/getting-started/](https://hardhat.org/getting-started/) development environment.
 
+You can skip to the next section if you have a working _Yarn_ installation.
+If not, here is how to install it.
+
+```sh
+npm install -g yarn
+```
+
 ### Install project
 
 ```sh
@@ -43,7 +50,7 @@ Add your Metamask mnemonic and Infura project id
 This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask
 
 ```sh
->> brownie console
+yarn hardhat console
 ```
 
 ### Mint a ERC20 token called REN and deploy RenPool contract to local net
