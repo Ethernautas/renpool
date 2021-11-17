@@ -16,6 +16,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: touch .env && echo ALCHEMY_KEY=${{ secrets.ALCHEMY_KEY }} >> .env
       - run: yarn test
+      - run: yarn test:mainnet
 
   coverage:
     runs-on: ubuntu-latest

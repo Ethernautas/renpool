@@ -5,9 +5,34 @@ require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 
+const FORK = process.env.FORK !== undefined ? process.env.FORK : 'kovan';
+
 const networks = {
+  mainnet: {
+    chainId: 1,
+    url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+    forking: {
+      blockNumber: 13611808,
+    },
+    build: 'mainnet',
+    contracts: {
+      renTokenAddr: '0x408e41876cCCDC0F92210600ef50372656052a38',
+      renBTCAddr: '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D',
+      topRenTokenHolderAddr: '0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8',
+      darknodeRegistryAddr: '0x2D7b6C95aFeFFa50C068D50f89C5C0014e054f0A',
+      darknodeRegistryStoreAddr: '0x60Ab11FE605D2A2C3cf351824816772a131f8782',
+      darknodePaymentAddr: '0x098e1708b920EFBdD7afe33Adb6a4CBa30c370B9',
+      claimRewardsAddr: '0x0000000000000000000000000000000000000000',
+      gatewayAddr: '0x0000000000000000000000000000000000000000',
+    },
+  },
   kovan: {
+    chainId: 42,
     url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+    forking: {
+      blockNumber: 28381671,
+    },
+    build: 'testnet',
     contracts: {
       renTokenAddr: '0x2CD647668494c1B15743AB283A0f980d90a87394',
       renBTCAddr: '0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f',
@@ -17,7 +42,7 @@ const networks = {
       darknodePaymentAddr: '0x023f2e94C3eb128D3bFa6317a3fF860BF93C1616',
       claimRewardsAddr: '0x7F8f7Aff44a63f61b7a120Ef2c34Ea2c4D9bD216',
       gatewayAddr: '0x0000000000000000000000000000000000000000',
-    }
+    },
   }
 };
 
@@ -32,21 +57,15 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: networks.kovan.url,
-        blockNumber: 28381671,
+        url: networks[FORK].url,
+        blockNumber: networks[FORK].forking.blockNumber,
       },
-      chainId: 42,
-      ...networks.kovan.contracts,
-    },
-    mainnet: {
-      forking: {
-        url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
-        blockNumber: 13611808,
-      },
-      url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
-      renTokenAddr: '0x2CD647668494c1B15743AB283A0f980d90a87394',
+      chainId: networks[FORK].chainId,
+      build: networks[FORK].build,
+      ...networks[FORK].contracts,
     },
     kovan: {
+      chainId: networks.kovan.chainId,
       url: networks.kovan.url,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       ...networks.kovan.contracts,
