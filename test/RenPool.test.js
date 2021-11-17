@@ -391,4 +391,61 @@ describe('RenPool contract test', function () {
 
   });
 
+  describe('refundBond', function () {
+
+    it('should refund all stakers', async () => {
+      const registryStoreBalance = await renToken.connect(owner).balanceOf(darknodeRegistryStoreAddr);
+      const aliceBalance = await renToken.connect(alice).balanceOf(alice.address);
+
+      // Lock pool
+      const deposit = POOL_BOND
+      await renToken.connect(alice).approve(renPool.address, deposit);
+      await renPool.connect(alice).deposit(deposit);
+
+      // Register darknode
+      await renPool.connect(nodeOperator).approveBondTransfer();
+      await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
+
+      // Skip to the next epoch for registration to settle
+      await increaseMonth();
+      await darknodeRegistry.connect(owner).epoch();
+
+      // Make sure darknode is under 'registered' state
+      expect(await darknodeRegistry.connect(owner).isRegistered(NODE_ID)).to.be.true;
+
+      // Deregister darknode
+      await renPool.connect(nodeOperator).deregisterDarknode();
+
+      // Make sure darknode is under 'pending deregistration' state
+      expect(await darknodeRegistry.connect(owner).isPendingDeregistration(NODE_ID)).to.be.true;
+
+      // Skip to the next epoch for deregistration to settle
+      await increaseMonth();
+      await darknodeRegistry.connect(owner).epoch();
+
+      // Make sure darknode is now under 'deregistered' state
+      expect(await darknodeRegistry.connect(owner).isDeregistered(NODE_ID)).to.be.true;
+
+      // Skip one extra epoch for refund to be callable
+      await increaseMonth();
+      await darknodeRegistry.connect(owner).epoch();
+
+      // Call refund to move funds from the Ren protocol back to the pool
+      await renPool.connect(nodeOperator).refundBond();
+
+      // Make sure funds are back into the RenPool contract
+      expect(await renToken.connect(owner).balanceOf(darknodeRegistryStoreAddr)).to.equal(registryStoreBalance);
+      expect(await renToken.connect(owner).balanceOf(renPool.address)).to.equal(deposit);
+
+      // Unlock pool to release funds
+      await renPool.connect(nodeOperator).unlockPool();
+      expect(await renPool.connect(owner).isLocked()).to.be.false;
+
+      // Refund staker(s)
+      await renPool.connect(alice).withdraw(deposit);
+      expect(await renToken.connect(owner).balanceOf(alice.address)).to.equal(aliceBalance);
+    });
+
+  });
+
 });
