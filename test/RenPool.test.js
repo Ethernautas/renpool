@@ -268,7 +268,7 @@ describe('RenPool contract test', function () {
     });
 
     it('should fail when darknode registration is not performed by node operator', async () => {
-      expect(await alice).to.not.equal(nodeOperator);
+      expect(alice).to.not.equal(nodeOperator);
 
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);
       await renPool.connect(alice).deposit(POOL_BOND);
@@ -290,7 +290,7 @@ describe('RenPool contract test', function () {
       ).to.be.revertedWith('DarknodeRegistry: must be refunded or never registered');
     });
 
-    it('should fail when darknode registration is performed twice but preserve first registration data', async () => {
+    it('should fail when darknode registration is performed twice but preserves first registration data', async () => {
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);
       await renPool.connect(alice).deposit(POOL_BOND);
       await renPool.connect(nodeOperator).approveBondTransfer();
@@ -323,6 +323,10 @@ describe('RenPool contract test', function () {
       await darknodeRegistry.connect(alice).epoch();
 
       await renPool.transferRewardsToDarknodeOwner([renBTCAddr]);
+      // ^ OBSERVATION: not sure if the above if actually working,
+      // we need a way to query the darknode's balance.
+      // Also, not sure if darknodePayment is still being used or has
+      // been replaced by the RenVM.
     });
 
     it('should convert base58 to hex', function () {
