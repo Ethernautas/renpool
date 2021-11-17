@@ -6,6 +6,8 @@
   "license": "MIT",
   "scripts": {
     "build": "hardhat compile",
+    "set-network:kovan": "cp .env.kovan .env",
+    "set-network:mainnet": "cp .env.mainnet .env",
     "test": "hardhat test",
     "test:gas": "REPORT_GAS=true hardhat test",
     "deploy": "hardhat run scripts/deploy.js",
