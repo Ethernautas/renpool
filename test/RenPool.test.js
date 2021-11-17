@@ -323,10 +323,11 @@ describe('RenPool contract test', function () {
       await darknodeRegistry.connect(alice).epoch();
 
       await renPool.transferRewardsToDarknodeOwner([renBTCAddr]);
-      // ^ OBSERVATION: not sure if the above if actually working,
-      // we need a way to query the darknode's balance.
-      // Also, not sure if darknodePayment is still being used or has
-      // been replaced by the RenVM.
+      // ^ OBSERVATION: not sure if the above code is actually working,
+      // we need a way to query the darknode's balance and make sure the
+      // balance is actually being transferred.
+      // Also, not sure if darknodePayment contract is still being used
+      // or has been replaced by the RenVM.
     });
 
     it('should convert base58 to hex', function () {
