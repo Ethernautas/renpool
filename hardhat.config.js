@@ -6,7 +6,12 @@ require("hardhat-gas-reporter");
 require("solidity-coverage");
 
 const networks = {
+  mainnet: {
+    chainId: 1,
+    url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+  },
   kovan: {
+    chainId: 42,
     url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
     contracts: {
       renTokenAddr: '0x2CD647668494c1B15743AB283A0f980d90a87394',
@@ -29,24 +34,27 @@ const networks = {
  */
 module.exports = {
   solidity: "0.8.7",
+  defaultNetwork: process.env.DEFAULT_NETWORK,
   networks: {
     hardhat: {
       forking: {
         url: networks.kovan.url,
         blockNumber: 28381671,
       },
-      chainId: 42,
+      chainId: networks.kovan.chainId,
       ...networks.kovan.contracts,
     },
     mainnet: {
       forking: {
-        url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+        url: networks.mainnet.url,
         blockNumber: 13611808,
       },
-      url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+      chainId: networks.mainnet.chainId,
+      url: networks.mainnet.url,
       renTokenAddr: '0x2CD647668494c1B15743AB283A0f980d90a87394',
     },
     kovan: {
+      chainId: networks.kovan.chainId,
       url: networks.kovan.url,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       ...networks.kovan.contracts,
