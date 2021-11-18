@@ -94,7 +94,7 @@ contract RenPool {
 	modifier onlyOwnerNodeOperator() {
 		require (
 			msg.sender == owner || msg.sender == nodeOperator,
-			"Caller is not owner/nodeOperator"
+			"RenPool: Caller is not owner nor node operator"
 		);
 		_;
 	}
@@ -102,7 +102,7 @@ contract RenPool {
 	modifier onlyOwner() {
 		require (
 			msg.sender == owner,
-			"Caller is not owner"
+			"RenPool: Caller is not owner"
 		);
 		_;
 	}
