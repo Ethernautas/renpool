@@ -145,6 +145,7 @@ describe('RenPool contract test', function () {
 
       // Every new deposit attempt should fail
       const amount = 1;
+      await renToken.connect(alice).approve(renPool.address, amount);
       await expect(
         renPool.connect(alice).deposit(amount)
       ).to.be.revertedWith('RenPool: Pool is locked');
