@@ -231,6 +231,27 @@ Run `solhint` (solidity linter).
 yarn lint
 ```
 
+## Running Static Analysis
+
+We use the [Slither](https://github.com/crytic/slither) to run static analysis on the RenPool contract.
+Slither can run on a Hardhat application, so you only need to install Slither.
+
+```sh
+pip3 install slither-analyzer
+```
+
+To run it
+
+```sh
+slither .
+```
+
+See <https://github.com/crytic/slither> for more information.
+
+The static analysis has been integrated into our pipeline with GitHub Actions.
+To see the result of the analysis,
+see <https://github.com/Ethernautas/renpool/actions/workflows/analysis.yaml>.
+
 ## Deploying to a Live Network
 
 To deploy your contracts to the mainnet or one of the test nets, first modify [`scripts/deploy.py`](`scripts/deploy.py`) to [use a funded account](https://eth-brownie.readthedocs.io/en/stable/account-management.html).
