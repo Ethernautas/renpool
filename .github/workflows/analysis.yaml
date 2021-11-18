@@ -1,0 +1,20 @@
+name: RenPool Static Analysis
+
+on:
+  # We want to trigger this job in every branch.
+  push:
+    # But only trigger it when either contracts or this file were modified.
+    paths:
+      - 'contracts/**.sol'
+      - '.github/workflows/analysis.yaml'
+
+jobs:
+
+  analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn install --frozen-lockfile
+      - run: pip3 install slither-analyzer
+      - run: slither . --print human-summary
+      - run: slither .

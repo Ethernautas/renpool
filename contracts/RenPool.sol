@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "OpenZeppelin/openzeppelin-contracts@4.0.0/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IDarknodePayment.sol";
 import "../interfaces/IClaimRewards.sol";
@@ -85,7 +86,7 @@ contract RenPool {
 	modifier onlyNodeOperator() {
 		require (
 			msg.sender == nodeOperator,
-			"Caller is not nodeOperator"
+			"RenPool: Caller is not node operator"
 		);
 		_;
 	}
@@ -93,7 +94,7 @@ contract RenPool {
 	modifier onlyOwnerNodeOperator() {
 		require (
 			msg.sender == owner || msg.sender == nodeOperator,
-			"Caller is not owner/nodeOperator"
+			"RenPool: Caller is not owner nor node operator"
 		);
 		_;
 	}
@@ -101,7 +102,7 @@ contract RenPool {
 	modifier onlyOwner() {
 		require (
 			msg.sender == owner,
-			"Caller is not owner"
+			"RenPool: Caller is not owner"
 		);
 		_;
 	}
@@ -132,17 +133,14 @@ contract RenPool {
 	function deposit(uint256 _amount) external {
 		address sender = msg.sender;
 
-		require(isLocked == false, "Pool is locked");
-		require(_amount > 0, "Invalid amount");
-		require(_amount + totalPooled <= bond, "Amount surpasses bond");
+		require(isLocked == false, "RenPool: Pool is locked");
+		require(_amount > 0, "RenPool: Invalid amount");
+		require(_amount + totalPooled <= bond, "RenPool: Amount surpasses bond");
 
 		balances[sender] += _amount;
 		totalPooled += _amount;
 
-		require(
-			renToken.transferFrom(sender, address(this), _amount) == true,
-			"Deposit failed"
-		);
+		renToken.transferFrom(sender, address(this), _amount);
 
 		emit RenDeposited(sender, _amount);
 
