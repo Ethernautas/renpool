@@ -1,0 +1,23 @@
+name: Ren Pool Static Analysis Workflow
+
+on:
+
+  push:
+    paths:
+      - 'contracts/**'
+      - '.github/workflows/slither.yaml'
+
+  pull_request:
+    paths:
+      - 'contracts/**'
+      - '.github/workflows/slither.yaml'
+
+jobs:
+
+  analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn install --frozen-lockfile
+      - run: pip3 install slither-analyzer
+      - run: slither .
