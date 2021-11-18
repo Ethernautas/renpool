@@ -1,15 +1,11 @@
 name: RenPool Static Analysis
 
 on:
-
+  # We want to trigger this job in every branch.
   push:
+    # But only trigger it when either contracts or this file were modified.
     paths:
-      - 'contracts/**'
-      - '.github/workflows/analysis.yaml'
-
-  pull_request:
-    paths:
-      - 'contracts/**'
+      - 'contracts/**.sol'
       - '.github/workflows/analysis.yaml'
 
 jobs:
