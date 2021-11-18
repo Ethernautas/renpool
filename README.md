@@ -1,25 +1,25 @@
-# RenPool project
+# RenPool Project
 
-Bringing community pools to the REN ecosystem
+Bringing community pools to the REN ecosystem.
 
 ## Getting started
-1. Install brownie:
-- [https://iamdefinitelyahuman.medium.com/getting-started-with-brownie-part-1-9b2181f4cb99](https://iamdefinitelyahuman.medium.com/getting-started-with-brownie-part-1-9b2181f4cb99)
-- [https://eth-brownie.readthedocs.io/en/stable/install.html](https://eth-brownie.readthedocs.io/en/stable/install.html)
-- [https://www.youtube.com/watch?v=nkvIFE2QVp0](https://www.youtube.com/watch?v=nkvIFE2QVp0)
 
-2. Install solhint
+The RenPool project uses the _Yarn_ package manager and _Hardhat_ [https://hardhat.org/getting-started/](https://hardhat.org/getting-started/) development environment.
 
-```bash
-npm install -g solhint
+You can skip to the next section if you have a working _Yarn_ installation.
+If not, here is how to install it.
+
+```sh
+npm install -g yarn
 ```
 
-Run solhint (solidity linter):
-```bash
-solhint 'contracts/**/*.sol'
+### Install project
+
+```sh
+yarn install
 ```
 
-3. Launch a python virtual env:
+### Launch a python virtual env
 
 ```bash
 >> python -m venv venv # create a new env called venv
@@ -27,38 +27,45 @@ solhint 'contracts/**/*.sol'
 >> deactivate # deactivate it once you are done
 ```
 
-4. Install deps
+### Install deps
 
-```bash
+```sh
 >> python -m pip install -r requirements.txt
 ```
 
-5. Update requirements.txt
+### Update requirements.txt
 
 In case you add some extra deps, please update requirements.txt
 
-```bash
+```sh
 >> python -m pip freeze > requirements.txt
 ```
 
-6. Create a new file called `.env` from `.env.sample`. Add your Metamask mnemonic and Infura project id.
+### Create a new file called `.env` from `.env.sample`
 
-7. Init brownie console. This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask.
+Add your Metamask mnemonic and Infura project id
 
-```bash
->> brownie console
+### Init brownie console
+
+This will create a local blockchain plus 10 `accounts` loaded with eth associated to your Metamask
+
+```sh
+yarn hardhat console
 ```
 
-8. Mint a ERC20 token called REN and deploy RenPool contract to local net. You'll get a fresh instance every time you init the brownie console.
+### Mint a ERC20 token called REN and deploy RenPool contract to local net
 
-```bash
+You'll get a fresh instance every time you init the brownie console
+
+```sh
 >> renToken, renPool = run('deploy')
 ```
 
-9. You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods.
+### You can now interact with the `renToken` and `renPool` contracts using any of the `accounts` provided by brownie and any of the contracts' methods
 
 Get some ren tokens from the faucet
-```bash
+
+```sh
 >> acc = accounts[1]
 >> renToken.balanceOf(acc)
 >> 0
@@ -68,25 +75,28 @@ Get some ren tokens from the faucet
 ```
 
 Deposit ren tokens into the ren pool
-```bash
+
+```sh
 >> tx1 = renToken.approve(renPool, 100, {'from': acc})
 >> tx2 = renPool.deposit(100, {'from': acc})
 ```
 
 Verify that the ren pool balance has increased
-```bash
+
+```sh
 >> renPool.totalPooled()
 >> 100
 ```
 
 Withdraw some tokens
-```bash
+
+```sh
 >> renPool.withdraw(5, {'from': acc})
 >> renPool.totalPooled()
 >> 95
 ```
 
-10. Running tests (open a new terminal).
+### Running tests (open a new terminal)
 
 ```bash
 >> brownie test
@@ -122,35 +132,6 @@ The app is deployed to [https://renpool.netlify.app/](https://renpool.netlify.ap
 
 3. Add kovan-fork to Development networks:
 `brownie networks add Development kovan-fork host=http://127.0.0.1 cmd=ganache-cli  mnemonic=brownie port=8545 accounts=10 evm_version=istanbul fork=kovan gas_limit=12000000 name="Ganache-CLI (Kovan Fork)" timeout=120`
-
-# Brownie React Mix
-
-This mix comes with everything you need to start using [React](https://reactjs.org/) with a Brownie project.
-
-## Installation
-
-1. [Install Brownie](https://eth-brownie.readthedocs.io/en/stable/install.html), if you haven't already. You must be using version `1.9.0` or newer.
-
-2. Download the mix.
-
-    ```bash
-    brownie bake react-mix
-    ```
-
-3. Install the React client dependencies.
-
-    ```bash
-    cd client
-    yarn install
-    ```
-
-4. In [MetaMask](https://metamask.io/) or another web3 browser extension, load the following seed phrase:
-
-    ```bash
-    hill law jazz limb penalty escape public dish stand bracket blue jar
-    ```
-
-    These accounts will automatically be funded.
 
 ## Usage
 
@@ -216,7 +197,7 @@ To retain your deployment artifacts (and their functionality) you can launch Gan
 
 ## Switching Networks
 
-```bash
+```sh
 export WEB3_INFURA_PROJECT_ID=YourProjectID
 brownie console --network mainnet-fork
 ```
@@ -225,49 +206,72 @@ brownie console --network mainnet-fork
 
 ### Testing
 
-To run the test suite:
+To run the test suite.
 
-```bash
-brownie test
+```sh
+yarn test
 ```
 
-### Deploying to a Live Network
+Runs the test suite and reports gas usage at then end.
+
+```sh
+yarn test:gas
+```
+
+Run test coverage.
+Coverage report is written to `coverage/index.html`.
+
+```sh
+yarn coverage
+```
+
+Run `solhint` (solidity linter).
+
+```sh
+yarn lint
+```
+
+## Running Static Analysis
+
+We use the [Slither](https://github.com/crytic/slither) to run static analysis on the RenPool contract.
+Slither can run on a Hardhat application, so you only need to install Slither.
+
+```sh
+pip3 install slither-analyzer
+```
+
+To run it
+
+```sh
+slither .
+```
+
+See <https://github.com/crytic/slither> for more information.
+
+The static analysis has been integrated into our pipeline with GitHub Actions.
+To see the result of the analysis,
+see <https://github.com/Ethernautas/renpool/actions/workflows/analysis.yaml>.
+
+## Deploying to a Live Network
 
 To deploy your contracts to the mainnet or one of the test nets, first modify [`scripts/deploy.py`](`scripts/deploy.py`) to [use a funded account](https://eth-brownie.readthedocs.io/en/stable/account-management.html).
 
 Then:
 
-```bash
-brownie run deploy --network kovan
+```sh
+yarn deploy --network kovan
 ```
 
-Replace `kovan` with the name of the network you wish you use. You may also wish to adjust Brownie's [network settings](https://eth-brownie.readthedocs.io/en/stable/network-management.html).
+Replace `kovan` with the name of the network you wish you use.
+You may also wish to adjust Brownie's [network settings](https://eth-brownie.readthedocs.io/en/stable/network-management.html).
 
 For contracts deployed on a live network, the deployment information is stored permanently unless you:
 
-* Delete or rename the contract file or
-* Manually remove the `client/src/artifacts/` directory
+- Delete or rename the contract file or
+- Manually remove the `client/src/artifacts/` directory
 
-## Resources
+## Further read
 
-This mix provides a bare-bones implementation of [Create React App](https://create-react-app.dev/), configured to work with Brownie.
-
-To get started with React and building a front-end for your dApps:
-
-* [Rimble](https://rimble.consensys.design/) is an open-source library of React components and guides to help you make dApps. Along with components they provide guides and tutorials to help you get started.
-* For more in-depth information, read the [Create React App documentation](https://create-react-app.dev/docs/getting-started)
-
-
-To get started with Brownie:
-
-* Check out the other [Brownie mixes](https://github.com/brownie-mix/) that can be used as a starting point for your own contracts. They also provide example code to help you get started.
-* ["Getting Started with Brownie"](https://medium.com/@iamdefinitelyahuman/getting-started-with-brownie-part-1-9b2181f4cb99) is a good tutorial to help you familiarize yourself with Brownie
-* For more in-depth information, read the [Brownie documentation](https://eth-brownie.readthedocs.io/en/stable/)
-
-
-Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channel to chat and share with others in the community.
-
-# Further read
 1. [https://renproject.io/](https://renproject.io/)
 2. [https://github.com/renproject](https://github.com/renproject)
 3. [https://renproject.github.io/ren-client-docs/contracts/](https://renproject.github.io/ren-client-docs/contracts/)
@@ -277,7 +281,7 @@ Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channe
 7. [https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974](https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974)
 8. [https://docs.renproject.io/darknodes/getting-started/digital-ocean-or-how-to-setup-a-darknode/mac-os-and-linux](https://docs.renproject.io/darknodes/getting-started/digital-ocean-or-how-to-setup-a-darknode/mac-os-and-linux)
 
-# How it works from renpool.io
+## How it Works from renpool.io
 
 Get Access to Darknode Rewards without having to have 100k Ren or having to run a Darknode
 

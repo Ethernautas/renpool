@@ -1,6 +1,6 @@
-const { ethers, network: { config: { chainId, renTokenAddr, topRenTokenHolderAddr } } } = require('hardhat');
+const { ethers, network: { config: { chainId, build, renTokenAddr, topRenTokenHolderAddr } } } = require('hardhat');
 const { expect } = require('chai').use(require('chai-string'));
-const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
+const RenToken = require(`@renproject/sol/build/${build}/RenToken.json`);
 
 describe('RenProject/RenToken contract check', () => {
 
