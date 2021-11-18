@@ -1,16 +1,16 @@
-name: Ren Pool Static Analysis Workflow
+name: RenPool Static Analysis
 
 on:
 
   push:
     paths:
       - 'contracts/**'
-      - '.github/workflows/slither.yaml'
+      - '.github/workflows/analysis.yaml'
 
   pull_request:
     paths:
       - 'contracts/**'
-      - '.github/workflows/slither.yaml'
+      - '.github/workflows/analysis.yaml'
 
 jobs:
 
