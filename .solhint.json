@@ -6,6 +6,7 @@
     "avoid-sha3": "warn",
     "compiler-version": ["error", "^0.8.0"],
     "func-visibility": ["warn", {"ignoreConstructors": true}],
-    "reason-string": ["warn", {"maxLength": 64}]
+    "reason-string": ["warn", {"maxLength": 64}],
+    "max-states-count": ["warn", 17]
   }
 }

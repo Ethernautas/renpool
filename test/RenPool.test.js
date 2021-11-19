@@ -32,28 +32,29 @@ describe('RenPool contract test', function () {
   const DIGITS = bn(10).pow(DECIMALS);
   const POOL_BOND = bn(100_000).mul(DIGITS);
 
-  const renToken = new Contract(renTokenAddr, RenToken.abi);
-  const darknodeRegistry = new Contract(darknodeRegistryAddr, DarknodeRegistryLogicV1.abi);
-  const darknodePayment = new Contract(darknodePaymentAddr, DarknodePayment.abi);
-
-  let _, owner, nodeOperator, alice, bob;
+  let owner, nodeOperator, alice, bob;
+  let renToken, darknodeRegistry, darknodePayment;
   let renPool;
 
   let snapshotID;
 
   before(async () => {
-    [_, owner, nodeOperator, alice, bob] = await getSigners();
+    [owner, nodeOperator, alice, bob] = await getSigners();
 
-    expect(await renToken.connect(_).balanceOf(topRenTokenHolderAddr)).to.be.above(0);
+    renToken = new Contract(renTokenAddr, RenToken.abi, owner);
+    darknodeRegistry = new Contract(darknodeRegistryAddr, DarknodeRegistryLogicV1.abi, owner);
+    darknodePayment = new Contract(darknodePaymentAddr, DarknodePayment.abi, owner);
+
+    expect(await renToken.balanceOf(topRenTokenHolderAddr)).to.be.above(0);
     await provider.request({ method: 'hardhat_impersonateAccount', params: [topRenTokenHolderAddr] });
 
     const signer = await getSigner(topRenTokenHolderAddr);
     for (const user of [owner, nodeOperator, alice, bob]) {
-      expect(await renToken.connect(_).balanceOf(user.address)).to.equal(0);
+      expect(await renToken.balanceOf(user.address)).to.equal(0);
 
       const amount = POOL_BOND.mul(2);
       await renToken.connect(signer).transfer(user.address, amount);
-      expect(await renToken.connect(_).balanceOf(user.address)).to.equal(amount);
+      expect(await renToken.balanceOf(user.address)).to.equal(amount);
     }
 
     await provider.request({ method: 'hardhat_stopImpersonatingAccount', params: [topRenTokenHolderAddr] });
@@ -68,7 +69,7 @@ describe('RenPool contract test', function () {
       owner.address,
       POOL_BOND);
     await renPool.deployed();
-    expect(await renToken.connect(_).balanceOf(renPool.address)).to.equal(0);
+    expect(await renToken.balanceOf(renPool.address)).to.equal(0);
 
     snapshotID = await provider.request({ method: 'evm_snapshot', params: [] });
   });
@@ -90,15 +91,15 @@ describe('RenPool contract test', function () {
 
     [bn(1), POOL_BOND].forEach(amount => {
       it(`should deposit ${amount.toString()} REN into RenPool`, async function () {
-        const aliceBalance = await renToken.connect(_).balanceOf(alice.address);
+        const aliceBalance = await renToken.balanceOf(alice.address);
 
         // Deposit `amount` into the pool
         await renToken.connect(alice).approve(renPool.address, amount);
         await renPool.connect(alice).deposit(amount);
 
         // Veify correct balances
-        expect(await renToken.connect(_).balanceOf(renPool.address)).to.equal(amount);
-        expect(await renToken.connect(_).balanceOf(alice.address)).to.equal(aliceBalance.sub(amount));
+        expect(await renToken.balanceOf(renPool.address)).to.equal(amount);
+        expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance.sub(amount));
         expect(await renPool.balanceOf(alice.address)).to.equal(amount);
         expect(await renPool.totalPooled()).to.equal(amount);
       });
@@ -178,7 +179,7 @@ describe('RenPool contract test', function () {
 
     [bn(1), POOL_BOND.sub(1)].forEach(amount => {
       it('should withdraw properly', async function () {
-        const aliceBalance = await renToken.connect(_).balanceOf(alice.address);
+        const aliceBalance = await renToken.balanceOf(alice.address);
 
         // Deposit into the pool without locking it
         await renToken.connect(alice).approve(renPool.address, amount);
@@ -189,15 +190,15 @@ describe('RenPool contract test', function () {
         await renPool.connect(alice).withdraw(amount);
 
         // Verify correct balances
-        expect(await renToken.connect(_).balanceOf(renPool.address)).to.equal(0);
-        expect(await renToken.connect(_).balanceOf(alice.address)).to.equal(aliceBalance);
+        expect(await renToken.balanceOf(renPool.address)).to.equal(0);
+        expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance);
         expect(await renPool.balanceOf(alice.address)).to.equal(0);
         expect(await renPool.totalPooled()).to.equal(0);
       });
     });
 
     it('should withdraw after unlocking', async function () {
-      const aliceBalance = await renToken.connect(_).balanceOf(alice.address);
+      const aliceBalance = await renToken.balanceOf(alice.address);
 
       // Lock pool
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);
@@ -212,16 +213,16 @@ describe('RenPool contract test', function () {
       await renPool.connect(alice).withdraw(POOL_BOND);
 
       // Verify correct balances
-      expect(await renToken.connect(_).balanceOf(renPool.address)).to.equal(0);
-      expect(await renToken.connect(_).balanceOf(alice.address)).to.equal(aliceBalance);
+      expect(await renToken.balanceOf(renPool.address)).to.equal(0);
+      expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance);
       expect(await renPool.balanceOf(alice.address)).to.equal(0);
       expect(await renPool.totalPooled()).to.equal(0);
     });
 
     [bn(1), POOL_BOND].forEach(amount => {
       it('should fulfill withdraw properly', async function () {
-        const aliceBalance = await renToken.connect(_).balanceOf(alice.address);
-        const bobBalance = await renToken.connect(_).balanceOf(bob.address);
+        const aliceBalance = await renToken.balanceOf(alice.address);
+        const bobBalance = await renToken.balanceOf(bob.address);
 
         // Lock pool
         await renToken.connect(bob).approve(renPool.address, POOL_BOND);
@@ -237,9 +238,9 @@ describe('RenPool contract test', function () {
         await renPool.connect(alice).fulfillWithdrawRequest(bob.address);
 
         // Verify correct balances
-        expect(await renToken.connect(_).balanceOf(renPool.address)).to.equal(POOL_BOND);
-        expect(await renToken.connect(_).balanceOf(alice.address)).to.equal(aliceBalance.sub(amount));
-        expect(await renToken.connect(_).balanceOf(bob.address)).to.equal(bobBalance.sub(POOL_BOND).add(amount));
+        expect(await renToken.balanceOf(renPool.address)).to.equal(POOL_BOND);
+        expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance.sub(amount));
+        expect(await renToken.balanceOf(bob.address)).to.equal(bobBalance.sub(POOL_BOND).add(amount));
         expect(await renPool.balanceOf(alice.address)).to.equal(amount);
         expect(await renPool.balanceOf(bob.address)).to.equal(POOL_BOND.sub(amount));
         expect(await renPool.isLocked()).to.be.true;
@@ -271,7 +272,7 @@ describe('RenPool contract test', function () {
     });
 
     it('should register darknode', async function () {
-      const registryStoreBalance = await renToken.connect(_).balanceOf(darknodeRegistryStoreAddr);
+      const registryStoreBalance = await renToken.balanceOf(darknodeRegistryStoreAddr);
 
       // Lock pool
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);
@@ -283,23 +284,23 @@ describe('RenPool contract test', function () {
 
       // Verify funds are transferred to the DarknodeRegistryStore contract
       // and the darknode is under 'pending registration' state
-      expect(await renToken.connect(_).balanceOf(darknodeRegistryStoreAddr)).to.equal(registryStoreBalance.add(POOL_BOND));
-      expect(await renToken.connect(_).balanceOf(renPool.address)).to.equal(0);
-      expect(await darknodeRegistry.connect(_).isPendingRegistration(NODE_ID)).to.be.true;
-      expect(await darknodeRegistry.connect(_).isRegistered(NODE_ID)).to.be.false;
+      expect(await renToken.balanceOf(darknodeRegistryStoreAddr)).to.equal(registryStoreBalance.add(POOL_BOND));
+      expect(await renToken.balanceOf(renPool.address)).to.equal(0);
+      expect(await darknodeRegistry.isPendingRegistration(NODE_ID)).to.be.true;
+      expect(await darknodeRegistry.isRegistered(NODE_ID)).to.be.false;
 
       // Verify darknodeID and publicKey are stored correctly inside the pool
-      expect(await renPool.connect(_).darknodeID()).to.equalIgnoreCase(NODE_ID);
-      expect(await renPool.connect(_).publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
+      expect(await renPool.darknodeID()).to.equalIgnoreCase(NODE_ID);
+      expect(await renPool.publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
 
       // Jump to the next epoch for registration to settle
       await increaseMonth();
-      await darknodeRegistry.connect(alice).epoch();
+      await darknodeRegistry.epoch();
 
       // Verify darknode is now under 'registered' state and the RenPool is darknode's owner
-      expect(await darknodeRegistry.connect(_).isPendingRegistration(NODE_ID)).to.be.false;
-      expect(await darknodeRegistry.connect(_).isRegistered(NODE_ID)).to.be.true;
-      expect(await darknodeRegistry.connect(_).getDarknodeOperator(NODE_ID)).to.equal(renPool.address);
+      expect(await darknodeRegistry.isPendingRegistration(NODE_ID)).to.be.false;
+      expect(await darknodeRegistry.isRegistered(NODE_ID)).to.be.true;
+      expect(await darknodeRegistry.getDarknodeOperator(NODE_ID)).to.equal(renPool.address);
     });
 
     it('should fail when darknode registration is not performed by node operator', async () => {
@@ -339,8 +340,8 @@ describe('RenPool contract test', function () {
       ).to.be.revertedWith('');
 
       // Make sure initial darknodeID and publicKey are preserved
-      expect(await renPool.connect(_).darknodeID()).to.equalIgnoreCase(NODE_ID);
-      expect(await renPool.connect(_).publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
+      expect(await renPool.darknodeID()).to.equalIgnoreCase(NODE_ID);
+      expect(await renPool.publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
     });
 
     it('should transfer rewards to darknode owner', async function () {
@@ -351,12 +352,12 @@ describe('RenPool contract test', function () {
       await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
 
       await increaseMonth();
-      await darknodeRegistry.connect(alice).epoch();
+      await darknodeRegistry.epoch();
 
-      expect(await darknodeRegistry.connect(_).isRegistered(NODE_ID)).to.be.true;
+      expect(await darknodeRegistry.isRegistered(NODE_ID)).to.be.true;
 
       await increaseMonth();
-      await darknodeRegistry.connect(_).epoch();
+      await darknodeRegistry.epoch();
 
       await renPool.transferRewardsToDarknodeOwner([renBTCAddr]);
       // ^ OBSERVATION: not sure if the above code is actually doing anything,
@@ -377,22 +378,22 @@ describe('RenPool contract test', function () {
 
       // Jump one epoch forward for registration to settle
       await increaseMonth();
-      await darknodeRegistry.connect(_).epoch();
+      await darknodeRegistry.epoch();
 
       // Deregister darknode
       await renPool.connect(nodeOperator).deregisterDarknode();
-      expect(await darknodeRegistry.connect(_).isPendingDeregistration(NODE_ID)).to.be.true;
+      expect(await darknodeRegistry.isPendingDeregistration(NODE_ID)).to.be.true;
 
       // Jump one epoch forward for deregitration to settle
       await increaseMonth();
-      await darknodeRegistry.connect(_).epoch();
+      await darknodeRegistry.epoch();
 
       // Verify state
-      expect(await darknodeRegistry.connect(_).isDeregistered(NODE_ID)).to.be.true;
+      expect(await darknodeRegistry.isDeregistered(NODE_ID)).to.be.true;
 
       // Make sure darknodeID and publicKey are still stored in the RenPool contract
-      expect(await renPool.connect(_).darknodeID()).to.equalIgnoreCase(NODE_ID);
-      expect(await renPool.connect(_).publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
+      expect(await renPool.darknodeID()).to.equalIgnoreCase(NODE_ID);
+      expect(await renPool.publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
     });
 
     it('should fail when darknode deregistration is not performed by node operator', async () => {
@@ -408,7 +409,7 @@ describe('RenPool contract test', function () {
 
       // Jump one epoch forward for registration to settle
       await increaseMonth();
-      await darknodeRegistry.connect(_).epoch();
+      await darknodeRegistry.epoch();
 
       // Attemping to deregister the darknode should fail when caller is not node operator
       await expect(
@@ -417,14 +418,14 @@ describe('RenPool contract test', function () {
 
       // Make sure node is still registered and nodeID and publicKey are still stored
       // in the RenPool contract
-      expect(await darknodeRegistry.connect(_).isRegistered(NODE_ID)).to.be.true;
-      expect(await renPool.connect(_).darknodeID()).to.equalIgnoreCase(NODE_ID);
-      expect(await renPool.connect(_).publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
+      expect(await darknodeRegistry.isRegistered(NODE_ID)).to.be.true;
+      expect(await renPool.darknodeID()).to.equalIgnoreCase(NODE_ID);
+      expect(await renPool.publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
     });
 
     it('should register a darknode, deregister it and refund all stakers', async () => {
-      const registryStoreBalance = await renToken.connect(_).balanceOf(darknodeRegistryStoreAddr);
-      const aliceBalance = await renToken.connect(_).balanceOf(alice.address);
+      const registryStoreBalance = await renToken.balanceOf(darknodeRegistryStoreAddr);
+      const aliceBalance = await renToken.balanceOf(alice.address);
 
       // Lock pool
       const deposit = POOL_BOND
@@ -437,42 +438,42 @@ describe('RenPool contract test', function () {
 
       // Skip to the next epoch for registration to settle
       await increaseMonth();
-      await darknodeRegistry.connect(_).epoch();
+      await darknodeRegistry.epoch();
 
       // Make sure darknode is under 'registered' state
-      expect(await darknodeRegistry.connect(_).isRegistered(NODE_ID)).to.be.true;
+      expect(await darknodeRegistry.isRegistered(NODE_ID)).to.be.true;
 
       // Deregister darknode
       await renPool.connect(nodeOperator).deregisterDarknode();
 
       // Make sure darknode is under 'pending deregistration' state
-      expect(await darknodeRegistry.connect(_).isPendingDeregistration(NODE_ID)).to.be.true;
+      expect(await darknodeRegistry.isPendingDeregistration(NODE_ID)).to.be.true;
 
       // Skip to the next epoch for deregistration to settle
       await increaseMonth();
-      await darknodeRegistry.connect(_).epoch();
+      await darknodeRegistry.epoch();
 
       // Make sure darknode is now under 'deregistered' state
-      expect(await darknodeRegistry.connect(_).isDeregistered(NODE_ID)).to.be.true;
+      expect(await darknodeRegistry.isDeregistered(NODE_ID)).to.be.true;
 
       // Skip one extra epoch for refund to be callable
       await increaseMonth();
-      await darknodeRegistry.connect(_).epoch();
+      await darknodeRegistry.epoch();
 
       // Call refund to move funds from the Ren protocol back to the pool
       await renPool.connect(nodeOperator).refundBond();
 
       // Make sure funds are back into the RenPool contract
-      expect(await renToken.connect(_).balanceOf(darknodeRegistryStoreAddr)).to.equal(registryStoreBalance);
-      expect(await renToken.connect(_).balanceOf(renPool.address)).to.equal(deposit);
+      expect(await renToken.balanceOf(darknodeRegistryStoreAddr)).to.equal(registryStoreBalance);
+      expect(await renToken.balanceOf(renPool.address)).to.equal(deposit);
 
       // Unlock pool to release funds
       await renPool.connect(nodeOperator).unlockPool();
-      expect(await renPool.connect(_).isLocked()).to.be.false;
+      expect(await renPool.isLocked()).to.be.false;
 
       // Refund staker(s)
       await renPool.connect(alice).withdraw(deposit);
-      expect(await renToken.connect(_).balanceOf(alice.address)).to.equal(aliceBalance);
+      expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance);
     });
 
   });
