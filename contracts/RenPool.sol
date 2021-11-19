@@ -133,20 +133,20 @@ contract RenPool {
 	function deposit(uint256 _amount) external {
 		address sender = msg.sender;
 
-		require(isLocked == false, "RenPool: Pool is locked");
+		require(!isLocked, "RenPool: Pool is locked");
 		require(_amount > 0, "RenPool: Invalid amount");
 		require(_amount + totalPooled <= bond, "RenPool: Amount surpasses bond");
 
 		balances[sender] += _amount;
 		totalPooled += _amount;
 
-		renToken.transferFrom(sender, address(this), _amount);
-
 		emit RenDeposited(sender, _amount);
 
 		if (totalPooled == bond) {
 			_lockPool();
 		}
+
+		require(renToken.transferFrom(sender, address(this), _amount), "RenPool: Deposit failed");
 	}
 
 	/**
@@ -157,13 +157,13 @@ contract RenPool {
 		uint256 senderBalance = balances[sender];
 
 		require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-		require(isLocked == false, "Pool is locked");
+		require(!isLocked, "Pool is locked");
 
 		totalPooled -= _amount;
 		balances[sender] -= _amount;
 
 		require(
-			renToken.transfer(sender, _amount) == true,
+			renToken.transfer(sender, _amount),
 			"Withdraw failed"
 		);
 
@@ -180,7 +180,7 @@ contract RenPool {
 		uint256 senderBalance = balances[sender];
 
 		require(senderBalance > 0 && senderBalance >= _amount, "Insufficient funds");
-		require(isLocked == true, "Pool is not locked");
+		require(isLocked, "Pool is not locked");
 
 		withdrawRequests[sender] = _amount;
 
@@ -197,7 +197,7 @@ contract RenPool {
 		// TODO: make sure user cannot fullfil his own request
 		// TODO: add test for when _target doesn't have an associated withdrawRequest
 
-		require(isLocked == true, "Pool is not locked");
+		require(isLocked, "Pool is not locked");
 
 		balances[sender] += amount;
 		balances[_target] -= amount;
@@ -205,11 +205,11 @@ contract RenPool {
 
 		// Transfer funds from sender to _target
 		require(
-			renToken.transferFrom(sender, address(this), amount) == true,
+			renToken.transferFrom(sender, address(this), amount),
 			"Deposit failed"
 		);
 		require(
-			renToken.transfer(_target, amount) == true,
+			renToken.transfer(_target, amount),
 			"Refund failed"
 		);
 
@@ -233,10 +233,10 @@ contract RenPool {
 	 * registering the darknode.
 	 */
 	function approveBondTransfer() external onlyNodeOperator {
-		require(isLocked == true, "Pool is not locked");
+		require(isLocked, "Pool is not locked");
 
 		require(
-			renToken.approve(address(darknodeRegistry), bond) == true,
+			renToken.approve(address(darknodeRegistry), bond),
 			"Bond transfer failed"
 		);
 	}
@@ -255,7 +255,7 @@ contract RenPool {
 	 * other darknodes and traders to encrypt messages to the trader.
 	 */
 	function registerDarknode(address _darknodeID, bytes calldata _publicKey) external onlyNodeOperator {
-		require(isLocked == true, "Pool is not locked");
+		require(isLocked, "Pool is not locked");
 
 		darknodeRegistry.register(_darknodeID, _publicKey);
 
