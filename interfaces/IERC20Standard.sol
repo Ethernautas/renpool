@@ -1,4 +1,5 @@
-pragma solidity >=0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
 
 interface IERC20Standard {
 	function totalSupply() external view returns (uint256);
