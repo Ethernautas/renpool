@@ -40,7 +40,7 @@ const networks = {
       darknodeRegistryAddr: '0x9954C9F839b31E82bc9CA98F234313112D269712',
       darknodeRegistryStoreAddr: '0x9daa16aA19e37f3de06197a8B5E638EC5e487392',
       darknodePaymentAddr: '0x023f2e94C3eb128D3bFa6317a3fF860BF93C1616',
-      claimRewardsAddr: '0x7F8f7Aff44a63f61b7a120Ef2c34Ea2c4D9bD216',
+      claimRewardsAddr: '0x64C8bdfE42cFFC41D9ca6617350c5F5371DdD0F7',
       gatewayAddr: '0x0000000000000000000000000000000000000000',
     },
   }

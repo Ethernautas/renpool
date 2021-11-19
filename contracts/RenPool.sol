@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IDarknodePayment.sol";
@@ -311,17 +312,20 @@ contract RenPool {
 	 */
 	function claimDarknodeRewards(
 		string memory _assetSymbol,
-		uint256 _amount, // avoid this param, read from user balance instead. What about airdrops?
-		address _recipientAddress
+		address _recipientAddress,
+		uint256 _amount // avoid this param, read from user balance instead. What about airdrops?
 	)
 		external
+    returns(uint256)
 	{
 	// TODO: check that sender has the amount to be claimed
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
 		uint256 nonce = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
+    console.log("nonce", nonce);
 
-		bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
-		bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
+    return nonce;
+		// bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
+		// bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
 
 		// gateway.mint(pHash, _amount, nHash, sig);
 

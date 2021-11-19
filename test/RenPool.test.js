@@ -344,10 +344,9 @@ describe('RenPool contract test', function () {
       expect(await renPool.publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
     });
 
-    it('should transfer rewards to darknode owner', async function () {
-      await renToken.connect(bob).approve(renPool.address, POOL_BOND);
-      await renPool.connect(bob).deposit(POOL_BOND);
-
+    it.only('should transfer rewards to darknode owner', async function () {
+      await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+      await renPool.connect(alice).deposit(POOL_BOND);
       await renPool.connect(nodeOperator).approveBondTransfer();
       await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
 
@@ -359,7 +358,9 @@ describe('RenPool contract test', function () {
       await increaseMonth();
       await darknodeRegistry.epoch();
 
-      await renPool.transferRewardsToDarknodeOwner([renBTCAddr]);
+      const nonce = await renPool.claimDarknodeRewards('BTC', alice.address, bn(1));
+      // expect(nonce).to.be.gte(0);
+      console.log(nonce);
       // ^ OBSERVATION: not sure if the above code is actually doing anything,
       // we need a way to query the darknode's balance and make sure the
       // balance is actually being transferred.
