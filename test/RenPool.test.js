@@ -32,8 +32,8 @@ describe('RenPool contract test', function () {
   const DIGITS = bn(10).pow(DECIMALS);
   const POOL_BOND = bn(100_000).mul(DIGITS);
 
-  let renToken, darknodeRegistry, darknodePayment;
   let owner, nodeOperator, alice, bob;
+  let renToken, darknodeRegistry, darknodePayment;
   let renPool;
 
   let snapshotID;
