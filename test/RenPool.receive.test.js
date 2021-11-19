@@ -15,7 +15,7 @@ describe('RenPool contract `receive` test', function () {
       signers[0].address,
       0);
     await renPool.deployed();
-    return [renPool, ...await ethers.getSigners()]
+    return [renPool, ...signers]
   }
 
   it('should receive ETH and emit `EthDeposited` event', async function () {
