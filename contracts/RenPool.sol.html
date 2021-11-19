@@ -25,9 +25,9 @@
         <span class='fraction'>60/68</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">63.16% </span>
+        <span class="strong">65% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>24/38</span>
+        <span class='fraction'>26/40</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">83.33% </span>
@@ -547,11 +547,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">19×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">18×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">18×</span>
+<span class="cline-any cline-yes">19×</span>
 <span class="cline-any cline-yes">15×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -898,20 +898,20 @@ contract RenPool {
 	function deposit(uint256 _amount) external {
 		address sender = msg.sender;
 &nbsp;
-		require(isLocked == false, "RenPool: Pool is locked");
+		require(!isLocked, "RenPool: Pool is locked");
 		require(_amount &gt; 0, "RenPool: Invalid amount");
 		require(_amount + totalPooled &lt;= bond, "RenPool: Amount surpasses bond");
 &nbsp;
 		balances[sender] += _amount;
 		totalPooled += _amount;
 &nbsp;
-		renToken.transferFrom(sender, address(this), _amount);
-&nbsp;
 		emit RenDeposited(sender, _amount);
 &nbsp;
 		if (totalPooled == bond) {
 			_lockPool();
 		}
+&nbsp;
+		require(renToken.transferFrom(sender, address(this), _amount), "RenPool: Deposit failed");
 	}
 &nbsp;
 	/**
@@ -922,13 +922,13 @@ contract RenPool {
 		uint256 senderBalance = balances[sender];
 &nbsp;
 		<span class="missing-if-branch" title="else path not taken" >E</span>require(senderBalance &gt; 0 &amp;&amp; senderBalance &gt;= _amount, "Insufficient funds");
-		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked == false, "Pool is locked");
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(!isLocked, "Pool is locked");
 &nbsp;
 		totalPooled -= _amount;
 		balances[sender] -= _amount;
 &nbsp;
 		<span class="missing-if-branch" title="else path not taken" >E</span>require(
-			renToken.transfer(sender, _amount) == true,
+			renToken.transfer(sender, _amount),
 			"Withdraw failed"
 		);
 &nbsp;
@@ -945,7 +945,7 @@ contract RenPool {
 		uint256 senderBalance = balances[sender];
 &nbsp;
 		<span class="missing-if-branch" title="else path not taken" >E</span>require(senderBalance &gt; 0 &amp;&amp; senderBalance &gt;= _amount, "Insufficient funds");
-		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked == true, "Pool is not locked");
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked, "Pool is not locked");
 &nbsp;
 		withdrawRequests[sender] = _amount;
 &nbsp;
@@ -962,7 +962,7 @@ contract RenPool {
 		// TODO: make sure user cannot fullfil his own request
 		// TODO: add test for when _target doesn't have an associated withdrawRequest
 &nbsp;
-		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked == true, "Pool is not locked");
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked, "Pool is not locked");
 &nbsp;
 		balances[sender] += amount;
 		balances[_target] -= amount;
@@ -970,11 +970,11 @@ contract RenPool {
 &nbsp;
 		// Transfer funds from sender to _target
 		<span class="missing-if-branch" title="else path not taken" >E</span>require(
-			renToken.transferFrom(sender, address(this), amount) == true,
+			renToken.transferFrom(sender, address(this), amount),
 			"Deposit failed"
 		);
 		<span class="missing-if-branch" title="else path not taken" >E</span>require(
-			renToken.transfer(_target, amount) == true,
+			renToken.transfer(_target, amount),
 			"Refund failed"
 		);
 &nbsp;
@@ -998,10 +998,10 @@ contract RenPool {
 	 * registering the darknode.
 	 */
 	function approveBondTransfer() external onlyNodeOperator {
-		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked == true, "Pool is not locked");
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked, "Pool is not locked");
 &nbsp;
 		<span class="missing-if-branch" title="else path not taken" >E</span>require(
-			renToken.approve(address(darknodeRegistry), bond) == true,
+			renToken.approve(address(darknodeRegistry), bond),
 			"Bond transfer failed"
 		);
 	}
@@ -1020,7 +1020,7 @@ contract RenPool {
 	 * other darknodes and traders to encrypt messages to the trader.
 	 */
 	function registerDarknode(address _darknodeID, bytes calldata _publicKey) external onlyNodeOperator {
-		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked == true, "Pool is not locked");
+		<span class="missing-if-branch" title="else path not taken" >E</span>require(isLocked, "Pool is not locked");
 &nbsp;
 		darknodeRegistry.register(_darknodeID, _publicKey);
 &nbsp;
@@ -1129,7 +1129,7 @@ contract RenPool {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Nov 19 2021 09:50:50 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Nov 19 2021 10:31:24 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../prettify.js"></script>
