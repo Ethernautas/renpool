@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IDarknodePayment.sol";
-import "../interfaces/IClaimRewards.sol";
+import "../interfaces/IClaimRewardsV1.sol";
 import "../interfaces/IGateway.sol";
 // TODO: use safeMath
 // TODO: Ownable + Ownable.initialize(_owner);
@@ -24,8 +24,6 @@ contract RenPool {
 	uint256 public ownerFee; // Percentage
 	uint256 public nodeOperatorFee; // Percentage
 
-	uint64 public nonce;
-
 	bool public isLocked;
   // ^ we could use enum instead POOL_STATUS = { OPEN /* 0 */, CLOSE /* 1 */ }
 
@@ -35,7 +33,7 @@ contract RenPool {
 	IERC20 public renToken;
 	IDarknodeRegistry public darknodeRegistry;
 	IDarknodePayment public darknodePayment;
-	IClaimRewards public claimRewards;
+	IClaimRewardsV1 public claimRewards;
 	IGateway public gateway; // OR IMintGateway????
 
 	event RenDeposited(address indexed _from, uint256 _amount);
@@ -51,7 +49,7 @@ contract RenPool {
 	 * @param _renTokenAddr The REN token contract address.
 	 * @param _darknodeRegistryAddr The DarknodeRegistry contract address.
 	 * @param _darknodePaymentAddr The DarknodePayment contract address.
-	 * @param _claimRewardsAddr The ClaimRewards contract address.
+	 * @param _claimRewardsAddr The ClaimRewardsV1 contract address.
 	 * @param _gatewayAddr The Gateway contract address.
 	 * @param _owner The protocol owner's address. Possibly a multising wallet.
 	 * @param _bond The amount of REN tokens required to register a darknode.
@@ -71,14 +69,13 @@ contract RenPool {
 		renToken = IERC20(_renTokenAddr);
 		darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
 		darknodePayment = IDarknodePayment(_darknodePaymentAddr);
-		claimRewards = IClaimRewards(_claimRewardsAddr);
+		claimRewards = IClaimRewardsV1(_claimRewardsAddr);
 		gateway = IGateway(_gatewayAddr);
 		bond = _bond;
 		isLocked = false;
 		totalPooled = 0;
 		ownerFee = 5;
 		nodeOperatorFee = 5;
-		nonce = 0;
 
 		// TODO: register pool into RenPoolStore
 	}
@@ -303,15 +300,6 @@ contract RenPool {
 	}
 
 	/**
-	 * @notice Transfer rewards from darknode to darknode owner prior to calling claimDarknodeRewards.
-	 *
-	 * @param _tokens List of tokens to transfer. (here we could have a list with all available tokens)
-	 */
-	function transferRewardsToDarknodeOwner(address[] calldata _tokens) external {
-		darknodePayment.withdrawMultiple(address(this), _tokens);
-	}
-
-	/**
 	 * @notice Claim darknode rewards.
 	 *
 	 * @param _assetSymbol The asset being claimed. e.g. "BTC" or "DOGE".
@@ -327,23 +315,19 @@ contract RenPool {
 		address _recipientAddress
 	)
 		external
-		returns(uint256, uint256)
 	{
-		// TODO: check that sender has the amount to be claimed
+	// TODO: check that sender has the amount to be claimed
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
-		uint256 sig = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
-		nonce += 1;
+		uint256 nonce = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
 
-		return (sig, nonce);
-		// bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
-		// bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
+		bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
+		bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
 
 		// gateway.mint(pHash, _amount, nHash, sig);
 
 		/*
                     const nHash = randomBytes(32);
                     const pHash = randomBytes(32);
-
                     const hash = await gateway.hashForSignature.call(
                         pHash,
                         value,
@@ -356,5 +340,21 @@ contract RenPool {
                     );
 										See: https://github.com/renproject/gateway-sol/blob/7bd51d8a897952a31134875d7b2b621e4542deaa/test/Gateway.ts
 		*/
+
+    /*
+        // Construct the payload hash and mint new tokens using the Gateway
+        // contract. This will verify the signature to ensure the Darknodes have
+        // received the Bitcoin.
+        bytes32 pHash =
+            keccak256(abi.encode(_beneficiary, _startTime, _duration));
+        uint256 finalAmountScaled =
+            registry.getGatewayBySymbol("BTC").mint(
+                pHash,
+                _amount,
+                _nHash,
+                _sig
+            );
+    See: https://github.com/renproject/gateway-sol/blob/master/contracts/Gateway/examples/Vesting.sol
+    */
 	}
 }

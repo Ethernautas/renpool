@@ -343,7 +343,7 @@ describe('RenPool contract test', function () {
       expect(await renPool.connect(_).publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
     });
 
-    it('should transfer reward to darknode owner', async function () {
+    it('should transfer rewards to darknode owner', async function () {
       await renToken.connect(bob).approve(renPool.address, POOL_BOND);
       await renPool.connect(bob).deposit(POOL_BOND);
 
