@@ -295,7 +295,7 @@ describe('RenPool contract test', function () {
 
       // Jump to the next epoch for registration to settle
       await increaseMonth();
-      await darknodeRegistry.connect(alice).epoch();
+      await darknodeRegistry.epoch();
 
       // Verify darknode is now under 'registered' state and the RenPool is darknode's owner
       expect(await darknodeRegistry.isPendingRegistration(NODE_ID)).to.be.false;
@@ -352,7 +352,7 @@ describe('RenPool contract test', function () {
       await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
 
       await increaseMonth();
-      await darknodeRegistry.connect(alice).epoch();
+      await darknodeRegistry.epoch();
 
       expect(await darknodeRegistry.isRegistered(NODE_ID)).to.be.true;
 
