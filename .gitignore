@@ -1,12 +1,3 @@
-.idea/
-
-__pycache__
-.history
-.hypothesis/
-client/src/artifacts
-reports/
-venv
-.env
 .env.dev
 .env.kovan
 .env.kovan2
@@ -14,11 +5,12 @@ venv
 .env.mainnet
 .env.mainnet_fork
 
+/.idea/
 # Local Netlify folder
-.netlify
-
+/.netlify/
 /node_modules/
 /cache/
 /artifacts/
 /coverage/
+/.env
 /coverage.json
