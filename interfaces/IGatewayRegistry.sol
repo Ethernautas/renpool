@@ -4,6 +4,8 @@ pragma solidity ^0.8.7;
 import "./IERC20Standard.sol";
 import "./IGateway.sol";
 
+// Source: https://github.com/renproject/gateway-sol/blob/master/contracts/Gateway/interfaces/IGatewayRegistry.sol
+
 /// @notice GatewayRegistry is a mapping from assets to their associated
 /// RenERC20 and Gateway contracts.
 interface IGatewayRegistry {

@@ -23,7 +23,7 @@ const networks = {
       darknodeRegistryStoreAddr: '0x60Ab11FE605D2A2C3cf351824816772a131f8782',
       darknodePaymentAddr: '0x098e1708b920EFBdD7afe33Adb6a4CBa30c370B9',
       claimRewardsAddr: '0x0000000000000000000000000000000000000000',
-      gatewayAddr: '0x0000000000000000000000000000000000000000',
+      gatewayRegistryAddr: '0xe80d347DF1209a76DD9d2319d62912ba98C54DDD',
     },
   },
   kovan: {
@@ -41,7 +41,7 @@ const networks = {
       darknodeRegistryStoreAddr: '0x9daa16aA19e37f3de06197a8B5E638EC5e487392',
       darknodePaymentAddr: '0x023f2e94C3eb128D3bFa6317a3fF860BF93C1616',
       claimRewardsAddr: '0x64C8bdfE42cFFC41D9ca6617350c5F5371DdD0F7',
-      gatewayAddr: '0x0000000000000000000000000000000000000000',
+      gatewayRegistryAddr: '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D',
     },
   }
 };

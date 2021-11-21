@@ -3,10 +3,11 @@ pragma solidity ^0.8.7;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// import { IGatewayRegistry } from "@renproject/gateway-sol/contracts/Gateway/interfaces/IGatewayRegistry.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IDarknodePayment.sol";
 import "../interfaces/IClaimRewardsV1.sol";
-import "../interfaces/IGateway.sol";
+import "../interfaces/IGatewayRegistry.sol";
 // TODO: use safeMath
 // TODO: Ownable + Ownable.initialize(_owner);
 
@@ -35,7 +36,7 @@ contract RenPool {
 	IDarknodeRegistry public darknodeRegistry;
 	IDarknodePayment public darknodePayment;
 	IClaimRewardsV1 public claimRewards;
-	IGateway public gateway; // OR IMintGateway????
+	IGatewayRegistry public gatewayRegistry;
 
 	event RenDeposited(address indexed _from, uint256 _amount);
 	event RenWithdrawn(address indexed _from, uint256 _amount);
@@ -51,7 +52,7 @@ contract RenPool {
 	 * @param _darknodeRegistryAddr The DarknodeRegistry contract address.
 	 * @param _darknodePaymentAddr The DarknodePayment contract address.
 	 * @param _claimRewardsAddr The ClaimRewardsV1 contract address.
-	 * @param _gatewayAddr The Gateway contract address.
+	 * @param _gatewayRegistryAddr The GatewayRegistry contract address.
 	 * @param _owner The protocol owner's address. Possibly a multising wallet.
 	 * @param _bond The amount of REN tokens required to register a darknode.
 	 */
@@ -60,7 +61,7 @@ contract RenPool {
 		address _darknodeRegistryAddr,
 		address _darknodePaymentAddr,
 		address _claimRewardsAddr,
-		address _gatewayAddr,
+		address _gatewayRegistryAddr,
 		address _owner,
 		uint256 _bond
 	)
@@ -71,7 +72,7 @@ contract RenPool {
 		darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
 		darknodePayment = IDarknodePayment(_darknodePaymentAddr);
 		claimRewards = IClaimRewardsV1(_claimRewardsAddr);
-		gateway = IGateway(_gatewayAddr);
+		gatewayRegistry = IGatewayRegistry(_gatewayRegistryAddr);
 		bond = _bond;
 		isLocked = false;
 		totalPooled = 0;
@@ -304,11 +305,11 @@ contract RenPool {
 	 * @notice Claim darknode rewards.
 	 *
 	 * @param _assetSymbol The asset being claimed. e.g. "BTC" or "DOGE".
-	 * @param _amount The amount of the token being minted, in its smallest
-	 * denomination (e.g. satoshis for BTC).
 	 * @param _recipientAddress The Ethereum address to which the assets are
 	 * being withdrawn to. This same address must then call `mint` on
 	 * the asset's Ren Gateway contract.
+   * @param _amount The amount of the token being minted, in its smallest
+	 * denomination (e.g. satoshis for BTC).
 	 */
 	function claimDarknodeRewards(
 		string memory _assetSymbol,
@@ -316,19 +317,32 @@ contract RenPool {
 		uint256 _amount // avoid this param, read from user balance instead. What about airdrops?
 	)
 		external
-    returns(uint256)
 	{
 	// TODO: check that sender has the amount to be claimed
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
 		uint256 nonce = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
     console.log("nonce", nonce);
 
-    return nonce;
-		// bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
-		// bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
+    /**
+    * @notice mint verifies a mint approval signature from RenVM and creates
+    * tokens after taking a fee for the `_feeRecipient`.
+    *
+    * @param _pHash (payload hash) The hash of the payload associated with the
+    * mint, ie, asset symbol and recipient address.
+    * @param _amount The amount of the token being minted, in its smallest
+    * denomination (e.g. satoshis for BTC).
+    * @param _nHash (nonce hash) The hash of the nonce, amount and pHash.
+    * @param _sig The signature of the hash of the following values:
+    * (pHash, amount, msg.sender, nHash), signed by the mintAuthority. Where
+    * mintAuthority refers to the address of the key that can sign mint requests.
+    *
+    * @dev See: https://github.com/renproject/gateway-sol/blob/7bd51d8a897952a31134875d7b2b621e4542deaa/contracts/Gateway/MintGatewayV3.sol
+    */
+		bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
+		bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
 
-		// gateway.mint(pHash, _amount, nHash, sig);
-
+    uint256 mintAmount = gatewayRegistry.getGatewayBySymbol(_assetSymbol).mint(pHash, _amount, nHash, _sig);
+    console.log("mintAmount", mintAmount);
 		/*
                     const nHash = randomBytes(32);
                     const pHash = randomBytes(32);
