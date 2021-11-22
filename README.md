@@ -8,7 +8,11 @@ RenVM is a permissionless and decentralized virtual machine protocol.
 
 _A secure network of virtual computers that power interoperability for decentralized applications, enabling cross-chain lending, exchanges, collateralization & more._
 
-More information about Ren can be found in <https://renproject.io/renvm>.
+**REN** token
+<https://ethereum.org/en/developers/docs/standards/tokens/erc-20/>
+
+More information about Ren and the Ren project can be found in <https://renproject.io/renvm>.
+Visit <https://github.com/renproject> to explore their repos.
 
 ### How does the RenPool works?
 
@@ -22,7 +26,13 @@ There are three main actors when using a RenPool.
 - Node Operator
 - Stakers
 
-In turn, the RenPool uses Ren smart contracts to interact with the RenVM in a decentralized and permissionless manner.
+In turn, the RenPool uses Ren smart contracts
+<https://renproject.github.io/ren-client-docs/contracts/>
+to interact with the RenVM in a decentralized and permissionless manner.
+Ren contract addresses are published
+
+- for `mainnet`. <https://renproject.github.io/contracts-ts/#/mainnet>
+- for `testnet`. <https://renproject.github.io/contracts-ts/#/testnet>
 
 ### RenPool states
 
@@ -32,7 +42,8 @@ The following picture shows different states the RenPool can be in.
 
 When _unlocked_, stakers can either `deposit` or `withdraw` **REN** tokens as they see fit.
 However, when the pool collects the Ren Bond, currently 100K **REN** tokens, it becomes _locked_.
-Once the pool is _locked_, the node operator can register a new darknode.
+Once the pool is _locked_, the node operator can register a new darknode
+<https://docs.renproject.io/darknodes/getting-started/digital-ocean-or-how-to-setup-a-darknode/mac-os-and-linux>.
 
 > ***Please note that the REN tokens collected by the contract are never in possession of the node operator nor the owner.***
 
@@ -307,17 +318,6 @@ For contracts deployed on a live network, the deployment information is stored p
 
 - Delete or rename the contract file or
 - Manually remove the `client/src/artifacts/` directory
-
-## Further read
-
-1. [https://renproject.io/](https://renproject.io/)
-2. [https://github.com/renproject](https://github.com/renproject)
-3. [https://renproject.github.io/ren-client-docs/contracts/](https://renproject.github.io/ren-client-docs/contracts/)
-4. [https://ethereum.org/en/developers/docs/standards/tokens/erc-20/](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
-5. Ren contract addresses on mainnet [https://renproject.github.io/contracts-ts/#/mainnet](https://renproject.github.io/contracts-ts/#/mainnet)
-6. Ren contract addresses on testnet [https://renproject.github.io/contracts-ts/#/testnet](https://renproject.github.io/contracts-ts/#/testnet)
-7. [https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974](https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974)
-8. [https://docs.renproject.io/darknodes/getting-started/digital-ocean-or-how-to-setup-a-darknode/mac-os-and-linux](https://docs.renproject.io/darknodes/getting-started/digital-ocean-or-how-to-setup-a-darknode/mac-os-and-linux)
 
 ## How it Works from renpool.io
 
