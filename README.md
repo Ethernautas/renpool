@@ -14,7 +14,7 @@ More information about Ren can be found in <https://renproject.io/renvm>.
 
 At its core, RenPool is powered by smart contracts that dictates how the pool rewards are distributed among its users.
 
-![RenPool Architecture](./RenPool.drawio.svg)
+![RenPool Architecture](./RenPool-arch.drawio.svg)
 
 There are three main actors when using a RenPool.
 
