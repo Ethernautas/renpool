@@ -9,6 +9,8 @@ The RenPool project uses the _Yarn_ package manager and _Hardhat_ [https://hardh
 You can skip to the next section if you have a working _Yarn_ installation.
 If not, here is how to install it.
 
+![RenPool Architecture](./RenPool.drawio.svg)
+
 ```sh
 npm install -g yarn
 ```
