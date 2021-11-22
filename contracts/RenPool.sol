@@ -303,6 +303,7 @@ contract RenPool {
 
 	/**
 	 * @notice Claim darknode rewards.
+   *After witnessing the locking of assets, RenVM returns a “minting signature” to the user. This authorizes the user to mint a tokenized representation of the asset on the host chain. This representation is pegged one-to-one with the locked asset; it is always redeemable in any quantity at any time. You can learn more about cross-chain transactions here.
 	 *
 	 * @param _assetSymbol The asset being claimed. e.g. "BTC" or "DOGE".
 	 * @param _recipientAddress The Ethereum address to which the assets are
@@ -314,14 +315,14 @@ contract RenPool {
 	function claimDarknodeRewards(
 		string memory _assetSymbol,
 		address _recipientAddress,
-		uint256 _amount // avoid this param, read from user balance instead. What about airdrops?
+		uint256 _amount,
+    bytes memory _sig
 	)
 		external
 	{
-	// TODO: check that sender has the amount to be claimed
+	  // TODO: check that sender has the amount to be claimed
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
 		uint256 nonce = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
-    console.log("nonce", nonce);
 
     /**
     * @notice mint verifies a mint approval signature from RenVM and creates
@@ -341,6 +342,9 @@ contract RenPool {
 		bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
 		bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
 
+    console.log("nonce", nonce);
+    // console.log("pHash", pHash.toString());
+    // console.log("nHash", nHash);
     uint256 mintAmount = gatewayRegistry.getGatewayBySymbol(_assetSymbol).mint(pHash, _amount, nHash, _sig);
     console.log("mintAmount", mintAmount);
 		/*

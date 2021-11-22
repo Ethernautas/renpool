@@ -10,26 +10,25 @@
 // const ClaimRewards = artifacts.require("ClaimRewards");
 // const GetOperatorDarknodes = artifacts.require("GetOperatorDarknodes");
 // const RenProxyAdmin = artifacts.require("RenProxyAdmin");
-
-// const { network: { config: { chainId, build, claimRewardsAddr } } } = require('hardhat');
+// const { network: { config: { chainId, build, darknodeRegistryAddr } } } = require('hardhat');
 // const { expect } = require('chai').use(require('chai-string'));
-// const ClaimRewards = require(`@renproject/sol/build/${build}/ClaimRewards.json`);
-// const ClaimRewardsProxy = require(`@renproject/sol/build/${build}/ClaimRewardsProxy.json`);
+// const GatewayRegistryLogicV1 = require(`@renproject/sol/build/${build}/GatewayRegistryLogicV1.json`);
+// const GatewayRegistryProxy = require(`@renproject/sol/build/${build}/GatewayRegistryProxy.json`);
 
-// describe('RenProject/ClaimRewards contracts check', function () {
+// describe('RenProject/GatewayRegistry contracts check', function () {
 
 //   it(`should ensure compiled contract networks include chain ID ${chainId}`, async () => {
-//     expect(Object.keys(ClaimRewards.networks)).to.include(chainId.toString());
-//     expect(Object.keys(ClaimRewardsProxy.networks)).to.include(chainId.toString());
+//     expect(Object.keys(GatewayRegistryLogicV1.networks)).to.include(chainId.toString());
+//     expect(Object.keys(GatewayRegistryProxy.networks)).to.include(chainId.toString());
 //   });
 
-//   it(`should ensure compiled contract address is ${claimRewardsAddr}`, async () => {
-//     expect(ClaimRewardsProxy.networks[chainId].address).to.equalIgnoreCase(claimRewardsAddr);
+//   it(`should ensure compiled contract address is ${darknodeRegistryAddr}`, async () => {
+//     expect(GatewayRegistryProxy.networks[chainId].address).to.equalIgnoreCase(darknodeRegistryAddr);
 //   });
 
-//   it(`should ensure a ClaimRewards contract is deployed at ${claimRewardsAddr}`, async () => {
+//   it(`should ensure a GatewayRegistry contract is deployed at ${darknodeRegistryAddr}`, async () => {
 //     const [signer] = await ethers.getSigners();
-//     const contract = new ethers.Contract(claimRewardsAddr, ClaimRewards.abi, signer);
+//     const contract = new ethers.Contract(darknodeRegistryAddr, GatewayRegistryLogicV1.abi, signer);
 //     await contract.VERSION();
 //     await contract.currentEpoch();
 //   });

@@ -25,6 +25,9 @@ require('dotenv');
 const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
 const DarknodeRegistryLogicV1 = require('@renproject/sol/build/testnet/DarknodeRegistryLogicV1.json');
 const DarknodePayment = require('@renproject/sol/build/testnet/DarknodePayment.json');
+const GatewayRegistry = require('@renproject/sol/build/testnet/GatewayRegistry.json');
+// const RenBTC = require('@renproject/sol/build/testnet/RenBTC.json');
+// console.log('renBTC', JSON.stringify(RenBTC, null, 2))
 
 describe('RenPool contract test', function () {
 
@@ -33,7 +36,7 @@ describe('RenPool contract test', function () {
   const POOL_BOND = bn(100_000).mul(DIGITS);
 
   let owner, nodeOperator, alice, bob;
-  let renToken, darknodeRegistry, darknodePayment;
+  let renToken, darknodeRegistry, darknodePayment, gatewayRegistry, renBTC;
   let renPool;
 
   let snapshotID;
@@ -44,6 +47,8 @@ describe('RenPool contract test', function () {
     renToken = new Contract(renTokenAddr, RenToken.abi, owner);
     darknodeRegistry = new Contract(darknodeRegistryAddr, DarknodeRegistryLogicV1.abi, owner);
     darknodePayment = new Contract(darknodePaymentAddr, DarknodePayment.abi, owner);
+    gatewayRegistry = new Contract(gatewayRegistryAddr, GatewayRegistry.abi, owner);
+    // renBTC = new Contract(renBTCAddr, RenBTC.abi, owner);
 
     expect(await renToken.balanceOf(topRenTokenHolderAddr)).to.be.above(0);
     await provider.request({ method: 'hardhat_impersonateAccount', params: [topRenTokenHolderAddr] });
@@ -453,7 +458,9 @@ describe('RenPool contract test', function () {
       expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance);
     });
 
-    it('should transfer rewards to darknode owner', async function () {
+    it.only('should transfer rewards to darknode owner', async function () {
+      const tokenSymbol = 'BTC'
+
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);
       await renPool.connect(alice).deposit(POOL_BOND);
       await renPool.connect(nodeOperator).approveBondTransfer();
@@ -467,9 +474,17 @@ describe('RenPool contract test', function () {
       await increaseMonth();
       await darknodeRegistry.epoch();
 
-      const nonce = await renPool.claimDarknodeRewards('BTC', alice.address, bn(1));
+      // const tokenAddr = await gatewayRegistry.getTokenBySymbol(tokenSymbol).balanceOf(renPool.address);
+      // console.log('token addr', tokenAddr)
+      // expect(tokenAddr).to.equalIgnoreCase(renBTCAddr);
+      // expect(RenBTC.balanceOf(renPool.address)).to.be.gt(0);
+
+      await renPool.claimDarknodeRewards(tokenSymbol, alice.address, bn(1));
+      // The BasicAdapter contract is not part of the core RenVM protocol contracts and is only used by the front-end RenJS library. It’s a contract that submits mint signatures to a MintGateway and then forwards the minted ren-asset to the specified recipient. You can find examples and templates in Ren’s repos.
+      // Source: https://medium.com/renproject/build-your-first-dapp-with-renjs-376b9225bd05
       // expect(nonce).to.be.gte(0);
       console.log('typeof', typeof nonce, nonce.value.toString());
+      // console.log({ pHash, nHash })
       // ^ OBSERVATION: not sure if the above code is actually doing anything,
       // we need a way to query the darknode's balance and make sure the
       // balance is actually being transferred.
