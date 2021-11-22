@@ -226,14 +226,26 @@ export WEB3_INFURA_PROJECT_ID=YourProjectID
 brownie console --network mainnet-fork
 ```
 
-## Further Possibilities
+## Running Tests and Code Coverage
 
-### Testing
+The RenPool depends heavily on Ren smart contracts to interact with the RenVM.
+Ren smart contracts have been deployed independently by the Ren team and their addresses can be found in
+<https://renproject.github.io/ren-client-docs/contracts/deployments/>.
+The `test/ren` folder contains checks to verify that these contract addresses.
 
-To run the test suite.
+Our test suite is designed to run on local forks of networks where the Ren smart contracts have been already deployed.
+Currently these networks are _mainnet_ and _kovan_.
+To run the test suite against a _kovan_ fork.
 
 ```sh
 yarn test
+```
+
+On the other hand,
+if you want to run these tests against a _mainnet_ fork.
+
+```sh
+yarn test:mainnet
 ```
 
 Runs the test suite and reports gas usage at then end.
@@ -249,11 +261,13 @@ Coverage report is written to `coverage/index.html`.
 yarn coverage
 ```
 
-Run `solhint` (solidity linter).
+Run `solhint` (Solidity linter).
 
 ```sh
 yarn lint
 ```
+
+> These `yarn` scripts are declared in `package.json`.
 
 ## Running Static Analysis
 
