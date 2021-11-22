@@ -11,6 +11,8 @@ If not, here is how to install it.
 
 ![RenPool Architecture](./RenPool.drawio.svg)
 
+![RenPool FSM](./RenPool-FSM.drawio.svg)
+
 ```sh
 npm install -g yarn
 ```
