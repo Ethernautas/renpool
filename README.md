@@ -1,17 +1,51 @@
 # RenPool Project
 
-Bringing community pools to the REN ecosystem.
+## Bringing community pools to the REN ecosystem
 
-## Getting started
+### What is REN?
 
-The RenPool project uses the _Yarn_ package manager and _Hardhat_ [https://hardhat.org/getting-started/](https://hardhat.org/getting-started/) development environment.
+RenVM is a permissionless and decentralized virtual machine protocol.
 
-You can skip to the next section if you have a working _Yarn_ installation.
-If not, here is how to install it.
+_A secure network of virtual computers that power interoperability for decentralized applications, enabling cross-chain lending, exchanges, collateralization & more._
+
+More information about Ren can be found in <https://renproject.io/renvm>.
+
+### How does the RenPool works?
+
+At its core, RenPool is powered by smart contracts that dictates how the pool rewards are distributed among its users.
 
 ![RenPool Architecture](./RenPool.drawio.svg)
 
+There are three main actors when using a RenPool.
+
+- Owner
+- Node Operator
+- Stakers
+
+In turn, the RenPool uses Ren smart contracts to interact with the RenVM in a decentralized and permissionless manner.
+
+### RenPool states
+
+The following picture shows different states the RenPool can be in.
+
 ![RenPool FSM](./RenPool-FSM.drawio.svg)
+
+When _unlocked_, stakers can either `deposit` or `withdraw` **REN** tokens as they see fit.
+However, when the pool collects the Ren Bond, currently 100K **REN** tokens, it becomes _locked_.
+Once the pool is _locked_, the node operator can register a new darknode.
+
+> ***Please note that the REN tokens collected by the contract are never in possession of the node operator nor the owner.***
+
+After the darknode has been registered,
+it will start to earn fees.
+The stakers can then withdraw their respective percentage of these fees.
+
+## Getting started
+
+The RenPool project uses the _Yarn_ package manager and the _Hardhat_ [https://hardhat.org/getting-started/](https://hardhat.org/getting-started/) development environment.
+
+You can skip to the next section if you have a working _Yarn_ installation.
+If not, here is how to install it.
 
 ```sh
 npm install -g yarn
@@ -31,21 +65,7 @@ yarn install
 >> deactivate # deactivate it once you are done
 ```
 
-### Install deps
-
-```sh
->> python -m pip install -r requirements.txt
-```
-
-### Update requirements.txt
-
-In case you add some extra deps, please update requirements.txt
-
-```sh
->> python -m pip freeze > requirements.txt
-```
-
-### Create a new file called `.env` from `.env.sample`
+### Create a new file called `.env` from `.env.template`
 
 Add your Metamask mnemonic and Infura project id
 
