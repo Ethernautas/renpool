@@ -44,6 +44,7 @@ contract RenPool {
 	event EthWithdrawn(address indexed _from, uint256 _amount);
 	event PoolLocked();
 	event PoolUnlocked();
+  event RewardsClaimed(address indexed _from, uint256 _amount, uint256 _nonce);
 
 	/**
 	 * @notice Deploy a new RenPool instance.
@@ -321,9 +322,11 @@ contract RenPool {
     returns(uint256)
 	{
 	  // TODO: check that sender has the amount to be claimed
+    // uint256 balance = gatewayRegistry.getTokenBySymbol(_assetSymbol).balanceOf(address(this));
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
 		uint256 nonce = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
     // Use claimReardsToChain instead
+    emit RewardsClaimed(msg.sender, _amount, nonce);
     return nonce;
   }
 

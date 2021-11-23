@@ -479,7 +479,7 @@ describe('RenPool contract test', function () {
       // expect(tokenAddr).to.equalIgnoreCase(renBTCAddr);
       // expect(RenBTC.balanceOf(renPool.address)).to.be.gt(0);
 
-      await renPool.claimDarknodeRewards(tokenSymbol, alice.address, bn(1));
+      await renPool.claimrewardsToChain(tokenSymbol, alice.address, bn(1));
       // The BasicAdapter contract is not part of the core RenVM protocol contracts and is only used by the front-end RenJS library. It’s a contract that submits mint signatures to a MintGateway and then forwards the minted ren-asset to the specified recipient. You can find examples and templates in Ren’s repos.
       // Source: https://medium.com/renproject/build-your-first-dapp-with-renjs-376b9225bd05
       // expect(nonce).to.be.gte(0);
