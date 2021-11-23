@@ -1,10 +1,59 @@
 # RenPool Project
 
-Bringing community pools to the REN ecosystem.
+## Bringing community pools to the REN ecosystem
+
+### What is REN?
+
+RenVM is a permissionless and decentralized virtual machine protocol.
+
+_A secure network of virtual computers that power interoperability for decentralized applications, enabling cross-chain lending, exchanges, collateralization & more._
+
+**REN** token
+<https://ethereum.org/en/developers/docs/standards/tokens/erc-20/>
+
+More information about Ren and the Ren project can be found in <https://renproject.io/renvm>.
+Visit <https://github.com/renproject> to explore their repos.
+
+### How does the RenPool works?
+
+At its core, RenPool is powered by smart contracts that dictates how the pool rewards are distributed among its users.
+
+![RenPool Architecture](./RenPool-arch.drawio.svg)
+
+There are three main actors when using a RenPool.
+
+- Owner
+- Node Operator
+- Stakers
+
+In turn, the RenPool uses Ren smart contracts
+<https://renproject.github.io/ren-client-docs/contracts/>
+to interact with the RenVM in a decentralized and permissionless manner.
+Ren contract addresses are published
+
+- for `mainnet`. <https://renproject.github.io/contracts-ts/#/mainnet>
+- for `testnet`. <https://renproject.github.io/contracts-ts/#/testnet>
+
+### RenPool states
+
+The following picture shows different states the RenPool can be in.
+
+![RenPool FSM](./RenPool-FSM.drawio.svg)
+
+When _unlocked_, stakers can either `deposit` or `withdraw` **REN** tokens as they see fit.
+However, when the pool collects the Ren Bond, currently 100K **REN** tokens, it becomes _locked_.
+Once the pool is _locked_, the node operator can register a new darknode
+<https://docs.renproject.io/darknodes/getting-started/digital-ocean-or-how-to-setup-a-darknode/mac-os-and-linux>.
+
+> ***Please note that the REN tokens collected by the contract are never in possession of the node operator nor the owner.***
+
+After the darknode has been registered,
+it will start to earn fees.
+The stakers can then withdraw their respective percentage of these fees.
 
 ## Getting started
 
-The RenPool project uses the _Yarn_ package manager and _Hardhat_ [https://hardhat.org/getting-started/](https://hardhat.org/getting-started/) development environment.
+The RenPool project uses the _Yarn_ package manager and the _Hardhat_ [https://hardhat.org/getting-started/](https://hardhat.org/getting-started/) development environment.
 
 You can skip to the next section if you have a working _Yarn_ installation.
 If not, here is how to install it.
@@ -27,21 +76,7 @@ yarn install
 >> deactivate # deactivate it once you are done
 ```
 
-### Install deps
-
-```sh
->> python -m pip install -r requirements.txt
-```
-
-### Update requirements.txt
-
-In case you add some extra deps, please update requirements.txt
-
-```sh
->> python -m pip freeze > requirements.txt
-```
-
-### Create a new file called `.env` from `.env.sample`
+### Create a new file called `.env` from `.env.template`
 
 Add your Metamask mnemonic and Infura project id
 
@@ -202,14 +237,26 @@ export WEB3_INFURA_PROJECT_ID=YourProjectID
 brownie console --network mainnet-fork
 ```
 
-## Further Possibilities
+## Running Tests and Code Coverage
 
-### Testing
+The RenPool depends heavily on Ren smart contracts to interact with the RenVM.
+Ren smart contracts have been deployed independently by the Ren team and their addresses can be found in
+<https://renproject.github.io/ren-client-docs/contracts/deployments/>.
+The `test/ren` folder contains checks to verify that these contract addresses.
 
-To run the test suite.
+Our test suite is designed to run on local forks of networks where the Ren smart contracts have been already deployed.
+Currently these networks are _mainnet_ and _kovan_.
+To run the test suite against a _kovan_ fork.
 
 ```sh
 yarn test
+```
+
+On the other hand,
+if you want to run these tests against a _mainnet_ fork.
+
+```sh
+yarn test:mainnet
 ```
 
 Runs the test suite and reports gas usage at then end.
@@ -225,11 +272,13 @@ Coverage report is written to `coverage/index.html`.
 yarn coverage
 ```
 
-Run `solhint` (solidity linter).
+Run `solhint` (Solidity linter).
 
 ```sh
 yarn lint
 ```
+
+> These `yarn` scripts are declared in `package.json`.
 
 ## Running Static Analysis
 
@@ -269,17 +318,6 @@ For contracts deployed on a live network, the deployment information is stored p
 
 - Delete or rename the contract file or
 - Manually remove the `client/src/artifacts/` directory
-
-## Further read
-
-1. [https://renproject.io/](https://renproject.io/)
-2. [https://github.com/renproject](https://github.com/renproject)
-3. [https://renproject.github.io/ren-client-docs/contracts/](https://renproject.github.io/ren-client-docs/contracts/)
-4. [https://ethereum.org/en/developers/docs/standards/tokens/erc-20/](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
-5. Ren contract addresses on mainnet [https://renproject.github.io/contracts-ts/#/mainnet](https://renproject.github.io/contracts-ts/#/mainnet)
-6. Ren contract addresses on testnet [https://renproject.github.io/contracts-ts/#/testnet](https://renproject.github.io/contracts-ts/#/testnet)
-7. [https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974](https://media.consensys.net/an-definitive-list-of-ethereum-developer-tools-2159ce865974)
-8. [https://docs.renproject.io/darknodes/getting-started/digital-ocean-or-how-to-setup-a-darknode/mac-os-and-linux](https://docs.renproject.io/darknodes/getting-started/digital-ocean-or-how-to-setup-a-darknode/mac-os-and-linux)
 
 ## How it Works from renpool.io
 
