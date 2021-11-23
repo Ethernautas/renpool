@@ -458,7 +458,7 @@ describe('RenPool contract test', function () {
       expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance);
     });
 
-    it.only('should transfer rewards to darknode owner', async function () {
+    it('should transfer rewards to darknode owner', async function () {
       const tokenSymbol = 'BTC'
 
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);

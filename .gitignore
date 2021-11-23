@@ -10,7 +10,6 @@
 /.netlify/
 /node_modules/
 /cache/
-/artifacts/
 /coverage/
 /.env
 /coverage.json
