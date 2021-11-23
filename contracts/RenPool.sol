@@ -3,11 +3,10 @@ pragma solidity ^0.8.7;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import { IGatewayRegistry } from "@renproject/gateway-sol/contracts/Gateway/interfaces/IGatewayRegistry.sol";
+import "@renproject/gateway-sol/contracts/Gateway/interfaces/IGatewayRegistry.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IDarknodePayment.sol";
 import "../interfaces/IClaimRewardsV1.sol";
-import "../interfaces/IGatewayRegistry.sol";
 // TODO: Ownable + Ownable.initialize(_owner);
 
 contract RenPool {
