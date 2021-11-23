@@ -312,71 +312,49 @@ contract RenPool {
    * @param _amount The amount of the token being minted, in its smallest
 	 * denomination (e.g. satoshis for BTC).
 	 */
-	function claimDarknodeRewards(
+	function claimRewardsToChain(
 		string memory _assetSymbol,
 		address _recipientAddress,
-		uint256 _amount,
-    bytes memory _sig
+		uint256 _amount
 	)
 		external
+    returns(uint256)
 	{
 	  // TODO: check that sender has the amount to be claimed
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
 		uint256 nonce = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
+    // Use claimReardsToChain instead
+    return nonce;
+  }
 
-    /**
-    * @notice mint verifies a mint approval signature from RenVM and creates
-    * tokens after taking a fee for the `_feeRecipient`.
-    *
-    * @param _pHash (payload hash) The hash of the payload associated with the
-    * mint, ie, asset symbol and recipient address.
-    * @param _amount The amount of the token being minted, in its smallest
-    * denomination (e.g. satoshis for BTC).
-    * @param _nHash (nonce hash) The hash of the nonce, amount and pHash.
-    * @param _sig The signature of the hash of the following values:
-    * (pHash, amount, msg.sender, nHash), signed by the mintAuthority. Where
-    * mintAuthority refers to the address of the key that can sign mint requests.
-    *
-    * @dev See: https://github.com/renproject/gateway-sol/blob/7bd51d8a897952a31134875d7b2b621e4542deaa/contracts/Gateway/MintGatewayV3.sol
-    */
-		bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
-		bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
+  /**
+   * @notice mint verifies a mint approval signature from RenVM and creates
+   * tokens after taking a fee for the `_feeRecipient`.
+   *
+   * @param _amount The amount of the token being minted, in its smallest
+   * denomination (e.g. satoshis for BTC).
+   * @param _sig The signature of the hash of the following values:
+   * (pHash, amount, msg.sender, nHash), signed by the mintAuthority. Where
+   * mintAuthority refers to the address of the key that can sign mint requests.
+   *
+   * @dev You'll need to make an RPC request to the RenVM after calling claimRewardsToChain
+   * in order to get the signature from the mint authority.
+   */
+  function mintRewards(
+		string memory _assetSymbol,
+		address _recipientAddress,
+		uint256 _amount,
+    uint256 _nonce,
+    bytes memory _sig
+  ) external {
+    // _pHash (payload hash) The hash of the payload associated with the
+    // mint, ie, asset symbol and recipient address.
+    bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
 
-    console.log("nonce", nonce);
-    // console.log("pHash", pHash.toString());
-    // console.log("nHash", nHash);
+    // _nHash (nonce hash) The hash of the nonce, amount and pHash.
+		bytes32 nHash = keccak256(abi.encode(_nonce, _amount, pHash));
+
     uint256 mintAmount = gatewayRegistry.getGatewayBySymbol(_assetSymbol).mint(pHash, _amount, nHash, _sig);
     console.log("mintAmount", mintAmount);
-		/*
-                    const nHash = randomBytes(32);
-                    const pHash = randomBytes(32);
-                    const hash = await gateway.hashForSignature.call(
-                        pHash,
-                        value,
-                        user,
-                        nHash
-                    );
-                    const sig = ecsign(
-                        Buffer.from(hash.slice(2), "hex"),
-                        privKey
-                    );
-										See: https://github.com/renproject/gateway-sol/blob/7bd51d8a897952a31134875d7b2b621e4542deaa/test/Gateway.ts
-		*/
-
-    /*
-        // Construct the payload hash and mint new tokens using the Gateway
-        // contract. This will verify the signature to ensure the Darknodes have
-        // received the Bitcoin.
-        bytes32 pHash =
-            keccak256(abi.encode(_beneficiary, _startTime, _duration));
-        uint256 finalAmountScaled =
-            registry.getGatewayBySymbol("BTC").mint(
-                pHash,
-                _amount,
-                _nHash,
-                _sig
-            );
-    See: https://github.com/renproject/gateway-sol/blob/master/contracts/Gateway/examples/Vesting.sol
-    */
 	}
 }
