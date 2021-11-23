@@ -8,7 +8,6 @@ import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IDarknodePayment.sol";
 import "../interfaces/IClaimRewardsV1.sol";
 import "../interfaces/IGatewayRegistry.sol";
-// TODO: use safeMath
 // TODO: Ownable + Ownable.initialize(_owner);
 
 contract RenPool {
@@ -45,6 +44,7 @@ contract RenPool {
 	event PoolLocked();
 	event PoolUnlocked();
   event RewardsClaimed(address indexed _from, uint256 _amount, uint256 _nonce);
+  event RewardsMinted(address indexed _from, uint256 _mintedAmount);
 
 	/**
 	 * @notice Deploy a new RenPool instance.
@@ -359,5 +359,7 @@ contract RenPool {
 
     uint256 mintAmount = gatewayRegistry.getGatewayBySymbol(_assetSymbol).mint(pHash, _amount, nHash, _sig);
     console.log("mintAmount", mintAmount);
+
+    emit RewardsMinted(msg.sender, mintAmount);
 	}
 }
