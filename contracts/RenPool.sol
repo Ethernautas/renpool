@@ -301,6 +301,11 @@ contract RenPool {
 		emit EthWithdrawn(nodeOperator, balance);
 	}
 
+  function getDarknodeBalance(string memory _assetSymbol) external view returns(uint256) {
+    uint256 balance = gatewayRegistry.getTokenBySymbol(_assetSymbol).balanceOf(address(this));
+    return balance;
+  }
+
 	/**
 	 * @notice Claim darknode rewards.
    *After witnessing the locking of assets, RenVM returns a “minting signature” to the user. This authorizes the user to mint a tokenized representation of the asset on the host chain. This representation is pegged one-to-one with the locked asset; it is always redeemable in any quantity at any time. You can learn more about cross-chain transactions here.
