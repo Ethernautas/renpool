@@ -458,7 +458,7 @@ describe('RenPool contract test', function () {
       expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance);
     });
 
-    it('should transfer rewards to darknode owner', async function () {
+    it.only('should transfer rewards to darknode owner', async function () {
       const tokenSymbol = 'BTC'
 
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);
@@ -479,11 +479,14 @@ describe('RenPool contract test', function () {
       // expect(tokenAddr).to.equalIgnoreCase(renBTCAddr);
       // expect(RenBTC.balanceOf(renPool.address)).to.be.gt(0);
 
-      const nonce = await renPool.claimRewardsToChain(tokenSymbol, alice.address, bn(1));
-      // The BasicAdapter contract is not part of the core RenVM protocol contracts and is only used by the front-end RenJS library. It’s a contract that submits mint signatures to a MintGateway and then forwards the minted ren-asset to the specified recipient. You can find examples and templates in Ren’s repos.
-      // Source: https://medium.com/renproject/build-your-first-dapp-with-renjs-376b9225bd05
-      expect(nonce.value).to.be.gte(0);
-      console.log('typeof', typeof nonce, nonce.value);
+      const tx = await renPool.connect(alice).claimRewardsToChain(tokenSymbol, alice.address, bn(1));
+      // TODO: probably in the future the claim is either made by a staker or the owner
+      // in order to collect all fees at once.
+      await tx.wait();
+      console.log('tx', JSON.stringify(tx, null, 2));
+      const nonce = await renPool.nonces(alice.address)
+      console.log('nonce', nonce.toString());
+      expect(nonce).to.be.gte(bn(0));
       // console.log({ pHash, nHash })
       // ^ OBSERVATION: not sure if the above code is actually doing anything,
       // we need a way to query the darknode's balance and make sure the

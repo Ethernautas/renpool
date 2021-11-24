@@ -29,6 +29,7 @@ contract RenPool {
 
 	mapping(address => uint256) public balances;
 	mapping(address => uint256) public withdrawRequests;
+  mapping(address => uint256) public nonces;
 
 	IERC20 public renToken;
 	IDarknodeRegistry public darknodeRegistry;
@@ -325,12 +326,16 @@ contract RenPool {
 		external
     returns(uint256)
 	{
+    address sender = msg.sender;
+
 	  // TODO: check that sender has the amount to be claimed
     // uint256 balance = gatewayRegistry.getTokenBySymbol(_assetSymbol).balanceOf(address(this));
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
 		uint256 nonce = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
-    // Use claimReardsToChain instead
-    emit RewardsClaimed(msg.sender, _amount, nonce);
+    // TODO: Use claimReardsToChain instead
+    nonces[sender] = nonce;
+    emit RewardsClaimed(sender, _amount, nonce);
+    console.log("nonce", nonce);
     return nonce;
   }
 
@@ -354,7 +359,9 @@ contract RenPool {
 		uint256 _amount,
     uint256 _nonce,
     bytes memory _sig
-  ) external {
+  )
+    external
+  {
     // _pHash (payload hash) The hash of the payload associated with the
     // mint, ie, asset symbol and recipient address.
     bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));

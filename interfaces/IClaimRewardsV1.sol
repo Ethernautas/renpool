@@ -10,7 +10,7 @@ interface IClaimRewardsV1 {
    * claimRewardsToEthereum must be called by the operator performing
    * the withdrawals. When RenVM sees the claim, it will produce a
    * signature which needs to be submitted to the asset's Ren Gateway contract
-   * on Ethereum. The signature has to be fetched via a JSON-RPC request
+   * on Ethereum. The signature has to be fetched via a JSON-RPC request made
    * to the associated lightnode (https://lightnode-devnet.herokuapp.com/)
    * with the transaction details from the claimRewardsToEthereum call.
    *
