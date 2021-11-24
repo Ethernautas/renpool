@@ -346,6 +346,7 @@ contract RenPool {
    *
    * @dev You'll need to make an RPC request to the RenVM after calling claimRewardsToChain
    * in order to get the signature from the mint authority.
+   * Source: https://renproject.github.io/ren-client-docs/contracts/integrating-contracts#writing-a-mint-function
    */
   function mintRewards(
 		string memory _assetSymbol,

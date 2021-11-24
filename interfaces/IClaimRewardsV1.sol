@@ -7,8 +7,14 @@ interface IClaimRewardsV1 {
   /**
    * claimRewardsToChain allows darknode operators to withdraw darknode
    * earnings, as an on-chain alternative to the JSON-RPC claim method.
+   * claimRewardsToEthereum must be called by the operator performing
+   * the withdrawals. When RenVM sees the claim, it will produce a
+   * signature which needs to be submitted to the asset's Ren Gateway contract
+   * on Ethereum. The signature has to be fetched via a JSON-RPC request
+   * to the associated lightnode (https://lightnode-devnet.herokuapp.com/)
+   * with the transaction details from the claimRewardsToEthereum call.
    *
-   * It will the operators total sum of rewards, for all of their nodes.
+   * It will withdraw the operators total sum of rewards, for all of their nodes.
    *
    * @param assetSymbol_ The token symbol.
    *        E.g. "BTC", "DOGE" or "FIL".
