@@ -458,7 +458,7 @@ describe('RenPool contract test', function () {
       expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance);
     });
 
-    it.only('should transfer rewards to darknode owner', async function () {
+    it('should transfer rewards to darknode owner', async function () {
       const tokenSymbol = 'BTC'
 
       await renToken.connect(alice).approve(renPool.address, POOL_BOND);
@@ -474,15 +474,11 @@ describe('RenPool contract test', function () {
       await increaseMonth();
       await darknodeRegistry.epoch();
 
+      // TODO: probably in the future the claim is either made by the node operator
+      // or the owner in order to collect all fees from at nodes at once.
       const tx = await renPool.connect(alice).claimRewardsToChain(tokenSymbol, alice.address, bn(1));
-      // TODO: probably in the future the claim is either made by a staker or the owner
-      // in order to collect all fees at once.
       await tx.wait();
-      console.log('tx', JSON.stringify(tx, null, 2));
-
-      const nonce = await renPool.nonces(alice.address);
-      console.log('nonce', nonce.toString());
-      expect(nonce).to.be.gte(bn(0));
+      expect(await renPool.nonces(alice.address)).to.be.gte(bn(0));
     });
 
   });

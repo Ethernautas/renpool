@@ -339,7 +339,6 @@ contract RenPool {
     // TODO: Use claimReardsToChain instead
     nonces[sender] = nonce;
     emit RewardsClaimed(sender, _amount, nonce);
-    console.log("nonce", nonce);
     return nonce;
   }
 
