@@ -1,6 +1,9 @@
 {
   "name": "renpool",
   "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "types": "index.d.ts",
   "repository": "git@github.com:Ethernautas/renpool.git",
   "author": "Fede Rodes",
   "license": "MIT",
