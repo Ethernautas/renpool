@@ -4,6 +4,7 @@ const {
     },
     network: {
         config: {
+            accounts,
             renTokenAddr,
             darknodeRegistryAddr,
             darknodePaymentAddr,
@@ -28,7 +29,7 @@ async function main() {
     console.log(`Using network ${chalk.bold(hre.network.name)} (${chalk.bold(hre.network.config.chainId)})`);
 
     console.log(`> Getting signers to deploy RenPool contract`);
-    const [owner] = await ethers.getSigners();
+    const owner = new ethers.Wallet(accounts[0], ethers.provider);
     const nodeOperator = owner;
 
     console.log(`> Deploying ${chalk.bold('RenPool')} contract`);
