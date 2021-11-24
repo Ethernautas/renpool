@@ -474,25 +474,15 @@ describe('RenPool contract test', function () {
       await increaseMonth();
       await darknodeRegistry.epoch();
 
-      // const tokenAddr = await gatewayRegistry.getTokenBySymbol(tokenSymbol).balanceOf(renPool.address);
-      // console.log('token addr', tokenAddr)
-      // expect(tokenAddr).to.equalIgnoreCase(renBTCAddr);
-      // expect(RenBTC.balanceOf(renPool.address)).to.be.gt(0);
-
       const tx = await renPool.connect(alice).claimRewardsToChain(tokenSymbol, alice.address, bn(1));
       // TODO: probably in the future the claim is either made by a staker or the owner
       // in order to collect all fees at once.
       await tx.wait();
       console.log('tx', JSON.stringify(tx, null, 2));
-      const nonce = await renPool.nonces(alice.address)
+
+      const nonce = await renPool.nonces(alice.address);
       console.log('nonce', nonce.toString());
       expect(nonce).to.be.gte(bn(0));
-      // console.log({ pHash, nHash })
-      // ^ OBSERVATION: not sure if the above code is actually doing anything,
-      // we need a way to query the darknode's balance and make sure the
-      // balance is actually being transferred.
-      // Also, not sure if darknodePayment contract is still being used
-      // or has been replaced by the RenVM.
     });
 
   });

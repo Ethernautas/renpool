@@ -303,13 +303,11 @@ contract RenPool {
 	}
 
   function getDarknodeBalance(string memory _assetSymbol) external view returns(uint256) {
-    uint256 balance = gatewayRegistry.getTokenBySymbol(_assetSymbol).balanceOf(address(this));
-    return balance;
+    return gatewayRegistry.getTokenBySymbol(_assetSymbol).balanceOf(address(this));
   }
 
 	/**
 	 * @notice Claim darknode rewards.
-   *After witnessing the locking of assets, RenVM returns a “minting signature” to the user. This authorizes the user to mint a tokenized representation of the asset on the host chain. This representation is pegged one-to-one with the locked asset; it is always redeemable in any quantity at any time. You can learn more about cross-chain transactions here.
 	 *
 	 * @param _assetSymbol The asset being claimed. e.g. "BTC" or "DOGE".
 	 * @param _recipientAddress The Ethereum address to which the assets are
@@ -317,6 +315,12 @@ contract RenPool {
 	 * the asset's Ren Gateway contract.
    * @param _amount The amount of the token being minted, in its smallest
 	 * denomination (e.g. satoshis for BTC).
+   *
+   * @dev When RenVM sees the claim, it will produce a signature which needs
+   * to be submitted to the asset's Ren Gateway contract on Ethereum. The
+   * signature has to be fetched via a JSON-RPC request made to the associated
+   * lightnode (https://lightnode-devnet.herokuapp) with the transaction
+   * details from the claimRewardsToEthereum call.
 	 */
 	function claimRewardsToChain(
 		string memory _assetSymbol,
