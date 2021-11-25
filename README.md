@@ -8,13 +8,22 @@ RenVM is a permissionless and decentralized virtual machine protocol.
 
 > _A secure network of virtual computers that power interoperability for decentralized applications, enabling cross-chain lending, exchanges, collateralization & more._
 
-In other words, RenVM is a network of nodes, called _darknodes_, that perform Secure Multiparty Computation (SMPC) over Shamir Secret Shares, to control ECDSA Private Keys securely, and hence custody funds for cross-chain bridging.
-
+This document assumes a high-level understanding of the RenVM protocol.
+Check <https://github.com/renproject/ren/wiki/> to learn more about the inner workings of RenVM.
 More information about Ren and the Ren project can be found in <https://renproject.io/renvm>.
 Visit <https://github.com/renproject> to explore their repos.
 
-**REN** token
-<https://ethereum.org/en/developers/docs/standards/tokens/erc-20/>
+In other words, RenVM is a network of nodes, called _darknodes_, that perform Secure Multiparty Computation (SMPC) over Shamir Secret Shares, to control ECDSA Private Keys securely, and hence custody funds for cross-chain bridging.
+
+These _darknodes_ earn fees for every transaction they process.
+In order to power a _darknode_, you need to stake a utility token provided by RenVM.
+This is the **REN** token, an [`ERC20` Ethereum token](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/).
+The amount you have to stake, called a _bond_, is `100,000 REN` (currently about `88,000 USD`).
+
+### What is the RenPool?
+
+The RenPool project allows users to participate in **REN** staking pools,
+which are rewarded with a share of fees earned by the _darknode_.
 
 ### How RenPool works
 
