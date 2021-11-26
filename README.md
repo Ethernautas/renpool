@@ -18,7 +18,7 @@ In other words, RenVM is a network of nodes, called _darknodes_, that perform Se
 These _darknodes_ earn fees for every transaction they process.
 In order to power a _darknode_, you need to stake a utility token provided by RenVM.
 This is the **REN** token, an [`ERC20` Ethereum token](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/).
-The amount you have to stake, called a _bond_, is `100,000 REN` (currently about `88,000 USD`).
+The amount you have to stake, known as _bond_, is `100,000 REN` (currently about `88,000 USD`).
 
 ### What is the RenPool?
 
