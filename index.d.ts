@@ -39,3 +39,18 @@ export type Artifact = {
 export const RenPool: Artifact;
 export const IERC20Standard: Artifact;
 export const IDarknodeRegistry: Artifact;
+
+export type AddressType = string;
+
+export const deployments: {
+    [network: string]: {
+        renTokenAddr: AddressType,
+        renBTCAddr: AddressType,
+        topRenTokenHolderAddr: AddressType,
+        darknodeRegistryAddr: AddressType,
+        darknodeRegistryStoreAddr: AddressType,
+        darknodePaymentAddr: AddressType,
+        claimRewardsAddr: AddressType,
+        gatewayRegistryAddr: AddressType,
+    },
+};
