@@ -15,6 +15,7 @@
     "deploy": "yarn run build && cp ./_redirects ./build && netlify deploy --dir build --prod"
   },
   "dependencies": {
+    "renpool-contracts": "./..",
     "@ethersproject/address": "^5.4.0",
     "@ethersproject/bignumber": "^5.4.0",
     "@ethersproject/contracts": "^5.4.0",

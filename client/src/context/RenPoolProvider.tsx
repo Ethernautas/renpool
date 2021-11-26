@@ -2,7 +2,7 @@ import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract, ContractInterface } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ContractNames, CONTRACT_ADDRESSES } from '../constants'
-import artifact from '../artifacts/contracts/RenPool.sol/RenPool.json'
+import { RenPool as artifact} from 'renpool-contracts'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
 
