@@ -43,7 +43,7 @@ export const IDarknodeRegistry: Artifact;
 export type AddressType = string;
 
 export const deployments: {
-    [network: string]: {
+    [key in 'mainnet' | 'kovan']: {
         renTokenAddr: AddressType,
         renBTCAddr: AddressType,
         topRenTokenHolderAddr: AddressType,
@@ -52,5 +52,5 @@ export const deployments: {
         darknodePaymentAddr: AddressType,
         claimRewardsAddr: AddressType,
         gatewayRegistryAddr: AddressType,
-    },
+    };
 };
