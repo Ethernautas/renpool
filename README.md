@@ -1,5 +1,7 @@
 # RenPool Project
 
+This repo has been archived. We moved the project to a new organization, please visit [https://github.com/renpool](https://github.com/renpool)
+
 ## Bringing community pools to the REN ecosystem
 
 ### What is REN?
