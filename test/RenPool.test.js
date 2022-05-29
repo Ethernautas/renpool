@@ -16,7 +16,7 @@ const {
       darknodePaymentAddr,
       darknodeRegistryStoreAddr,
       claimRewardsAddr,
-      gatewayAddr,
+      gatewayRegistryAddr,
     },
     provider
   } } = require('hardhat');
@@ -25,6 +25,9 @@ require('dotenv');
 const RenToken = require('@renproject/sol/build/testnet/RenToken.json');
 const DarknodeRegistryLogicV1 = require('@renproject/sol/build/testnet/DarknodeRegistryLogicV1.json');
 const DarknodePayment = require('@renproject/sol/build/testnet/DarknodePayment.json');
+const GatewayRegistry = require('@renproject/sol/build/testnet/GatewayRegistry.json');
+// const RenBTC = require('@renproject/sol/build/testnet/RenBTC.json');
+// console.log('renBTC', JSON.stringify(RenBTC, null, 2))
 
 describe('RenPool contract test', function () {
 
@@ -33,7 +36,7 @@ describe('RenPool contract test', function () {
   const POOL_BOND = bn(100_000).mul(DIGITS);
 
   let owner, nodeOperator, alice, bob;
-  let renToken, darknodeRegistry, darknodePayment;
+  let renToken, darknodeRegistry, darknodePayment, gatewayRegistry, renBTC;
   let renPool;
 
   let snapshotID;
@@ -44,6 +47,8 @@ describe('RenPool contract test', function () {
     renToken = new Contract(renTokenAddr, RenToken.abi, owner);
     darknodeRegistry = new Contract(darknodeRegistryAddr, DarknodeRegistryLogicV1.abi, owner);
     darknodePayment = new Contract(darknodePaymentAddr, DarknodePayment.abi, owner);
+    gatewayRegistry = new Contract(gatewayRegistryAddr, GatewayRegistry.abi, owner);
+    // renBTC = new Contract(renBTCAddr, RenBTC.abi, owner);
 
     expect(await renToken.balanceOf(topRenTokenHolderAddr)).to.be.above(0);
     await provider.request({ method: 'hardhat_impersonateAccount', params: [topRenTokenHolderAddr] });
@@ -65,7 +70,7 @@ describe('RenPool contract test', function () {
       darknodeRegistry.address,
       darknodePayment.address,
       claimRewardsAddr,
-      gatewayAddr,
+      gatewayRegistryAddr,
       owner.address,
       POOL_BOND);
     await renPool.deployed();
@@ -344,29 +349,6 @@ describe('RenPool contract test', function () {
       expect(await renPool.publicKey()).to.equalIgnoreCase(PUBLIC_KEY);
     });
 
-    it('should transfer reward to darknode owner', async function () {
-      await renToken.connect(bob).approve(renPool.address, POOL_BOND);
-      await renPool.connect(bob).deposit(POOL_BOND);
-
-      await renPool.connect(nodeOperator).approveBondTransfer();
-      await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
-
-      await increaseMonth();
-      await darknodeRegistry.epoch();
-
-      expect(await darknodeRegistry.isRegistered(NODE_ID)).to.be.true;
-
-      await increaseMonth();
-      await darknodeRegistry.epoch();
-
-      await renPool.transferRewardsToDarknodeOwner([renBTCAddr]);
-      // ^ OBSERVATION: not sure if the above code is actually doing anything,
-      // we need a way to query the darknode's balance and make sure the
-      // balance is actually being transferred.
-      // Also, not sure if darknodePayment contract is still being used
-      // or has been replaced by the RenVM.
-    });
-
     it('should deregister darknode', async function () {
       // Lock pool
       await renToken.connect(bob).approve(renPool.address, POOL_BOND);
@@ -474,6 +456,29 @@ describe('RenPool contract test', function () {
       // Refund staker(s)
       await renPool.connect(alice).withdraw(deposit);
       expect(await renToken.balanceOf(alice.address)).to.equal(aliceBalance);
+    });
+
+    it('should transfer rewards to darknode owner', async function () {
+      const tokenSymbol = 'BTC'
+
+      await renToken.connect(alice).approve(renPool.address, POOL_BOND);
+      await renPool.connect(alice).deposit(POOL_BOND);
+      await renPool.connect(nodeOperator).approveBondTransfer();
+      await renPool.connect(nodeOperator).registerDarknode(NODE_ID, PUBLIC_KEY);
+
+      await increaseMonth();
+      await darknodeRegistry.epoch();
+
+      expect(await darknodeRegistry.isRegistered(NODE_ID)).to.be.true;
+
+      await increaseMonth();
+      await darknodeRegistry.epoch();
+
+      // TODO: probably in the future the claim is either made by the node operator
+      // or the owner in order to collect all fees from at nodes at once.
+      const tx = await renPool.connect(alice).claimRewardsToChain(tokenSymbol, alice.address, bn(1));
+      await tx.wait();
+      expect(await renPool.nonces(alice.address)).to.be.gte(bn(0));
     });
 
   });

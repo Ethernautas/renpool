@@ -9,8 +9,11 @@
 # Local Netlify folder
 /.netlify/
 /node_modules/
+/artifacts/**/*.json
+!/artifacts/contracts/RenPool.sol/RenPool.json
+!/artifacts/@renproject/gateway-sol/contracts/Gateway/interfaces/IERC20Standard.sol/IERC20Standard.json
+!/artifacts/interfaces/IDarknodeRegistry.sol/IDarknodeRegistry.json
 /cache/
-/artifacts/
 /coverage/
 /.env
 /coverage.json

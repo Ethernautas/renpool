@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { deployments } from 'renpool-contracts'
 
 export const NETWORK_CONTEXT_NAME = 'NETWORK'
 
@@ -54,12 +55,19 @@ export const ETHERSCAN = {
 // Smart contract addresses for live networks only
 export const CONTRACT_ADDRESSES = {
   1: {
-    REN_TOKEN: '0x408e41876cCCDC0F92210600ef50372656052a38',
-    DARKNODE_REGISTRY: '0x2D7b6C95aFeFFa50C068D50f89C5C0014e054f0A',
+    REN_TOKEN: deployments.mainnet.renTokenAddr,
+    DARKNODE_REGISTRY: deployments.mainnet.darknodeRegistryAddr,
+    REN_POOL: '0x0000000000000000000000000000000000000000',
   },
   42: {
-    REN_TOKEN: '0x2CD647668494c1B15743AB283A0f980d90a87394',
-    DARKNODE_REGISTRY: '0x9954C9F839b31E82bc9CA98F234313112D269712',
+    REN_TOKEN: deployments.kovan.renTokenAddr,
+    DARKNODE_REGISTRY: deployments.kovan.darknodeRegistryAddr,
+    REN_POOL: '0xf1e98770ab8ed1364371B8c7DBdA56633F7cB6a9',
+  },
+  1337: {
+    REN_TOKEN: '0x0000000000000000000000000000000000000000',
+    DARKNODE_REGISTRY: '0x0000000000000000000000000000000000000000',
+    REN_POOL: '0x0000000000000000000000000000000000000000',
   },
 }
 

@@ -2,8 +2,8 @@ import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 import { ContractNames, CONTRACT_ADDRESSES } from '../constants'
-import artifact from'../artifacts/contracts/dependencies/OpenZeppelin/openzeppelin-contracts@4.0.0/IERC20.json'
-import map from '../artifacts/deployments/map.json'
+import { IERC20Standard as artifact } from 'renpool-contracts'
+// import map from '../artifacts/deployments/map.json'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
 
@@ -32,11 +32,11 @@ export const RenTokenProvider: FC = ({
 }) => {
   const { library, account } = useActiveWeb3React()
 
-  const address: string = CHAIN_ID === '1337'
-    ? map[CHAIN_ID][ContractNames.RenToken][0]
-    : CONTRACT_ADDRESSES[CHAIN_ID].REN_TOKEN
+  // const address: string = CHAIN_ID === '1337'
+  //   ? map[CHAIN_ID][ContractNames.RenToken][0]
+  //   : CONTRACT_ADDRESSES[CHAIN_ID].REN_TOKEN
 
-  const renToken = useContract(address, artifact.abi)
+  const renToken = useContract(CONTRACT_ADDRESSES[CHAIN_ID].REN_TOKEN, artifact.abi)
 
   const [balance, setBalance] = useState<BigNumber>(BigNumber.from(0))
 

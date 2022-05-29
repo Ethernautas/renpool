@@ -3,7 +3,7 @@ import React, { FC, useState, useEffect, createContext } from 'react'
 import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 import { CONTRACT_ADDRESSES } from '../constants'
-import artifact from'../artifacts/interfaces/IDarknodeRegistry.json'
+import { IDarknodeRegistry as artifact} from'renpool-contracts'
 import { useActiveWeb3React } from '../hooks/useActiveWeb3React'
 import { useContract } from '../hooks/useContract'
 

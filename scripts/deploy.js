@@ -4,11 +4,12 @@ const {
     },
     network: {
         config: {
+            accounts,
             renTokenAddr,
             darknodeRegistryAddr,
             darknodePaymentAddr,
             claimRewardsAddr,
-            gatewayAddr,
+            gatewayRegistryAddr,
         }
     } } = require('hardhat');
 const chalk = require('chalk');
@@ -28,7 +29,7 @@ async function main() {
     console.log(`Using network ${chalk.bold(hre.network.name)} (${chalk.bold(hre.network.config.chainId)})`);
 
     console.log(`> Getting signers to deploy RenPool contract`);
-    const [owner] = await ethers.getSigners();
+    const owner = new ethers.Wallet(accounts[0], ethers.provider);
     const nodeOperator = owner;
 
     console.log(`> Deploying ${chalk.bold('RenPool')} contract`);
@@ -38,7 +39,7 @@ async function main() {
         darknodeRegistryAddr,
         darknodePaymentAddr,
         claimRewardsAddr,
-        gatewayAddr,
+        gatewayRegistryAddr,
         owner.address,
         POOL_BOND);
     await renPool.deployed();
@@ -52,7 +53,7 @@ async function main() {
         await sleep(30000);
         const balance = await renPool.balanceOf(owner.address);
         console.log(`  Owner's balance is ${chalk.yellow(balance)}`);
-    
+
         console.log('> Verifying RenPool smart contract in Etherscan')
 
         await hre.run("verify:verify", {
@@ -62,7 +63,7 @@ async function main() {
                 darknodeRegistryAddr,
                 darknodePaymentAddr,
                 claimRewardsAddr,
-                gatewayAddr,
+                gatewayRegistryAddr,
                 owner.address,
                 POOL_BOND
             ],

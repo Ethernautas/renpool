@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@renproject/gateway-sol/contracts/Gateway/interfaces/IGatewayRegistry.sol";
 import "../interfaces/IDarknodeRegistry.sol";
 import "../interfaces/IDarknodePayment.sol";
-import "../interfaces/IClaimRewards.sol";
-import "../interfaces/IGateway.sol";
-// TODO: use safeMath
+import "../interfaces/IClaimRewardsV1.sol";
 // TODO: Ownable + Ownable.initialize(_owner);
 
 contract RenPool {
@@ -24,19 +24,18 @@ contract RenPool {
 	uint256 public ownerFee; // Percentage
 	uint256 public nodeOperatorFee; // Percentage
 
-	uint64 public nonce;
-
 	bool public isLocked;
   // ^ we could use enum instead POOL_STATUS = { OPEN /* 0 */, CLOSE /* 1 */ }
 
 	mapping(address => uint256) public balances;
 	mapping(address => uint256) public withdrawRequests;
+  mapping(address => uint256) public nonces;
 
 	IERC20 public renToken;
 	IDarknodeRegistry public darknodeRegistry;
 	IDarknodePayment public darknodePayment;
-	IClaimRewards public claimRewards;
-	IGateway public gateway; // OR IMintGateway????
+	IClaimRewardsV1 public claimRewards;
+	IGatewayRegistry public gatewayRegistry;
 
 	event RenDeposited(address indexed _from, uint256 _amount);
 	event RenWithdrawn(address indexed _from, uint256 _amount);
@@ -44,6 +43,8 @@ contract RenPool {
 	event EthWithdrawn(address indexed _from, uint256 _amount);
 	event PoolLocked();
 	event PoolUnlocked();
+  event RewardsClaimed(address indexed _from, uint256 _amount, uint256 _nonce);
+  event RewardsMinted(address indexed _from, uint256 _mintedAmount);
 
 	/**
 	 * @notice Deploy a new RenPool instance.
@@ -51,8 +52,8 @@ contract RenPool {
 	 * @param _renTokenAddr The REN token contract address.
 	 * @param _darknodeRegistryAddr The DarknodeRegistry contract address.
 	 * @param _darknodePaymentAddr The DarknodePayment contract address.
-	 * @param _claimRewardsAddr The ClaimRewards contract address.
-	 * @param _gatewayAddr The Gateway contract address.
+	 * @param _claimRewardsAddr The ClaimRewardsV1 contract address.
+	 * @param _gatewayRegistryAddr The GatewayRegistry contract address.
 	 * @param _owner The protocol owner's address. Possibly a multising wallet.
 	 * @param _bond The amount of REN tokens required to register a darknode.
 	 */
@@ -61,7 +62,7 @@ contract RenPool {
 		address _darknodeRegistryAddr,
 		address _darknodePaymentAddr,
 		address _claimRewardsAddr,
-		address _gatewayAddr,
+		address _gatewayRegistryAddr,
 		address _owner,
 		uint256 _bond
 	)
@@ -71,14 +72,13 @@ contract RenPool {
 		renToken = IERC20(_renTokenAddr);
 		darknodeRegistry = IDarknodeRegistry(_darknodeRegistryAddr);
 		darknodePayment = IDarknodePayment(_darknodePaymentAddr);
-		claimRewards = IClaimRewards(_claimRewardsAddr);
-		gateway = IGateway(_gatewayAddr);
+		claimRewards = IClaimRewardsV1(_claimRewardsAddr);
+		gatewayRegistry = IGatewayRegistry(_gatewayRegistryAddr);
 		bond = _bond;
 		isLocked = false;
 		totalPooled = 0;
 		ownerFee = 5;
 		nodeOperatorFee = 5;
-		nonce = 0;
 
 		// TODO: register pool into RenPoolStore
 	}
@@ -302,59 +302,79 @@ contract RenPool {
 		emit EthWithdrawn(nodeOperator, balance);
 	}
 
-	/**
-	 * @notice Transfer rewards from darknode to darknode owner prior to calling claimDarknodeRewards.
-	 *
-	 * @param _tokens List of tokens to transfer. (here we could have a list with all available tokens)
-	 */
-	function transferRewardsToDarknodeOwner(address[] calldata _tokens) external {
-		darknodePayment.withdrawMultiple(address(this), _tokens);
-	}
+  function getDarknodeBalance(string memory _assetSymbol) external view returns(uint256) {
+    return gatewayRegistry.getTokenBySymbol(_assetSymbol).balanceOf(address(this));
+  }
 
 	/**
 	 * @notice Claim darknode rewards.
 	 *
 	 * @param _assetSymbol The asset being claimed. e.g. "BTC" or "DOGE".
-	 * @param _amount The amount of the token being minted, in its smallest
-	 * denomination (e.g. satoshis for BTC).
 	 * @param _recipientAddress The Ethereum address to which the assets are
 	 * being withdrawn to. This same address must then call `mint` on
 	 * the asset's Ren Gateway contract.
+   * @param _amount The amount of the token being minted, in its smallest
+	 * denomination (e.g. satoshis for BTC).
+   *
+   * @dev When RenVM sees the claim, it will produce a signature which needs
+   * to be submitted to the asset's Ren Gateway contract on Ethereum. The
+   * signature has to be fetched via a JSON-RPC request made to the associated
+   * lightnode (https://lightnode-devnet.herokuapp) with the transaction
+   * details from the claimRewardsToEthereum call.
 	 */
-	function claimDarknodeRewards(
+	function claimRewardsToChain(
 		string memory _assetSymbol,
-		uint256 _amount, // avoid this param, read from user balance instead. What about airdrops?
-		address _recipientAddress
+		address _recipientAddress,
+		uint256 _amount
 	)
 		external
-		returns(uint256, uint256)
+    returns(uint256)
 	{
-		// TODO: check that sender has the amount to be claimed
+    address sender = msg.sender;
+
+	  // TODO: check that sender has the amount to be claimed
+    // uint256 balance = gatewayRegistry.getTokenBySymbol(_assetSymbol).balanceOf(address(this));
 		uint256 fractionInBps = 10_000; // TODO: this should be the share of the user for the given token
-		uint256 sig = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
-		nonce += 1;
+		uint256 nonce = claimRewards.claimRewardsToEthereum(_assetSymbol, _recipientAddress, fractionInBps);
+    // TODO: Use claimReardsToChain instead
+    nonces[sender] = nonce;
+    emit RewardsClaimed(sender, _amount, nonce);
+    return nonce;
+  }
 
-		return (sig, nonce);
-		// bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
-		// bytes32 nHash = keccak256(abi.encode(nonce, _amount, pHash));
+  /**
+   * @notice mint verifies a mint approval signature from RenVM and creates
+   * tokens after taking a fee for the `_feeRecipient`.
+   *
+   * @param _amount The amount of the token being minted, in its smallest
+   * denomination (e.g. satoshis for BTC).
+   * @param _sig The signature of the hash of the following values:
+   * (pHash, amount, msg.sender, nHash), signed by the mintAuthority. Where
+   * mintAuthority refers to the address of the key that can sign mint requests.
+   *
+   * @dev You'll need to make an RPC request to the RenVM after calling claimRewardsToChain
+   * in order to get the signature from the mint authority.
+   * Source: https://renproject.github.io/ren-client-docs/contracts/integrating-contracts#writing-a-mint-function
+   */
+  function mintRewards(
+		string memory _assetSymbol,
+		address _recipientAddress,
+		uint256 _amount,
+    uint256 _nonce,
+    bytes memory _sig
+  )
+    external
+  {
+    // _pHash (payload hash) The hash of the payload associated with the
+    // mint, ie, asset symbol and recipient address.
+    bytes32 pHash = keccak256(abi.encode(_assetSymbol, _recipientAddress));
 
-		// gateway.mint(pHash, _amount, nHash, sig);
+    // _nHash (nonce hash) The hash of the nonce, amount and pHash.
+		bytes32 nHash = keccak256(abi.encode(_nonce, _amount, pHash));
 
-		/*
-                    const nHash = randomBytes(32);
-                    const pHash = randomBytes(32);
+    uint256 mintAmount = gatewayRegistry.getGatewayBySymbol(_assetSymbol).mint(pHash, _amount, nHash, _sig);
+    console.log("mintAmount", mintAmount);
 
-                    const hash = await gateway.hashForSignature.call(
-                        pHash,
-                        value,
-                        user,
-                        nHash
-                    );
-                    const sig = ecsign(
-                        Buffer.from(hash.slice(2), "hex"),
-                        privKey
-                    );
-										See: https://github.com/renproject/gateway-sol/blob/7bd51d8a897952a31134875d7b2b621e4542deaa/test/Gateway.ts
-		*/
+    emit RewardsMinted(msg.sender, mintAmount);
 	}
 }
